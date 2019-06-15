@@ -28,4 +28,11 @@ Documentation / Tests
 Remarks
 -------
 
-pyFFS is developed and tested on x86_64 systems running Linux.
+* pyFFS is developed and tested on x86_64 systems running Linux.
+
+* It is recommended to install dependencies using `Miniconda <https://conda.io/miniconda.html>`_ or
+  `Anaconda <https://www.anaconda.com/download/#linux>`_::
+
+    $ conda install --channel=defaults    \
+                    --channel=conda-forge \
+                    --file=requirements.txt
