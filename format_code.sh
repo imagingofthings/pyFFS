@@ -1,0 +1,1 @@
+black pyffs/* -l 79
