@@ -9,8 +9,8 @@ def _index(x, axis, index_spec):
     """
     Form indexing tuple for NumPy arrays.
 
-    Given an array `x`, generates the indexing tuple that has :py:class:`slice` in each axis except
-    `axis`, where `index_spec` is used instead.
+    Given an array `x`, generates the indexing tuple that has :py:class:`slice`
+    in each axis except `axis`, where `index_spec` is used instead.
 
     Parameters
     ----------
