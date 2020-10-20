@@ -13,74 +13,7 @@ import cmath
 import numpy as np
 import scipy.fftpack as fftpack
 
-import pyffs._util as _util
-
-
-def ffs_sample(T, N_FS, T_c, N_s):
-    r"""
-    Signal sample positions for :py:func:`~pyffs.ffs`.
-
-    Return the coordinates at which a signal must be sampled to use
-    :py:func:`~pyffs.ffs`.
-
-    Parameters
-    ----------
-    T : float
-        Function period.
-    N_FS : int
-        Function bandwidth.
-    T_c : float
-        Period mid-point.
-    N_s : int
-        Number of samples.
-
-    Returns
-    -------
-    sample_point : :py:class:`~numpy.ndarray`
-        (N_s,) coordinates at which to sample a signal (in the right order).
-
-    Examples
-    --------
-    Let :math:`\phi: \mathbb{R} \to \mathbb{C}` be a bandlimited periodic function of period
-    :math:`T = 1`, bandwidth :math:`N_{FS} = 5`, and with one period centered at :math:`T_{c} = \pi`.
-    The sampling points :math:`t[n] \in \mathbb{R}` at which :math:`\phi` must be evaluated to
-    compute the Fourier Series coefficients :math:`\left\{ \phi_{k}^{FS}, k = -2, \ldots, 2 \right\}`
-    with :py:func:`~pyffs.ffs` are obtained as follows:
-
-    .. testsetup::
-
-       import numpy as np
-
-       from pyffs import ffs_sample
-
-    .. doctest::
-
-       # Ideally choose N_s to be highly-composite for ffs().
-       >>> sample_points = ffs_sample(T=1, N_FS=5, T_c=np.pi, N_s=8)
-       >>> np.around(sample_points, 2)  # Notice points are not sorted.
-       array([3.2 , 3.33, 3.45, 3.58, 2.7 , 2.83, 2.95, 3.08])
-
-    See Also
-    --------
-    :py:func:`~pyffs.ffs`
-    """
-    if T <= 0:
-        raise ValueError("Parameter[T] must be positive.")
-    if N_FS < 3:
-        raise ValueError("Parameter[N_FS] must be at least 3.")
-    if N_s < N_FS:
-        raise ValueError("Parameter[N_s] must be greater or equal to the signal bandwidth.")
-
-    if N_s % 2 == 1:  # Odd-valued
-        M = (N_s - 1) // 2
-        idx = np.r_[0 : (M + 1), -M:0]
-        sample_points = T_c + (T / N_s) * idx
-    else:  # Even case
-        M = N_s // 2
-        idx = np.r_[0:M, -M:0]
-        sample_points = T_c + (T / N_s) * (0.5 + idx)
-
-    return sample_points
+import pyffs.utils as _util
 
 
 def ffs(x, T, T_c, N_FS, axis=-1):
@@ -261,7 +194,9 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     C_2 = np.reshape(B_2 ** (N * E_2), sh)
 
     # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
-    if (x_FS.dtype == np.dtype("complex64")) or (x_FS.dtype == np.dtype("float32")):
+    if (x_FS.dtype == np.dtype("complex64")) or (
+        x_FS.dtype == np.dtype("float32")
+    ):
         C_1 = C_1.astype(np.complex64)
 
     x = fftpack.ifft(x_FS * C_1, axis=axis)
@@ -336,7 +271,9 @@ def czt(x, A, W, M, axis=-1):
     W = complex(W)
 
     if not cmath.isclose(abs(A), 1):
-        raise ValueError("Parameter[A] must lie on the unit circle for numerical stability.")
+        raise ValueError(
+            "Parameter[A] must lie on the unit circle for numerical stability."
+        )
     if not cmath.isclose(abs(W), 1):
         raise ValueError("Parameter[W] must lie on the unit circle.")
     if M <= 0:
@@ -357,7 +294,10 @@ def czt(x, A, W, M, axis=-1):
 
     y_dtype = (
         np.complex64
-        if ((x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")))
+        if (
+            (x.dtype == np.dtype("complex64"))
+            or (x.dtype == np.dtype("float32"))
+        )
         else np.complex128
     )
 
