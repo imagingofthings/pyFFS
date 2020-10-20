@@ -218,3 +218,39 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     sample_points = cartesian_product(sample_points_x, sample_points_y)
 
     return sample_points, idx
+
+
+def _create_modulation_vectors(N_s, N_FS, T, T_c):
+    """
+    Compute modulation vectors for FFS.
+
+    Parameters
+    ----------
+    N_s : int
+        Number of samples.
+    N_FS : int
+        Function bandwidth.
+    T : float
+        Function period.
+    T_c : float
+        Period mid-point.
+
+    Returns
+    -------
+    A : :py:class:`~numpy.ndarray`
+    B : :py:class:`~numpy.ndarray`
+
+    """
+
+    M, N = np.r_[N_s, N_FS] // 2
+    E_1 = np.r_[-N : (N + 1), np.zeros((N_s - N_FS,), dtype=int)]
+    B_2 = np.exp(-1j * 2 * np.pi / N_s)
+
+    if N_s % 2 == 1:
+        B_1 = np.exp(1j * (2 * np.pi / T) * T_c)
+        E_2 = np.r_[0 : (M + 1), -M:0]
+    else:
+        B_1 = np.exp(1j * (2 * np.pi / T) * (T_c + T / (2 * N_s)))
+        E_2 = np.r_[0:M, -M:0]
+
+    return B_1 ** E_1, B_2 ** (N * E_2)
