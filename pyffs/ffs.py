@@ -289,14 +289,14 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
        >>> N_sy = 3
 
        # Sample the kernel and do the transform.
-       >>> vals, _ = ffs2_sample(
-       ... Tx=Tx, y=Ty, N_FSx=N_FSx, N_FSy=N_FSy, T_cx=T_cx, T_cy=T_cy, N_sx=N_sx, N_sy=N_sy,
+       >>> sample_points, _ = ffs2_sample(
+       ... Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy,
        ... )
        >>> diric_samples = dirichlet_2D(
-       ... sample_points=vals, Tx=Tx, Ty=Ty, T_cx=T_cx, T_cy=T_cy, N_FSx=N_FSx, N_FSy=N_FSy,
+       ... sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy,
        ... )
        >>> diric_FS = ffs2(
-       ... Phi=diric_samples, Tx=Tx, Ty=Ty, T_cx=T_cx, T_cy=T_cy, N_FSx=N_FSx, N_FSy=N_FSy,
+       ... diric_samples, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy,
        ... )
 
        # Compare with theoretical result.
@@ -348,4 +348,76 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
 
 
 def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
-    raise NotImplementedError
+    r"""
+    Signal samples from Fourier Series coefficients of a 2D function.
+
+    :py:func:`~pyffs.iffs2` is basically the inverse of :py:func:`~pyffs.ffs2`.
+
+    Parameters
+    ----------
+    Phi_FS : :py:class:`~numpy.ndarray`
+        (..., N_sx, N_sy, ...) FS coefficients in ascending order, namely in
+        the top-left corner.
+    Tx : float
+        Function period along x-axis.
+    Ty : float
+        Function period along y-axis.
+    T_cx : float
+        Period mid-point, x-axis.
+    T_cy : float
+        Period mid-point, y-axis.
+    N_FSx : int
+        Function bandwidth, x-axis.
+    N_FSy : int
+        Function bandwidth, y-axis.
+    axes : tuple
+        Dimensions of `Phi_FS` along which FS coefficients are stored.
+
+    Returns
+    -------
+    Phi : :py:class:`~numpy.ndarray`
+        (..., N_sx, N_sy, ...) matrices containing original function samples
+        given to :py:func:`~pyffs.ffs2`.
+
+        In short: :math:`(\text{iFFS} \circ \text{FFS})\{ x \} = x`.
+
+    Notes
+    -----
+    Theory: :ref:`FFS_def`.
+
+    See Also
+    --------
+    :py:func:`~pyffs.ffs2_sample`, :py:func:`~pyffs.ffs2`
+    """
+
+    if len(Phi_FS.shape) > 2:
+        raise NotImplementedError
+
+    N_sx = Phi_FS.shape[axes[0]]
+    N_sy = Phi_FS.shape[axes[1]]
+    N_s = N_sx * N_sy
+
+    if Tx <= 0:
+        raise ValueError("Parameter[Tx] must be positive.")
+    if Ty <= 0:
+        raise ValueError("Parameter[Ty] must be positive.")
+    if not (3 <= N_FSx <= N_sx):
+        raise ValueError(f"Parameter[N_FSx] must lie in {{3, ..., N_sx}}.")
+    if not (3 <= N_FSy <= N_sy):
+        raise ValueError(f"Parameter[N_FSy] must lie in {{3, ..., N_sy}}.")
+
+    # create modulation vectors for each dimension
+    Ax, Bx = _create_modulation_vectors(N_sx, N_FSx, Tx, T_cx)
+    Ay, By = _create_modulation_vectors(N_sy, N_FSy, Ty, T_cy)
+    C_1 = np.outer(Ax, Ay)
+    C_2 = np.outer(Bx, By)
+
+    # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
+    if (Phi_FS.dtype == np.dtype("complex64")) or (
+        Phi_FS.dtype == np.dtype("float32")
+    ):
+        C_1 = C_1.astype(np.complex64)
+
+    Phi = fftpack.ifft2(Phi_FS * C_1, axes=axes)
+    Phi *= C_2 * N_s
+    return Phi
