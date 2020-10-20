@@ -40,9 +40,10 @@ def _index(x, axis, index_spec):
 
 def cartesian_product(x1, x2):
     """
-    Return Cartesian product of two arrays.
+    Return
+    `Cartesian product <https://en.wikipedia.org/wiki/Cartesian_product>`_
+    of two arrays.
 
-    https://en.wikipedia.org/wiki/Cartesian_product
 
     Parameters
     ----------
