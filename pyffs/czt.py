@@ -80,9 +80,7 @@ def czt(x, A, W, M, axis=-1):
     W = complex(W)
 
     if not cmath.isclose(abs(A), 1):
-        raise ValueError(
-            "Parameter[A] must lie on the unit circle for numerical stability."
-        )
+        raise ValueError("Parameter[A] must lie on the unit circle for numerical stability.")
     if not cmath.isclose(abs(W), 1):
         raise ValueError("Parameter[W] must lie on the unit circle.")
     if M <= 0:
@@ -103,10 +101,7 @@ def czt(x, A, W, M, axis=-1):
 
     y_dtype = (
         np.complex64
-        if (
-            (x.dtype == np.dtype("complex64"))
-            or (x.dtype == np.dtype("float32"))
-        )
+        if ((x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")))
         else np.complex128
     )
 

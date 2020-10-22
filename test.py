@@ -17,9 +17,7 @@ import sys
 
 project_root_dir = pathlib.Path(__file__).parent.absolute()
 cmds = dict(
-    doctest=[
-        f'sphinx-build -b doctest "{project_root_dir}/doc" "{project_root_dir}/build/doctest"'
-    ]
+    doctest=[f'sphinx-build -b doctest "{project_root_dir}/doc" "{project_root_dir}/build/doctest"']
 )
 
 print(project_root_dir)
@@ -28,9 +26,7 @@ parser = argparse.ArgumentParser(
     description="pyFFS test runner.",
     epilog="When run with no arguments, all tests are executed.",
 )
-parser.add_argument(
-    "-e", help="Name of test to run.", type=str, choices=cmds.keys()
-)
+parser.add_argument("-e", help="Name of test to run.", type=str, choices=cmds.keys())
 args = parser.parse_args()
 
 

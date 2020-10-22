@@ -174,9 +174,7 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     C_2 = np.reshape(B, sh)
 
     # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
-    if (x_FS.dtype == np.dtype("complex64")) or (
-        x_FS.dtype == np.dtype("float32")
-    ):
+    if (x_FS.dtype == np.dtype("complex64")) or (x_FS.dtype == np.dtype("float32")):
         C_1 = C_1.astype(np.complex64)
 
     x = fftpack.ifft(x_FS * C_1, axis=axis)
@@ -337,9 +335,7 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     C_2 = np.outer(Bx.conj(), By.conj())
 
     # Cast C_2 to 32 bits if x is 32 bits. (Allows faster transforms.)
-    if (Phi.dtype == np.dtype("complex64")) or (
-        Phi.dtype == np.dtype("float32")
-    ):
+    if (Phi.dtype == np.dtype("complex64")) or (Phi.dtype == np.dtype("float32")):
         C_2 = C_2.astype(np.complex64)
 
     x_FS = fftpack.fft2(Phi * C_2, axes=axes)
@@ -413,9 +409,7 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     C_2 = np.outer(Bx, By)
 
     # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
-    if (Phi_FS.dtype == np.dtype("complex64")) or (
-        Phi_FS.dtype == np.dtype("float32")
-    ):
+    if (Phi_FS.dtype == np.dtype("complex64")) or (Phi_FS.dtype == np.dtype("float32")):
         C_1 = C_1.astype(np.complex64)
 
     Phi = fftpack.ifft2(Phi_FS * C_1, axes=axes)

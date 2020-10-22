@@ -86,9 +86,7 @@ def test_ffs2():
     )
 
     # Compare with theoretical result.
-    diric_FS_exact = np.outer(
-        dirichlet_fs(N_FSx, Tx, T_cx), dirichlet_fs(N_FSy, Ty, T_cy)
-    )
+    diric_FS_exact = np.outer(dirichlet_fs(N_FSx, Tx, T_cx), dirichlet_fs(N_FSy, Ty, T_cy))
     assert np.allclose(diric_FS[:N_FSx, :N_FSy], diric_FS_exact)
 
     # Inverse transform.

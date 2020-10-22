@@ -35,13 +35,9 @@ def test_ffs2_sample():
     # check sample points
     assert sample_points.shape == (N_sx, N_sy, 2)
     for i in range(N_sy):
-        assert_array_equal(
-            sample_points[:, i, 0], np.array([0.125, 0.375, -0.375, -0.125])
-        )
+        assert_array_equal(sample_points[:, i, 0], np.array([0.125, 0.375, -0.375, -0.125]))
     for i in range(N_sx):
-        assert_array_equal(
-            sample_points[i, :, 1], np.array([0, 1 / 3, -1 / 3])
-        )
+        assert_array_equal(sample_points[i, :, 1], np.array([0, 1 / 3, -1 / 3]))
 
     # check index values
     assert idx.shape == (N_sx, N_sy, 2)
