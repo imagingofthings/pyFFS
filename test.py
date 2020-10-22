@@ -20,8 +20,6 @@ cmds = dict(
     doctest=[f'sphinx-build -b doctest "{project_root_dir}/doc" "{project_root_dir}/build/doctest"']
 )
 
-print(project_root_dir)
-
 parser = argparse.ArgumentParser(
     description="pyFFS test runner.",
     epilog="When run with no arguments, all tests are executed.",
