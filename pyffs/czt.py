@@ -10,7 +10,7 @@ import cmath
 import numpy as np
 from scipy import fftpack as fftpack
 
-from pyffs import utils as _util
+from pyffs import util as _util
 
 
 def czt(x, A, W, M, axis=-1):

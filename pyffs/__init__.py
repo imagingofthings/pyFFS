@@ -24,7 +24,7 @@ Available submodules
 :py:obj:`pyfft.interpolation`
     Methods for interpolating with Fourier Series coefficients.
 
-:py:obj:`pyfft.utils`
+:py:obj:`pyfft.util`
     Utility functions.
 
 """
@@ -32,4 +32,4 @@ Available submodules
 from .czt import *
 from .ffs import *
 from .interpolation import *
-from .utils import *
+from .util import *

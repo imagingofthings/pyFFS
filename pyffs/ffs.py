@@ -9,7 +9,7 @@
 import numpy as np
 from scipy import fftpack as fftpack
 
-from pyffs.utils import _create_modulation_vectors
+from pyffs.util import _create_modulation_vectors
 
 
 def ffs(x, T, T_c, N_FS, axis=-1):

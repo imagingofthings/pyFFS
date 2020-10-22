@@ -7,7 +7,7 @@
 
 import numpy as np
 
-from pyffs import utils as _util
+from pyffs import util as _util
 from pyffs.czt import czt
 
 

@@ -25,4 +25,4 @@ Submodules
    pyffs.czt
    pyffs.ffs
    pyffs.interpolation
-   pyffs.utils
+   pyffs.util

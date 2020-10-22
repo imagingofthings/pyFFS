@@ -1,7 +1,7 @@
-pyffs.utils
-===========
+pyffs.util
+==========
 
-.. automodule:: pyffs.utils
+.. automodule:: pyffs.util
     :members:
     :undoc-members:
     :show-inheritance:
