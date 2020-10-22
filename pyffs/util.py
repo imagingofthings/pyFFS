@@ -142,8 +142,7 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs2`.
 
-    Return the coordinates at which a signal must be sampled to use
-    :py:func:`~pyffs.ffs2`.
+    Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs2`.
 
     Parameters
     ----------
@@ -166,22 +165,20 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
 
     Returns
     -------
-    sample_point : :py:class:`~numpy.ndarray`
-        (N_sx, N_sy) coordinates at which to sample a signal (in the right
+    sample_point : list(:py:class:`~numpy.ndarray`)
+        (2,) coordinates at which to sample a signal in the x- and y- dimensions (in the right
         order).
-    indices : :py:class:`~numpy.ndarray`
-        (N_sx, N_sy) index array; could be used to reorder samples.
+    idx : list(:py:class:`~numpy.ndarray`)
+        (2,) sample indices in the x- and y- dmeensions; could be used to reorder samples.
 
     Examples
     --------
-    Let :math:`\phi: \mathbb{R}^2 \to \mathbb{C}` be a bandlimited periodic
-    function with periods :math:`T_x = 1` and :math:`T_y = 1`, bandwidths
-    :math:`N_{FS,x} = 3` and :math:`N_{FS,y} = 3`, and with one period centered
-    at :math:`(T_{c,x}, T_{c,y}) = (0, 0)`. The sampling points
-    :math:`[x[m], y[n]] \in \mathbb{R}^2` at which :math:`\phi` must be
-    evaluated to compute the Fourier Series coefficients
-    :math:`\left\{ \phi_{k_x, k_y}^{FS}, k_x, k_y = -1, \ldots, 1 \right\}`
-    with :py:func:`~pyffs.ffs2` are obtained as follows:
+    Let :math:`\phi: \mathbb{R}^2 \to \mathbb{C}` be a bandlimited periodic function with periods
+    :math:`T_x = 1` and :math:`T_y = 1`, bandwidths :math:`N_{FS,x} = 3` and :math:`N_{FS,y} = 3`,
+    and with one period centered at :math:`(T_{c,x}, T_{c,y}) = (0, 0)`. The sampling points
+    :math:`[x[m], y[n]] \in \mathbb{R}^2` at which :math:`\phi` must be evaluated to compute the
+    Fourier Series coefficients :math:`\left\{ \phi_{k_x, k_y}^{FS}, k_x, k_y = -1, \ldots, 1
+    \right\}` with :py:func:`~pyffs.ffs2` are obtained as follows:
 
     .. testsetup::
 
@@ -193,13 +190,13 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
        >>> sample_points, idx = ffs2_sample(
        ... Tx=1, Ty=1, N_FSx=3, N_FSy=3, T_cx=0, T_cy=0, N_sx=4, N_sy=3
        ... )
-       >>> sample_points[:, 0, 0]
+       >>> np.squeeze(sample_points[0])
        array([0.125, 0.375, -0.375, -0.125])
-       >>> sample_points[0, :, 1]
+       >>> np.squeeze(sample_points[1])
        array([0, 1 / 3, -1 / 3])
-       >>> idx[:, 0, 0]
+       >>> np.squeeze(idx[0])
        array([0, 1, -2, -1])
-       >>> idx[0, :, 1]
+       >>> np.squeeze(idx[1])
        array([0, 1, -1])
 
     See Also
@@ -212,8 +209,8 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     sample_points_y, idx_y = ffs_sample(Ty, N_FSy, T_cy, N_sy)
 
     # all combos
-    idx = cartesian_product(idx_x, idx_y)
-    sample_points = cartesian_product(sample_points_x, sample_points_y)
+    idx = [idx_x.reshape(N_sx, 1), idx_y.reshape(1, N_sy)]
+    sample_points = [sample_points_x.reshape(N_sx, 1), sample_points_y.reshape(1, N_sy)]
 
     return sample_points, idx
 

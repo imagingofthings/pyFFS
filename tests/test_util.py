@@ -33,18 +33,16 @@ def test_ffs2_sample():
     )
 
     # check sample points
-    assert sample_points.shape == (N_sx, N_sy, 2)
-    for i in range(N_sy):
-        assert_array_equal(sample_points[:, i, 0], np.array([0.125, 0.375, -0.375, -0.125]))
-    for i in range(N_sx):
-        assert_array_equal(sample_points[i, :, 1], np.array([0, 1 / 3, -1 / 3]))
+    assert sample_points[0].shape == (N_sx, 1)
+    assert sample_points[1].shape == (1, N_sy)
+    assert_array_equal(np.squeeze(sample_points[0]), np.array([0.125, 0.375, -0.375, -0.125]))
+    assert_array_equal(np.squeeze(sample_points[1]), np.array([0, 1 / 3, -1 / 3]))
 
     # check index values
-    assert idx.shape == (N_sx, N_sy, 2)
-    for i in range(N_sy):
-        assert_array_equal(idx[:, i, 0], np.array([0, 1, -2, -1]))
-    for i in range(N_sx):
-        assert_array_equal(idx[i, :, 1], np.array([0, 1, -1]))
+    assert idx[0].shape == (N_sx, 1)
+    assert idx[1].shape == (1, N_sy)
+    assert_array_equal(np.squeeze(idx[0]), np.array([0, 1, -2, -1]))
+    assert_array_equal(np.squeeze(idx[1]), np.array([0, 1, -1]))
 
 
 if __name__ == "__main__":
