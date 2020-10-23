@@ -183,6 +183,7 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     .. testsetup::
 
        from pyffs import ffs2_sample
+       from numpy.testing import assert_array_equal
 
     .. doctest::
 
@@ -190,14 +191,10 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
        >>> sample_points, idx = ffs2_sample(
        ... Tx=1, Ty=1, N_FSx=3, N_FSy=3, T_cx=0, T_cy=0, N_sx=4, N_sy=3
        ... )
-       >>> np.squeeze(sample_points[0])
-       array([0.125, 0.375, -0.375, -0.125])
-       >>> np.squeeze(sample_points[1])
-       array([0, 1 / 3, -1 / 3])
-       >>> np.squeeze(idx[0])
-       array([0, 1, -2, -1])
-       >>> np.squeeze(idx[1])
-       array([0, 1, -1])
+       >>> assert_array_equal(sample_points[0][:, 0], np.array([0.125, 0.375, -0.375, -0.125]))
+       >>> assert_array_equal(sample_points[1][0, :], np.array([0, 1 / 3, -1 / 3]))
+       >>> assert_array_equal(idx[0][:, 0], np.array([0, 1, -2, -1]))
+       >>> assert_array_equal(idx[1][0, :], np.array([0, 1, -1]))
 
     See Also
     --------
