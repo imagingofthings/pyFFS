@@ -14,6 +14,9 @@ ChangeLog
 ### PyCharm template ==========================================================
 .idea/
 
+### macOS =====================================================================
+*.DS_Store
+
 ### Python template ===========================================================
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -44,6 +47,9 @@ MANIFEST
 
 # Sphinx documentation
 doc/build/
+
+# Virtual environments
+venv*
 
 ### C/C++ template ============================================================
 *.so
