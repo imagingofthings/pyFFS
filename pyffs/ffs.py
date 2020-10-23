@@ -308,8 +308,6 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     --------
     :py:func:`~pyffs.util.ffs2_sample`, :py:func:`~pyffs.ffs.iffs2`
     """
-    if len(Phi.shape) > 2:
-        raise NotImplementedError
 
     N_sx = Phi.shape[axes[0]]
     N_sy = Phi.shape[axes[1]]
@@ -327,8 +325,11 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     # create modulation vectors for each dimension
     Ax, Bx = _create_modulation_vectors(N_sx, N_FSx, Tx, T_cx)
     Ay, By = _create_modulation_vectors(N_sy, N_FSy, Ty, T_cy)
-    C_1 = np.outer(Ax.conj(), Ay.conj())
-    C_2 = np.outer(Bx.conj(), By.conj())
+    sh = [1] * Phi.ndim
+    sh[axes[0]] = N_sx
+    sh[axes[1]] = N_sy
+    C_1 = np.outer(Ax.conj(), Ay.conj()).reshape(sh)
+    C_2 = np.outer(Bx.conj(), By.conj()).reshape(sh)
 
     # Cast C_2 to 32 bits if x is 32 bits. (Allows faster transforms.)
     if (Phi.dtype == np.dtype("complex64")) or (Phi.dtype == np.dtype("float32")):
@@ -382,9 +383,6 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     :py:func:`~pyffs.util.ffs2_sample`, :py:func:`~pyffs.ffs.ffs2`
     """
 
-    if len(Phi_FS.shape) > 2:
-        raise NotImplementedError
-
     N_sx = Phi_FS.shape[axes[0]]
     N_sy = Phi_FS.shape[axes[1]]
     N_s = N_sx * N_sy
@@ -401,8 +399,11 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     # create modulation vectors for each dimension
     Ax, Bx = _create_modulation_vectors(N_sx, N_FSx, Tx, T_cx)
     Ay, By = _create_modulation_vectors(N_sy, N_FSy, Ty, T_cy)
-    C_1 = np.outer(Ax, Ay)
-    C_2 = np.outer(Bx, By)
+    sh = [1] * Phi_FS.ndim
+    sh[axes[0]] = N_sx
+    sh[axes[1]] = N_sy
+    C_1 = np.outer(Ax, Ay).reshape(sh)
+    C_2 = np.outer(Bx, By).reshape(sh)
 
     # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
     if (Phi_FS.dtype == np.dtype("complex64")) or (Phi_FS.dtype == np.dtype("float32")):
