@@ -100,7 +100,7 @@ def ffs(x, T, T_c, N_FS, axis=-1):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs_sample`, :py:func:`~pyffs.iffs`
+    :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.iffs`
     """
     N_s = x.shape[axis]
 
@@ -157,7 +157,7 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs_sample`, :py:func:`~pyffs.ffs`
+    :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.ffs`
     """
     N_s = x_FS.shape[axis]
 
@@ -306,7 +306,7 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs2_sample`, :py:func:`~pyffs.iffs2`
+    :py:func:`~pyffs.util.ffs2_sample`, :py:func:`~pyffs.ffs.iffs2`
     """
     if len(Phi.shape) > 2:
         raise NotImplementedError
@@ -379,7 +379,7 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs2_sample`, :py:func:`~pyffs.ffs2`
+    :py:func:`~pyffs.util.ffs2_sample`, :py:func:`~pyffs.ffs.ffs2`
     """
 
     if len(Phi_FS.shape) > 2:

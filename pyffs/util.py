@@ -117,7 +117,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs`
+    :py:func:`~pyffs.ffs.ffs`
     """
     if T <= 0:
         raise ValueError("Parameter[T] must be positive.")
@@ -198,7 +198,7 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs2`
+    :py:func:`~pyffs.ffs.ffs2`
     """
 
     # each dimension separately
@@ -231,6 +231,11 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
     -------
     A : :py:class:`~numpy.ndarray`
     B : :py:class:`~numpy.ndarray`
+
+    See Also
+    --------
+    :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`, :py:func:`~pyffs.ffs.ffs2`,
+    :py:func:`~pyffs.ffs.iffs2`
 
     """
 

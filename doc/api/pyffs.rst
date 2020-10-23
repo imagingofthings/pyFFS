@@ -7,14 +7,14 @@ pyffs
 
    .. autosummary::
    
-      czt
-      ffs
-      ffs2
-      ffs_sample
-      ffs2_sample
-      fs_interp
-      iffs
-      iffs2
+      czt.czt
+      ffs.ffs
+      ffs.ffs2
+      util.ffs_sample
+      util.ffs2_sample
+      interp.fs_interp
+      ffs.iffs
+      ffs.iffs2
    
    
 Submodules
@@ -24,5 +24,5 @@ Submodules
 
    pyffs.czt
    pyffs.ffs
-   pyffs.interpolation
+   pyffs.interp
    pyffs.util

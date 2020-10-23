@@ -10,8 +10,8 @@
 Fast Fourier Series library.
 ============================
 
-Efficient computation of Fourier Series (FS) coefficients and interpolation
-with them through use of the Fast Fourier Transformation (FFT).
+Efficient computation of Fourier Series (FS) coefficients and interpolation with them through use of
+the Fast Fourier Transformation (FFT).
 
 Available submodules
 --------------------
@@ -21,7 +21,7 @@ Available submodules
 :py:obj:`pyfft.ffs`
     Methods for computing Fast Fourier Series.
 
-:py:obj:`pyfft.interpolation`
+:py:obj:`pyfft.interp`
     Methods for interpolating with Fourier Series coefficients.
 
 :py:obj:`pyfft.util`
@@ -31,5 +31,5 @@ Available submodules
 
 from .czt import *
 from .ffs import *
-from .interpolation import *
+from .interp import *
 from .util import *

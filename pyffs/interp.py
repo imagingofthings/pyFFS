@@ -1,5 +1,5 @@
 # #############################################################################
-# interpolation.py
+# interp.py
 # ===========
 # Author : Sepand KASHANI [kashani.sepand@gmail.com]
 # #############################################################################
@@ -139,7 +139,7 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
 
     See Also
     --------
-    :py:func:`~pyffs.czt`
+    :py:func:`~pyffs.czt.czt`
     """
     if T <= 0:
         raise ValueError("Parameter[T] must be positive.")
