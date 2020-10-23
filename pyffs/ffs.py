@@ -113,8 +113,8 @@ def ffs(x, T, T_c, N_FS, axis=-1):
     A, B = _create_modulation_vectors(N_s, N_FS, T, T_c)
     sh = [1] * x.ndim
     sh[axis] = N_s
-    C_1 = np.reshape(A.conj(), sh)
-    C_2 = np.reshape(B.conj(), sh)
+    C_1 = A.conj().reshape(sh)
+    C_2 = B.conj().reshape(sh)
 
     # Cast C_2 to 32 bits if x is 32 bits. (Allows faster transforms.)
     if (x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")):
@@ -170,8 +170,8 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     A, B = _create_modulation_vectors(N_s, N_FS, T, T_c)
     sh = [1] * x_FS.ndim
     sh[axis] = N_s
-    C_1 = np.reshape(A, sh)
-    C_2 = np.reshape(B, sh)
+    C_1 = A.reshape(sh)
+    C_2 = B.reshape(sh)
 
     # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
     if (x_FS.dtype == np.dtype("complex64")) or (x_FS.dtype == np.dtype("float32")):
