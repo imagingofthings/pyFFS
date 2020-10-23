@@ -12,6 +12,7 @@ pyffs
       ffs.ffs2
       util.ffs_sample
       util.ffs2_sample
+      util.ffsn_sample
       interp.fs_interp
       ffs.iffs
       ffs.iffs2

@@ -142,7 +142,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
 
 def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     r"""
-    Signal sample positions for :py:func:`~pyffs.ffs2`.
+    Signal sample positions for :py:func:`~pyffs.ffs.ffs2`.
 
     Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs.ffs2`.
 
@@ -211,6 +211,81 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     # all combos
     idx = [idx_x.reshape(N_sx, 1), idx_y.reshape(1, N_sy)]
     sample_points = [sample_points_x.reshape(N_sx, 1), sample_points_y.reshape(1, N_sy)]
+
+    return sample_points, idx
+
+
+def ffsn_sample(T, N_FS, T_c, N_s):
+    r"""
+    Signal sample positions for :py:func:`~pyffs.ffs.ffsn`.
+
+    Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs.ffsn`.
+
+    Parameters
+    ----------
+    T : list of floats
+        Function period along each dimension.
+    N_FS : list of ints
+        Function bandwidth along each dimension.
+    T_c : list of floats
+        Period mid-point for each dimension.
+    N_s : list of ints
+        Number of sample points for each dimension.
+
+    Returns
+    -------
+    S0, ..., SD : list(:py:class:`~numpy.ndarray`)
+        (N_D,) coordinates at which to sample a signal in the d-th dimension (in the right order).
+    i1, ..., iD : list(:py:class:~numpy.ndarray)
+        (N_D,) sample indices in the d-th dimension. May be useful to reorder samples.
+
+    Examples
+    --------
+    Let :math:`\phi: \mathbb{R}^2 \to \mathbb{C}` be a bandlimited periodic function with periods
+    :math:`T_x = 1` and :math:`T_y = 1`, bandwidths :math:`N_{FS,x} = 3` and :math:`N_{FS,y} = 3`,
+    and with one period centered at :math:`(T_{c,x}, T_{c,y}) = (0, 0)`. The sampling points
+    :math:`[x[m], y[n]] \in \mathbb{R}^2` at which :math:`\phi` must be evaluated to compute the
+    Fourier Series coefficients :math:`\left\{ \phi_{k_x, k_y}^{FS}, k_x, k_y = -1, \ldots, 1
+    \right\}` with :py:func:`~pyffs.ffs2` are obtained as follows:
+
+    .. testsetup::
+
+       from pyffs import ffsn_sample
+       from numpy.testing import assert_array_equal
+
+    .. doctest::
+
+       # Ideally choose number of samples to be highly-composite for ffsn().
+       >>> sample_points, idx = ffsn_sample(T=[1, 1], N_FS=[3, 3], T_c=[0, 0], N_s=[4, 3])
+       >>> assert_array_equal(sample_points[0][:, 0], np.array([0.125, 0.375, -0.375, -0.125]))
+       >>> assert_array_equal(sample_points[1][0, :], np.array([0, 1 / 3, -1 / 3]))
+       >>> assert_array_equal(idx[0][:, 0], np.array([0, 1, -2, -1]))
+       >>> assert_array_equal(idx[1][0, :], np.array([0, 1, -1]))
+
+    See Also
+    --------
+    :py:func:`~pyffs.ffs.ffsn`
+
+    """
+
+    D = len(T)
+    assert len(N_FS) == D, "Length of [N_FS] must match that of [T]."
+    assert len(T_c) == D, "Length of [T_c] must match that of [T]."
+    assert len(N_s) == D, "Length of [N_s] must match that of [T]."
+
+    # loop over dimensions
+    sample_points = []
+    idx = []
+    for d in range(D):
+
+        # get values for d-dimension
+        _sample_points, _idx = ffs_sample(T=T[d], N_FS=N_FS[d], T_c=T_c[d], N_s=N_s[d])
+
+        # reshape for sparse array
+        sh = [1] * D
+        sh[d] = N_s[d]
+        sample_points.append(_sample_points.reshape(sh))
+        idx.append(_idx.reshape(sh))
 
     return sample_points, idx
 
