@@ -66,7 +66,7 @@ def cartesian_product(x1, x2):
 
 def ffs_sample(T, N_FS, T_c, N_s):
     r"""
-    Signal sample positions for :py:func:`~pyffs.ffs`.
+    Signal sample positions for :py:func:`~pyffs.ffs.ffs`.
 
     Return the coordinates at which a signal must be sampled to use
     :py:func:`~pyffs.ffs`.
@@ -118,6 +118,12 @@ def ffs_sample(T, N_FS, T_c, N_s):
     See Also
     --------
     :py:func:`~pyffs.ffs.ffs`
+
+
+    .. TODO::
+
+        Check for odd `N_FS`
+
     """
     if T <= 0:
         raise ValueError("Parameter[T] must be positive.")
@@ -142,7 +148,7 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs2`.
 
-    Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs2`.
+    Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs.ffs2`.
 
     Parameters
     ----------
@@ -169,7 +175,7 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
         (2,) coordinates at which to sample a signal in the x- and y- dimensions (in the right
         order).
     idx : list(:py:class:`~numpy.ndarray`)
-        (2,) sample indices in the x- and y- dmeensions; could be used to reorder samples.
+        (2,) sample indices in the x- and y- dimensions; could be used to reorder samples.
 
     Examples
     --------
@@ -199,6 +205,7 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     See Also
     --------
     :py:func:`~pyffs.ffs.ffs2`
+
     """
 
     # each dimension separately
