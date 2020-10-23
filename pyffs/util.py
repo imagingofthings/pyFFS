@@ -115,11 +115,6 @@ def ffs_sample(T, N_FS, T_c, N_s):
     --------
     :py:func:`~pyffs.ffs.ffs`
 
-
-    .. TODO::
-
-        Check for odd `N_FS`
-
     """
     if T <= 0:
         raise ValueError("Parameter[T] must be positive.")
@@ -127,6 +122,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
         raise ValueError("Parameter[N_FS] must be at least 3.")
     if N_s < N_FS:
         raise ValueError("Parameter[N_s] must be greater or equal to the signal bandwidth.")
+    assert N_FS % 2, "Parameter[N_FS] must be odd."
 
     if N_s % 2 == 1:  # Odd-valued
         M = (N_s - 1) // 2
