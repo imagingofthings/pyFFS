@@ -266,8 +266,8 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
        def dirichlet_2D(sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy):
 
            # compute along x and y, then combine
-           x_vals = dirichlet(x=np.squeeze(sample_points[0]), T=Tx, T_c=T_cx, N_FS=N_FSx)
-           y_vals = dirichlet(x=np.squeeze(sample_points[1]), T=Ty, T_c=T_cy, N_FS=N_FSy)
+           x_vals = dirichlet(x=sample_points[0][:, 0], T=Tx, T_c=T_cx, N_FS=N_FSx)
+           y_vals = dirichlet(x=sample_points[1][0, :], T=Ty, T_c=T_cy, N_FS=N_FSy)
            return np.outer(x_vals, y_vals)
 
        def dirichlet_fs(N_FS, T, T_c):
