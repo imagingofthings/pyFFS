@@ -15,14 +15,15 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     r"""
     Interpolate bandlimited periodic signal.
 
-    If `x_FS` holds the Fourier Series coefficients of a bandlimited periodic function
-    :math:`x(t): \mathbb{R} \to \mathbb{C}`, then :py:func:`~pyffs.fs_interp`
-    computes the values of :math:`x(t)` at points :math:`t[k] = (a + \frac{b - a}{M - 1} k) 1_{[0,\ldots,M-1]}[k]`.
+    If `x_FS` holds the Fourier Series coefficients of a bandlimited periodic function :math:`x(t):
+    \mathbb{R} \to \mathbb{C}`, then :py:func:`~pyffs.fs_interp` computes the values of :math:`x(t)`
+    at points :math:`t[k] = (a + \frac{b - a}{M - 1} k) 1_{[0,\ldots,M-1]}[k]`.
 
     Parameters
     ----------
     x_FS : :py:class:`~numpy.ndarray`
-        (..., N_FS, ...) FS coefficients in the order :math:`\left[ x_{-N}^{FS}, \ldots, x_{N}^{FS}\right]`.
+        (..., N_FS, ...) FS coefficients in the order :math:`\left[ x_{-N}^{FS}, \ldots,
+        x_{N}^{FS}\right]`.
     T : float
         Function period.
     a : float
@@ -34,8 +35,8 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     axis : int
         Dimension of `x_FS` along which the FS coefficients are stored.
     real_x : bool
-        If True, assume that `x_FS` is conjugate symmetric and use a more efficient algorithm.
-        In this case, the FS coefficients corresponding to negative frequencies are not used.
+        If True, assume that `x_FS` is conjugate symmetric and use a more efficient algorithm. In
+        this case, the FS coefficients corresponding to negative frequencies are not used.
 
     Returns
     -------
@@ -97,8 +98,8 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
        >>> diric_FS = np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N:N+1])
 
 
-    Being bandlimited, we can use :py:func:`~pyffs.fs_interp` to numerically
-    evaluate :math:`\phi(t)` on the interval :math:`\left[ T_{c} - \frac{T}{2}, T_{c} + \frac{T}{2} \right]`:
+    Being bandlimited, we can use :py:func:`~pyffs.fs_interp` to numerically evaluate
+    :math:`\phi(t)` on the interval :math:`\left[ T_{c} - \frac{T}{2}, T_{c} + \frac{T}{2} \right]`:
 
     .. doctest::
 

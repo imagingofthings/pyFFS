@@ -14,8 +14,8 @@ def _index(x, axis, index_spec):
     """
     Form indexing tuple for NumPy arrays.
 
-    Given an array `x`, generates the indexing tuple that has :py:class:`slice`
-    in each axis except `axis`, where `index_spec` is used instead.
+    Given an array `x`, generates the indexing tuple that has :py:class:`slice` in each axis except
+    `axis`, where `index_spec` is used instead.
 
     Parameters
     ----------
@@ -41,8 +41,7 @@ def _index(x, axis, index_spec):
 def cartesian_product(x1, x2):
     """
     Return
-    `Cartesian product <https://en.wikipedia.org/wiki/Cartesian_product>`_
-    of two arrays.
+    `Cartesian product <https://en.wikipedia.org/wiki/Cartesian_product>`_ of two arrays.
 
 
     Parameters
@@ -68,8 +67,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs.ffs`.
 
-    Return the coordinates at which a signal must be sampled to use
-    :py:func:`~pyffs.ffs`.
+    Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs`.
 
     Parameters
     ----------
@@ -91,13 +89,11 @@ def ffs_sample(T, N_FS, T_c, N_s):
 
     Examples
     --------
-    Let :math:`\phi: \mathbb{R} \to \mathbb{C}` be a bandlimited periodic
-    function of period :math:`T = 1`, bandwidth :math:`N_{FS} = 5`, and with
-    one period centered at :math:`T_{c} = \pi`. The sampling points
-    :math:`t[n] \in \mathbb{R}` at which :math:`\phi` must be evaluated to
-    compute the Fourier Series coefficients :math:`\left\{ \phi_{k}^{FS},
-    k = -2, \ldots, 2 \right\}` with :py:func:`~pyffs.ffs` are obtained as
-    follows:
+    Let :math:`\phi: \mathbb{R} \to \mathbb{C}` be a bandlimited periodic function of period
+    :math:`T = 1`, bandwidth :math:`N_{FS} = 5`, and with one period centered at :math:`T_{c} =
+    \pi`. The sampling points :math:`t[n] \in \mathbb{R}` at which :math:`\phi` must be evaluated to
+    compute the Fourier Series coefficients :math:`\left\{ \phi_{k}^{FS}, k = -2, \ldots, 2
+    \right\}` with :py:func:`~pyffs.ffs` are obtained as follows:
 
     .. testsetup::
 

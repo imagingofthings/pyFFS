@@ -19,7 +19,8 @@ def ffs(x, T, T_c, N_FS, axis=-1):
     Parameters
     ----------
     x : :py:class:`~numpy.ndarray`
-        (..., N_s, ...) function values at sampling points specified by :py:func:`~pyffs.ffs_sample`.
+        (..., N_s, ...) function values at sampling points specified by
+        :py:func:`~pyffs.ffs_sample`.
     T : float
         Function period.
     T_c : float
@@ -32,16 +33,19 @@ def ffs(x, T, T_c, N_FS, axis=-1):
     Returns
     -------
     x_FS : :py:class:`~numpy.ndarray`
-        (..., N_s, ...) vectors containing entries :math:`\left[ x_{-N}^{FS}, \ldots, x_{N}^{FS}, 0, \ldots, 0 \right] \in \mathbb{C}^{N_{s}}`.
+        (..., N_s, ...) vectors containing entries :math:`\left[ x_{-N}^{FS}, \ldots, x_{N}^{FS},
+        0, \ldots, 0 \right] \in \mathbb{C}^{N_{s}}`.
 
     Examples
     --------
-    Let :math:`\phi(t)` be a shifted Dirichlet kernel of period :math:`T` and bandwidth :math:`N_{FS} = 2 N + 1`:
+    Let :math:`\phi(t)` be a shifted Dirichlet kernel of period :math:`T` and bandwidth
+    :math:`N_{FS} = 2 N + 1`:
 
     .. math::
 
        \phi(t) = \sum_{k = -N}^{N} \exp\left( j \frac{2 \pi}{T} k (t - T_{c}) \right)
-               = \frac{\sin\left( N_{FS} \pi [t - T_{c}] / T \right)}{\sin\left( \pi [t - T_{c}] / T \right)}.
+               = \frac{\sin\left( N_{FS} \pi [t - T_{c}] / T \right)}{\sin\left( \pi [t - T_{c}]
+               / T \right)}.
 
     Its Fourier Series (FS) coefficients :math:`\phi_{k}^{FS}` can be analytically evaluated using
     the shift-modulation theorem:
@@ -134,7 +138,8 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     Parameters
     ----------
     x_FS : :py:class:`~numpy.ndarray`
-        (..., N_s, ...) FS coefficients in the order :math:`\left[ x_{-N}^{FS}, \ldots, x_{N}^{FS}, 0, \ldots, 0 \right] \in \mathbb{C}^{N_{s}}`.
+        (..., N_s, ...) FS coefficients in the order :math:`\left[ x_{-N}^{FS}, \ldots,
+        x_{N}^{FS}, 0, \ldots, 0 \right] \in \mathbb{C}^{N_{s}}`.
     T : float
         Function period.
     T_c : float
@@ -209,39 +214,37 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     Returns
     -------
     Phi_FS : :py:class:`~numpy.ndarray`
-        (..., N_sx, N_sy, ...) array containing Fourier Series coefficients in
-        ascending order (top-left of matrix).
+        (..., N_sx, N_sy, ...) array containing Fourier Series coefficients in ascending order
+        (top-left of matrix).
 
     Examples
     --------
-    Let :math:`\phi(x, y)` be a shifted Dirichlet kernel of periods
-    :math:`(T_x, T_y)` and bandwidths :math:`N_{FS, x} = 2 N_x + 1,
-    N_{FS, y} = 2 N_y + 1`:
+    Let :math:`\phi(x, y)` be a shifted Dirichlet kernel of periods :math:`(T_x, T_y)` and
+    bandwidths :math:`N_{FS, x} = 2 N_x + 1, N_{FS, y} = 2 N_y + 1`:
 
     .. math::
 
        \phi(x, y) &= \sum_{k_x = -N_x}^{N_x} \sum_{k_y = -N_y}^{N_y}
                 \exp\left( j \frac{2 \pi}{T_x} k_x (x - T_{c,x}) \right)
                 \exp\left( j \frac{2 \pi}{T_y} k_y (y - T_{c,y}) \right) \\
-               &= \frac{\sin\left( N_{FS, x} \pi [x - T_{c,x}] / T_x \right)}{\sin\left( \pi [x - T_{c, x}] / T_x \right)}
-               \frac{\sin\left( N_{FS, y} \pi [y - T_{c,y}] / T_y \right)}{\sin\left( \pi [y - T_{c, y}] / T_y \right)}.
+               &= \frac{\sin\left( N_{FS, x} \pi [x - T_{c,x}] / T_x \right)}{\sin\left( \pi
+               [x - T_{c, x}] / T_x \right)} \frac{\sin\left( N_{FS, y} \pi [y - T_{c,y}] / T_y
+               \right)}{\sin\left( \pi [y - T_{c, y}] / T_y \right)}.
 
-    Its Fourier Series (FS) coefficients :math:`\phi_{k_x, k_y}^{FS}` can be
-    analytically evaluated using the shift-modulation theorem:
+    Its Fourier Series (FS) coefficients :math:`\phi_{k_x, k_y}^{FS}` can be analytically evaluated
+    using the shift-modulation theorem:
 
     .. math::
 
        \phi_{k_x, k_y}^{FS} =
        \begin{cases}
-           \exp\left( -j \frac{2 \pi}{T_x} k_x T_{c,x} \right)
-           \exp\left( -j \frac{2 \pi}{T_y} k_y T_{c,y} \right)
-           & -N_x \le k_x \le N_x, -N_y \le k_y \le N_y,  \\
+           \exp\left( -j \frac{2 \pi}{T_x} k_x T_{c,x} \right) \exp\left( -j \frac{2 \pi}{T_y} k_y
+           T_{c,y} \right) & -N_x \le k_x \le N_x, -N_y \le k_y \le N_y,  \\
            0 & \text{otherwise}.
        \end{cases}
 
-    Being bandlimited, we can use :py:func:`~pyffs.ffs2` to numerically
-    evaluate :math:`\{\phi_{k_x, k_y}^{FS}, k_x = -N_x, \ldots, N_x,
-    k_y = -N_y, \ldots, N_y\}`:
+    Being bandlimited, we can use :py:func:`~pyffs.ffs2` to numerically evaluate :math:`\{\phi_{k_x,
+    k_y}^{FS}, k_x = -N_x, \ldots, N_x, k_y = -N_y, \ldots, N_y\}`:
 
     .. testsetup::
 
@@ -283,20 +286,12 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
        >>> N_sy = 3
 
        # Sample the kernel and do the transform.
-       >>> sample_points, _ = ffs2_sample(
-       ... Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy,
-       ... )
-       >>> diric_samples = dirichlet_2D(
-       ... sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy,
-       ... )
-       >>> diric_FS = ffs2(
-       ... diric_samples, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy,
-       ... )
+       >>> sample_points, _ = ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy)
+       >>> diric_samples = dirichlet_2D(sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy)
+       >>> diric_FS = ffs2(diric_samples, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy)
 
        # Compare with theoretical result.
-       >>> diric_FS_exact = np.outer(
-       ... dirichlet_fs(N_FSx, Tx, T_cx), dirichlet_fs(N_FSy, Ty, T_cy)
-       ... )
+       >>> diric_FS_exact = np.outer(dirichlet_fs(N_FSx, Tx, T_cx), dirichlet_fs(N_FSy, Ty, T_cy))
        >>> np.allclose(diric_FS[:N_FSx, :N_FSy], diric_FS_exact)
        True
 
@@ -349,8 +344,7 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     Parameters
     ----------
     Phi_FS : :py:class:`~numpy.ndarray`
-        (..., N_sx, N_sy, ...) FS coefficients in ascending order, namely in
-        the top-left corner.
+        (..., N_sx, N_sy, ...) FS coefficients in ascending order, namely in the top-left corner.
     Tx : float
         Function period along x-axis.
     Ty : float
@@ -369,8 +363,8 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     Returns
     -------
     Phi : :py:class:`~numpy.ndarray`
-        (..., N_sx, N_sy, ...) matrices containing original function samples
-        given to :py:func:`~pyffs.ffs2`.
+        (..., N_sx, N_sy, ...) matrices containing original function samples given to
+        :py:func:`~pyffs.ffs2`.
 
         In short: :math:`(\text{iFFS} \circ \text{FFS})\{ x \} = x`.
 
