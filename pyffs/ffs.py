@@ -14,7 +14,7 @@ from pyffs.util import _create_modulation_vectors
 
 def ffs(x, T, T_c, N_FS, axis=-1):
     r"""
-    Fourier Series coefficients from signal samples.
+    Fourier Series coefficients from signal samples of a 1D function.
 
     Parameters
     ----------
@@ -113,7 +113,7 @@ def ffs(x, T, T_c, N_FS, axis=-1):
     if not (3 <= N_FS <= N_s):
         raise ValueError(f"Parameter[N_FS] must lie in {{3, ..., N_s}}.")
 
-    # compute modulatation vectors
+    # compute modulation vectors
     A, B = _create_modulation_vectors(N_s, N_FS, T, T_c)
     sh = [1] * x.ndim
     sh[axis] = N_s
@@ -131,7 +131,7 @@ def ffs(x, T, T_c, N_FS, axis=-1):
 
 def iffs(x_FS, T, T_c, N_FS, axis=-1):
     r"""
-    Signal samples from Fourier Series coefficients.
+    Signal samples from Fourier Series coefficients of a 1D function.
 
     :py:func:`~pyffs.iffs` is basically the inverse of :py:func:`~pyffs.ffs`.
 
@@ -171,7 +171,7 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     if not (3 <= N_FS <= N_s):
         raise ValueError(f"Parameter[N_FS] must lie in {{3, ..., N_s}}.")
 
-    # compute modulatation vectors
+    # compute modulation vectors
     A, B = _create_modulation_vectors(N_s, N_FS, T, T_c)
     sh = [1] * x_FS.ndim
     sh[axis] = N_s
@@ -266,12 +266,11 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
 
            return n / d
 
-       def dirichlet_2D(sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy):
-
-           # compute along x and y, then combine
-           x_vals = dirichlet(x=sample_points[0][:, 0], T=Tx, T_c=T_cx, N_FS=N_FSx)
-           y_vals = dirichlet(x=sample_points[1][0, :], T=Ty, T_c=T_cy, N_FS=N_FSy)
-           return np.outer(x_vals, y_vals)
+       def dirichlet_2D(sample_points, T, T_c, N_FS):
+            # compute along x and y, then combine
+            x_vals = dirichlet(x=sample_points[0][:, 0], T=T[0], T_c=T_c[0], N_FS=N_FS[0])
+            y_vals = dirichlet(x=sample_points[1][0, :], T=T[1], T_c=T_c[1], N_FS=N_FS[1])
+            return np.outer(x_vals, y_vals)
 
        def dirichlet_fs(N_FS, T, T_c):
            N = (N_FS - 1) // 2
@@ -287,7 +286,7 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
 
        # Sample the kernel and do the transform.
        >>> sample_points, _ = ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy)
-       >>> diric_samples = dirichlet_2D(sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy)
+       >>> diric_samples = dirichlet_2D(sample_points, [Tx, Ty], [T_cx, T_cy], [N_FSx, N_FSy])
        >>> diric_FS = ffs2(diric_samples, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy)
 
        # Compare with theoretical result.
@@ -405,4 +404,191 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
 
     Phi = fftpack.ifft2(Phi_FS * C_1, axes=axes)
     Phi *= C_2 * N_s
+    return Phi
+
+
+def ffsn(Phi, T, T_c, N_FS, axes=None):
+    r"""
+    Fourier Series coefficients from signal samples of a D-dimension signal.
+
+    Parameters
+    ----------
+    Phi : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
+        :py:func:`~pyffs.ffsn_sample`.
+    T : list of floats
+        Function period along each dimension.
+    T_c : list of floats
+        Function bandwidth along each dimension.
+    N_FS : list of ints
+        Period mid-point for each dimension.
+    axes : list of ints
+        Dimensions of `Phi` along which function samples are stored.
+
+    Returns
+    -------
+    Phi_FS : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) array containing Fourier Series coefficients in ascending
+        order (top-left of matrix).
+
+    Examples
+    --------
+    Let :math:`\phi(x, y)` be a shifted Dirichlet kernel of periods :math:`(T_x, T_y)` and
+    bandwidths :math:`N_{FS, x} = 2 N_x + 1, N_{FS, y} = 2 N_y + 1`:
+
+    .. math::
+
+       \phi(x, y) &= \sum_{k_x = -N_x}^{N_x} \sum_{k_y = -N_y}^{N_y}
+                \exp\left( j \frac{2 \pi}{T_x} k_x (x - T_{c,x}) \right)
+                \exp\left( j \frac{2 \pi}{T_y} k_y (y - T_{c,y}) \right) \\
+               &= \frac{\sin\left( N_{FS, x} \pi [x - T_{c,x}] / T_x \right)}{\sin\left( \pi
+               [x - T_{c, x}] / T_x \right)} \frac{\sin\left( N_{FS, y} \pi [y - T_{c,y}] / T_y
+               \right)}{\sin\left( \pi [y - T_{c, y}] / T_y \right)}.
+
+    Its Fourier Series (FS) coefficients :math:`\phi_{k_x, k_y}^{FS}` can be analytically evaluated
+    using the shift-modulation theorem:
+
+    .. math::
+
+       \phi_{k_x, k_y}^{FS} =
+       \begin{cases}
+           \exp\left( -j \frac{2 \pi}{T_x} k_x T_{c,x} \right) \exp\left( -j \frac{2 \pi}{T_y} k_y
+           T_{c,y} \right) & -N_x \le k_x \le N_x, -N_y \le k_y \le N_y,  \\
+           0 & \text{otherwise}.
+       \end{cases}
+
+    Being bandlimited, we can use :py:func:`~pyffs.ffs2` to numerically evaluate :math:`\{\phi_{k_x,
+    k_y}^{FS}, k_x = -N_x, \ldots, N_x, k_y = -N_y, \ldots, N_y\}`:
+
+    .. testsetup::
+
+       import math
+
+       import numpy as np
+
+       from pyffs import ffsn_sample, ffsn
+
+       def dirichlet(x, T, T_c, N_FS):
+           y = x - T_c
+
+           n, d = np.zeros((2, len(x)))
+           nan_mask = np.isclose(np.fmod(y, np.pi), 0)
+           n[~nan_mask] = np.sin(N_FS * np.pi * y[~nan_mask] / T)
+           d[~nan_mask] = np.sin(np.pi * y[~nan_mask] / T)
+           n[nan_mask] = N_FS * np.cos(N_FS * np.pi * y[nan_mask] / T)
+           d[nan_mask] = np.cos(np.pi * y[nan_mask] / T)
+
+           return n / d
+
+       def dirichlet_2D(sample_points, T, T_c, N_FS):
+
+           # compute along x and y, then combine
+           x_vals = dirichlet(x=sample_points[0][:, 0], T=T[0], T_c=T_c[0], N_FS=N_FS[0])
+           y_vals = dirichlet(x=sample_points[1][0, :], T=T[1], T_c=T_c[1], N_FS=N_FS[1])
+           return np.outer(x_vals, y_vals)
+
+       def dirichlet_fs(N_FS, T, T_c):
+           N = (N_FS - 1) // 2
+           return np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N : N + 1])
+
+    .. doctest::
+
+       >>> T = [1, 1]
+       >>> T_c = [0, 0]
+       >>> N_FS = [3, 3]
+       >>> N_s = [4, 3]
+
+       # Sample the kernel and do the transform.
+       >>> sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
+       >>> diric_samples = dirichlet_2D(sample_points, T, T_c, N_FS)
+       >>> diric_FS = ffsn(Phi=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
+
+       # Compare with theoretical result.
+       >>> diric_FS_exact = np.outer(
+       ... dirichlet_fs(N_FS[0], T[0], T_c[0]), dirichlet_fs(N_FS[1], T[1], T_c[1])
+       ... )
+       >>> np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
+       True
+
+    Notes
+    -----
+    Theory: :ref:`FFS_def`.
+
+    See Also
+    --------
+    :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.iffsn`
+    """
+    if axes is None:
+        D = len(Phi.shape)
+        axes = tuple(range(D))
+    else:
+        D = len(list(set(axes)))
+        assert D == len(axes), "[axes] must contain unique values."
+
+    # check same length
+    assert len(T) == D, "Length of [T] must match dimension of [Phi]."
+    assert len(T_c) == D, "Length of [T_c] must match dimension of [Phi]."
+    assert len(N_FS) == D, "Length of [T] must match dimension of [Phi]."
+
+    # sequence of 1D FFS
+    Phi_FS = Phi.copy()
+    for d in range(D):
+        Phi_FS = ffs(Phi_FS, T[d], T_c[d], N_FS[d], axis=axes[d])
+
+    return Phi_FS
+
+
+def iffsn(Phi_FS, T, T_c, N_FS, axes=None):
+    r"""
+    Signal samples from Fourier Series coefficients of a D-dimension signal.
+
+    :py:func:`~pyffs.iffsn` is basically the inverse of :py:func:`~pyffs.ffsn`.
+
+    Parameters
+    ----------
+    Phi_FS : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) FS coefficients in ascending order.
+    T : list of floats
+        Function period along each dimension.
+    T_c : list of floats
+        Function bandwidth along each dimension.
+    N_FS : list of ints
+        Period mid-point for each dimension.
+    axes : list of ints
+        Dimensions of `Phi` along which function samples are stored.
+
+    Returns
+    -------
+    Phi : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) matrices containing original function samples given to
+        :py:func:`~pyffs.ffsn`.
+
+        In short: :math:`(\text{iFFS} \circ \text{FFS})\{ x \} = x`.
+
+    Notes
+    -----
+    Theory: :ref:`FFS_def`.
+
+    See Also
+    --------
+    :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.ffsn`
+    """
+
+    if axes is None:
+        D = len(Phi_FS.shape)
+        axes = tuple(range(D))
+    else:
+        D = len(list(set(axes)))
+        assert D == len(axes), "[axes] must contain unique values."
+
+    # check same length
+    assert len(T) == D, "Length of [T] must match dimension of [Phi]."
+    assert len(T_c) == D, "Length of [T_c] must match dimension of [Phi]."
+    assert len(N_FS) == D, "Length of [T] must match dimension of [Phi]."
+
+    # sequence of 1D iFFS
+    Phi = Phi_FS.copy()
+    for d in range(D):
+        Phi = iffs(Phi, T[d], T_c[d], N_FS[d], axis=axes[d])
+
     return Phi

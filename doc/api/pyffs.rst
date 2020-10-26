@@ -10,12 +10,14 @@ pyffs
       czt.czt
       ffs.ffs
       ffs.ffs2
+      ffs.ffsn
       util.ffs_sample
       util.ffs2_sample
       util.ffsn_sample
       interp.fs_interp
       ffs.iffs
       ffs.iffs2
+      ffs.iffsn
    
    
 Submodules
