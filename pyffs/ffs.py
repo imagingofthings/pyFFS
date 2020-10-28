@@ -9,7 +9,7 @@
 import numpy as np
 from scipy import fftpack as fftpack
 
-from pyffs.util import _create_modulation_vectors
+from pyffs.util import _create_modulation_vectors, _verify_ffsn_input
 
 
 def ffs(x, T, T_c, N_FS, axis=-1):
@@ -383,13 +383,13 @@ def ffsn_comp(Phi, T, T_c, N_FS, axes=None):
     Phi : :py:class:`~numpy.ndarray`
         (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
         :py:func:`~pyffs.util.ffsn_sample`.
-    T : list of floats
+    T : list(float)
         Function period along each dimension.
-    T_c : list of floats
+    T_c : list(float)
         Function bandwidth along each dimension.
-    N_FS : list of ints
+    N_FS : list(int)
         Period mid-point for each dimension.
-    axes : list of ints
+    axes : tuple
         Dimensions of `Phi` along which function samples are stored.
 
     Returns
@@ -463,22 +463,13 @@ def ffsn_comp(Phi, T, T_c, N_FS, axes=None):
     --------
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.iffsn_comp`
     """
-    if axes is None:
-        D = len(Phi.shape)
-        axes = tuple(range(D))
-    else:
-        D = len(list(set(axes)))
-        assert D == len(axes), "[axes] must contain unique values."
 
-    # check same length
-    assert len(T) == D, "Length of [T] must match dimension of [Phi]."
-    assert len(T_c) == D, "Length of [T_c] must match dimension of [Phi]."
-    assert len(N_FS) == D, "Length of [T] must match dimension of [Phi]."
+    axes, _ = _verify_ffsn_input(Phi, T, T_c, N_FS, axes)
 
     # sequence of 1D FFS
     Phi_FS = Phi.copy()
-    for d in range(D):
-        Phi_FS = ffs(Phi_FS, T[d], T_c[d], N_FS[d], axis=axes[d])
+    for d, ax in enumerate(axes):
+        Phi_FS = ffs(Phi_FS, T[d], T_c[d], N_FS[d], axis=ax)
 
     return Phi_FS
 
@@ -495,13 +486,13 @@ def iffsn_comp(Phi_FS, T, T_c, N_FS, axes=None):
     ----------
     Phi_FS : :py:class:`~numpy.ndarray`
         (..., N_s1, N_s2, ..., N_sD, ...) FS coefficients in ascending order.
-    T : list of floats
+    T : list(float)
         Function period along each dimension.
-    T_c : list of floats
+    T_c : list(float)
         Function bandwidth along each dimension.
-    N_FS : list of ints
+    N_FS : list(int)
         Period mid-point for each dimension.
-    axes : list of ints
+    axes : tuple
         Dimensions of `Phi` along which function samples are stored.
 
     Returns
@@ -521,22 +512,12 @@ def iffsn_comp(Phi_FS, T, T_c, N_FS, axes=None):
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.ffsn_comp`
     """
 
-    if axes is None:
-        D = len(Phi_FS.shape)
-        axes = tuple(range(D))
-    else:
-        D = len(list(set(axes)))
-        assert D == len(axes), "[axes] must contain unique values."
-
-    # check same length
-    assert len(T) == D, "Length of [T] must match dimension of [Phi]."
-    assert len(T_c) == D, "Length of [T_c] must match dimension of [Phi]."
-    assert len(N_FS) == D, "Length of [T] must match dimension of [Phi]."
+    axes, _ = _verify_ffsn_input(Phi_FS, T, T_c, N_FS, axes)
 
     # sequence of 1D iFFS
     Phi = Phi_FS.copy()
-    for d in range(D):
-        Phi = iffs(Phi, T[d], T_c[d], N_FS[d], axis=axes[d])
+    for d, ax in enumerate(axes):
+        Phi = iffs(Phi, T[d], T_c[d], N_FS[d], axis=ax)
 
     return Phi
 
@@ -551,13 +532,13 @@ def ffsn(Phi, T, T_c, N_FS, axes=None):
     Phi : :py:class:`~numpy.ndarray`
         (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
         :py:func:`~pyffs.util.ffsn_sample`.
-    T : list of floats
+    T : list(float)
         Function period along each dimension.
-    T_c : list of floats
+    T_c : list(float)
         Function bandwidth along each dimension.
-    N_FS : list of ints
+    N_FS : list(int)
         Period mid-point for each dimension.
-    axes : list of ints
+    axes : tuple
         Dimensions of `Phi` along which function samples are stored.
 
     Returns
@@ -632,26 +613,7 @@ def ffsn(Phi, T, T_c, N_FS, axes=None):
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.iffsn`
     """
 
-    if axes is None:
-        D = len(Phi.shape)
-        axes = tuple(range(D))
-    else:
-        D = len(list(set(axes)))
-        assert D == len(axes), "[axes] must contain unique values."
-
-    # check same length
-    assert len(T) == D, "Length of [T] must match dimension of [Phi]."
-    assert len(T_c) == D, "Length of [T_c] must match dimension of [Phi]."
-    assert len(N_FS) == D, "Length of [T] must match dimension of [Phi]."
-
-    # check valid values
-    N_s = []
-    for d in range(D):
-        N_s.append(Phi.shape[axes[d]])
-        if T[d] <= 0:
-            raise ValueError("Parameter[T[d]] must be positive.")
-        if not (3 <= N_FS[d] <= N_s[d]):
-            raise ValueError(f"Parameter[N_FS[d]] must lie in {{3, ..., N_s[d]}}.")
+    axes, N_s = _verify_ffsn_input(Phi, T, T_c, N_FS, axes)
 
     # check for input type
     if (Phi.dtype == np.dtype("complex64")) or (Phi.dtype == np.dtype("float32")):
@@ -663,8 +625,8 @@ def ffsn(Phi, T, T_c, N_FS, axes=None):
 
     # apply modulation before FFT
     A = []
-    for d in range(D):
-        A_d, B_d = _create_modulation_vectors(N_s[d], N_FS[d], T[d], T_c[d])
+    for d, N_sd in enumerate(N_s):
+        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
         A.append(A_d.conj())
         sh = [1] * Phi.ndim
         sh[axes[d]] = N_s[d]
@@ -677,9 +639,9 @@ def ffsn(Phi, T, T_c, N_FS, axes=None):
     Phi_FS = fftpack.fftn(Phi_FS, axes=axes)
 
     # apply modulate after FFT
-    for d in range(D):
+    for d, ax in enumerate(axes):
         sh = [1] * Phi.ndim
-        sh[axes[d]] = N_s[d]
+        sh[ax] = N_s[d]
         C_1 = A[d].reshape(sh)
         Phi_FS *= C_1 / N_s[d]
 
@@ -698,13 +660,13 @@ def iffsn(Phi_FS, T, T_c, N_FS, axes=None):
     ----------
     Phi_FS : :py:class:`~numpy.ndarray`
         (..., N_s1, N_s2, ..., N_sD, ...) FS coefficients in ascending order.
-    T : list of floats
+    T : list(float)
         Function period along each dimension.
-    T_c : list of floats
+    T_c : list(float)
         Function bandwidth along each dimension.
-    N_FS : list of ints
+    N_FS : list(int)
         Period mid-point for each dimension.
-    axes : list of ints
+    axes : tuple
         Dimensions of `Phi` along which function samples are stored.
 
     Returns
@@ -724,26 +686,7 @@ def iffsn(Phi_FS, T, T_c, N_FS, axes=None):
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.ffsn`
     """
 
-    if axes is None:
-        D = len(Phi_FS.shape)
-        axes = tuple(range(D))
-    else:
-        D = len(list(set(axes)))
-        assert D == len(axes), "[axes] must contain unique values."
-
-    # check same length
-    assert len(T) == D, "Length of [T] must match dimension of [Phi]."
-    assert len(T_c) == D, "Length of [T_c] must match dimension of [Phi]."
-    assert len(N_FS) == D, "Length of [T] must match dimension of [Phi]."
-
-    # check valid values
-    N_s = []
-    for d in range(D):
-        N_s.append(Phi_FS.shape[axes[d]])
-        if T[d] <= 0:
-            raise ValueError("Parameter[T[d]] must be positive.")
-        if not (3 <= N_FS[d] <= N_s[d]):
-            raise ValueError(f"Parameter[N_FS[d]] must lie in {{3, ..., N_s[d]}}.")
+    axes, N_s = _verify_ffsn_input(Phi_FS, T, T_c, N_FS, axes)
 
     # check for input type
     if (Phi_FS.dtype == np.dtype("complex64")) or (Phi_FS.dtype == np.dtype("float32")):
@@ -755,8 +698,8 @@ def iffsn(Phi_FS, T, T_c, N_FS, axes=None):
 
     # apply modulation before iFFT
     B = []
-    for d in range(D):
-        A_d, B_d = _create_modulation_vectors(N_s[d], N_FS[d], T[d], T_c[d])
+    for d, N_sd in enumerate(N_s):
+        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
         B.append(B_d)
         sh = [1] * Phi.ndim
         sh[axes[d]] = N_s[d]
@@ -769,9 +712,9 @@ def iffsn(Phi_FS, T, T_c, N_FS, axes=None):
     Phi = fftpack.ifftn(Phi, axes=axes)
 
     # apply modulate after iFFT
-    for d in range(D):
+    for d, ax in enumerate(axes):
         sh = [1] * Phi.ndim
-        sh[axes[d]] = N_s[d]
+        sh[ax] = N_s[d]
         C_2 = B[d].reshape(sh)
         Phi *= C_2 * N_s[d]
 

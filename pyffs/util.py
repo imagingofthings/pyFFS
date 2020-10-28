@@ -38,6 +38,60 @@ def _index(x, axis, index_spec):
     return indexer
 
 
+def _verify_ffsn_input(x, T, T_c, N_FS, axes):
+    """
+
+    Verify input values to FFSN and iFFSN, and return axes values.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) input values; either for FFSN or iFFSN.
+    T : list(float)
+        Function period along each dimension.
+    T_c : list(float)
+        Function bandwidth along each dimension.
+    N_FS : list(int)
+        Period mid-point for each dimension.
+    axes : tuple
+        Dimensions of `x` along which transform should be applied.
+
+    Returns
+    -------
+    axes : tuple
+        Indexing tuple.
+    N_s : :py:class:`~numpy.ndarray`
+        Number of samples per dimension.
+    """
+
+    D = len(T)
+    if not (len(T_c) == len(N_FS) == D):
+        raise ValueError("Length of [T], [T_c], and [N_FS] must match.")
+    if x.ndim < D:
+        raise ValueError("[Phi] does not have enough dimensions.")
+
+    if axes is not None:
+        assert len(axes) == D, "Length of [axes] must be match [T], [T_c], and [N_FS]."
+        axes = [a + x.ndim if a < 0 else a for a in axes]
+        if any(a >= x.ndim or a < 0 for a in axes):
+            raise ValueError("axes exceeds dimensionality of input")
+        if len(set(axes)) != len(axes):
+            raise ValueError("all axes must be unique")
+
+    else:
+        axes = list(range(D))
+    N_s = np.array(x.shape)[axes]
+
+    # check valid values
+    for d in range(D):
+        if T[d] <= 0:
+            raise ValueError("Parameter[T[d]] must be positive.")
+        if not (3 <= N_FS[d] <= N_s[d]):
+            raise ValueError(f"Parameter[N_FS[d]] must lie in {{3, ..., N_s[d]}}.")
+
+    return tuple(axes), N_s
+
+
 def cartesian_product(x1, x2):
     """
     Return
@@ -122,7 +176,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
         raise ValueError("Parameter[N_FS] must be at least 3.")
     if N_s < N_FS:
         raise ValueError("Parameter[N_s] must be greater or equal to the signal bandwidth.")
-    assert N_FS % 2, "Parameter[N_FS] must be odd."
+    assert N_FS % 2 == 1, "Parameter[N_FS] must be odd."
 
     if N_s % 2 == 1:  # Odd-valued
         M = (N_s - 1) // 2
@@ -219,13 +273,13 @@ def ffsn_sample(T, N_FS, T_c, N_s):
 
     Parameters
     ----------
-    T : list of floats
+    T : list(float)
         Function period along each dimension.
-    N_FS : list of ints
+    N_FS : list(int)
         Function bandwidth along each dimension.
-    T_c : list of floats
+    T_c : list(float)
         Period mid-point for each dimension.
-    N_s : list of ints
+    N_s : list(int)
         Number of sample points for each dimension.
 
     Returns
@@ -242,7 +296,7 @@ def ffsn_sample(T, N_FS, T_c, N_s):
     and with one period centered at :math:`(T_{c,x}, T_{c,y}) = (0, 0)`. The sampling points
     :math:`[x[m], y[n]] \in \mathbb{R}^2` at which :math:`\phi` must be evaluated to compute the
     Fourier Series coefficients :math:`\left\{ \phi_{k_x, k_y}^{FS}, k_x, k_y = -1, \ldots, 1
-    \right\}` with :py:func:`~pyffs.ffs2` are obtained as follows:
+    \right\}` with :py:func:`~pyffs.ffs.ffsn` are obtained as follows:
 
     .. testsetup::
 

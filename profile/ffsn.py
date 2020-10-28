@@ -9,11 +9,12 @@ import click
 @click.command()
 @click.option("--n_trials", type=int, default=5)
 def profile_ffsn(n_trials):
-    print("\nCOMPARING FFSN APPROACHES WITH {} TRIALS".format(n_trials))
+    print(f"\nCOMPARING FFSN APPROACHES WITH {n_trials} TRIALS")
 
     T = [1, 1]
     T_c = [0, 0]
     N_FS_vals = [101, 301, 1001, 3001]
+
     n_std = 1
 
     func = {"ffsn_fft": ffsn, "ffsn_comp": ffsn_comp}
