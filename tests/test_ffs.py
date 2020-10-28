@@ -13,31 +13,7 @@ from pyffs import (
     ffsn,
     iffsn,
 )
-
-
-def dirichlet(x, T, T_c, N_FS):
-    y = x - T_c
-
-    n, d = np.zeros((2, len(x)))
-    nan_mask = np.isclose(np.fmod(y, np.pi), 0)
-    n[~nan_mask] = np.sin(N_FS * np.pi * y[~nan_mask] / T)
-    d[~nan_mask] = np.sin(np.pi * y[~nan_mask] / T)
-    n[nan_mask] = N_FS * np.cos(N_FS * np.pi * y[nan_mask] / T)
-    d[nan_mask] = np.cos(np.pi * y[nan_mask] / T)
-
-    return n / d
-
-
-def dirichlet_fs(N_FS, T, T_c):
-    N = (N_FS - 1) // 2
-    return np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N : N + 1])
-
-
-def dirichlet_2D(sample_points, T, T_c, N_FS):
-    # compute along x and y, then combine
-    x_vals = dirichlet(x=sample_points[0][:, 0], T=T[0], T_c=T_c[0], N_FS=N_FS[0])
-    y_vals = dirichlet(x=sample_points[1][0, :], T=T[1], T_c=T_c[1], N_FS=N_FS[1])
-    return np.outer(x_vals, y_vals)
+from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
 
 
 def test_ffs():

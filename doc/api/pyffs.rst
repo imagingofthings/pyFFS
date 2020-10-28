@@ -27,5 +27,6 @@ Submodules
 
    pyffs.czt
    pyffs.ffs
+   pyffs.func
    pyffs.interp
    pyffs.util
