@@ -7,6 +7,7 @@
 # #############################################################################
 
 import numpy as np
+import cmath
 from itertools import product
 
 
@@ -36,6 +37,87 @@ def _index(x, axis, index_spec):
 
     indexer = tuple(idx)
     return indexer
+
+
+def _index_n(x, axes, index_spec):
+    """
+    Form indexing tuple for NumPy arrays.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        Array to index.
+    axes : list(int)
+        Dimensions along which to apply `index_spec`.
+    index_spec : list(:py:class:`slice`)
+        Index/slice to use.
+
+    Returns
+    -------
+    indexer : tuple
+        Indexing tuple.
+    """
+    assert len(axes) == len(index_spec)
+    idx = [slice(None)] * x.ndim
+    for i, ax in enumerate(axes):
+        idx[ax] = index_spec[i]
+
+    indexer = tuple(idx)
+    return indexer
+
+
+def _verify_cztn_input(x, A, W, M, axes):
+    """
+    Verify input values to CZTN, and return axes values.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) input values.
+    A : list(float or complex)
+        Circular offset from the positive real-axis, for each dimension.
+    W : list(float or complex)
+        Circular spacing between transform points, for each dimension.
+    M : list(int)
+        Length of transform for each dimension.
+    axes : tuple
+        Dimensions of `x` along which transform should be applied.
+
+    Returns
+    -------
+    axes : tuple
+        Indexing tuple.
+    """
+
+    D = len(A)
+    if not (len(W) == len(M) == D):
+        raise ValueError("Length of [A], [W], and [M] must match.")
+    if x.ndim < D:
+        raise ValueError("[Phi] does not have enough dimensions.")
+
+    if axes is not None:
+        assert len(axes) == D, "Length of [axes] must match [A], [W], and [M]."
+        axes = [a + x.ndim if a < 0 else a for a in axes]
+        if any(a >= x.ndim or a < 0 for a in axes):
+            raise ValueError("axes exceeds dimensionality of input")
+        if len(set(axes)) != len(axes):
+            raise ValueError("all axes must be unique")
+
+    else:
+        axes = list(range(D))
+
+    # check valid values
+    for d in range(D):
+        A[d] = complex(A[d])
+        W[d] = complex(W[d])
+        if not cmath.isclose(abs(A[d]), 1):
+            raise ValueError("Parameter[A[d]] must lie on the unit circle for numerical stability.")
+        if not cmath.isclose(abs(W[d]), 1):
+            raise ValueError("Parameter[W[d]] must lie on the unit circle.")
+        if M[d] <= 0:
+            raise ValueError("Parameter[M[d]] must be positive.")
+
+    return axes, A, W
 
 
 def cartesian_product(x1, x2):
