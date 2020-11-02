@@ -225,7 +225,7 @@ def cztn(Phi, A, W, M, axes=None):
         sh_N[axes[d]] = N[d]
         u_mod_d = (A[d] ** -_n[:_N]) * np.float_power(W[d], (_n[:_N] ** 2) / 2)
         u[idx] *= u_mod_d.reshape(sh_N)
-    U = fftpack.fft2(u, axes=axes)
+    U = fftpack.fftn(u, axes=axes)
 
     # Convolve along each dimension -> multiply in frequency domain
     for d in range(D):
@@ -237,7 +237,7 @@ def cztn(Phi, A, W, M, axes=None):
         v[L[d] - _N + 1 :] = np.float_power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
         V = fftpack.fft(v).reshape(sh_L)
         U *= V
-    g = fftpack.ifft2(U, axes=axes)
+    g = fftpack.ifftn(U, axes=axes)
 
     # Final modulation in time
     time_idx = _index_n(g, axes, [slice(m) for m in M])
