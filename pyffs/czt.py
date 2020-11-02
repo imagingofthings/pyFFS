@@ -129,6 +129,38 @@ def czt(x, A, W, M, axis=-1):
 
 
 def czt2(Phi, Ax, Ay, Wx, Wy, Mx, My, axes=(-2, -1)):
+    """
+    2D Chirp Z-Transform.
+
+    Parameters
+    ----------
+    Phi : :py:class:`~numpy.ndarray`
+        (..., N_x, N_y, ...) input array.
+    Ax : float or complex
+        Circular offset from the positive real-axis, x-axis.
+    Ax : float or complex
+        Circular offset from the positive real-axis, y-axis.
+    Wx : float or complex
+        Circular spacing between transform points, x-axis.
+    Wy : float or complex
+        Circular spacing between transform points, y-axis.
+    Mx : int
+        Length of the transform, x-axis.
+    My : int
+        Length of the transform, y-axis.
+    axes : tuple
+        Dimensions of `Phi` along which the samples are stored.
+
+    Returns
+    -------
+    Phi_czt : :py:class:`~numpy.ndarray`
+        (..., Mx, My, ...) transformed input along the axes indicated by `axes`.
+
+    Notes
+    -----
+    Due to numerical instability when using large `Mx`, `My`, this implementation only supports
+    transforms where `Ax`, `Ay`, `Wx, and `Wy` have unit norm.
+    """
     return cztn(Phi, A=[Ax, Ay], W=[Wx, Wy], M=[Mx, My], axes=axes)
 
 
@@ -151,8 +183,8 @@ def cztn(Phi, A, W, M, axes=None):
 
     Returns
     -------
-    X : :py:class:`~numpy.ndarray`
-        (..., M_1, M_2, ..., M_D, ...) transformed input along the axis indicated by `axes`.
+    Phi_czt : :py:class:`~numpy.ndarray`
+        (..., M_1, M_2, ..., M_D, ...) transformed input along the axes indicated by `axes`.
 
     Notes
     -----
