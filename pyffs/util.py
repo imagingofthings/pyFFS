@@ -38,6 +38,60 @@ def _index(x, axis, index_spec):
     return indexer
 
 
+def _verify_ffsn_input(x, T, T_c, N_FS, axes):
+    """
+
+    Verify input values to FFSN and iFFSN, and return axes values.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) input values; either for FFSN or iFFSN.
+    T : list(float)
+        Function period along each dimension.
+    T_c : list(float)
+        Function bandwidth along each dimension.
+    N_FS : list(int)
+        Period mid-point for each dimension.
+    axes : tuple
+        Dimensions of `x` along which transform should be applied.
+
+    Returns
+    -------
+    axes : tuple
+        Indexing tuple.
+    N_s : :py:class:`~numpy.ndarray`
+        Number of samples per dimension.
+    """
+
+    D = len(T)
+    if not (len(T_c) == len(N_FS) == D):
+        raise ValueError("Length of [T], [T_c], and [N_FS] must match.")
+    if x.ndim < D:
+        raise ValueError("[Phi] does not have enough dimensions.")
+
+    if axes is not None:
+        assert len(axes) == D, "Length of [axes] must be match [T], [T_c], and [N_FS]."
+        axes = [a + x.ndim if a < 0 else a for a in axes]
+        if any(a >= x.ndim or a < 0 for a in axes):
+            raise ValueError("axes exceeds dimensionality of input")
+        if len(set(axes)) != len(axes):
+            raise ValueError("all axes must be unique")
+
+    else:
+        axes = list(range(D))
+    N_s = np.array(x.shape)[axes]
+
+    # check valid values
+    for d in range(D):
+        if T[d] <= 0:
+            raise ValueError("Parameter[T[d]] must be positive.")
+        if not (3 <= N_FS[d] <= N_s[d]):
+            raise ValueError(f"Parameter[N_FS[d]] must lie in {{3, ..., N_s[d]}}.")
+
+    return tuple(axes), N_s
+
+
 def cartesian_product(x1, x2):
     """
     Return
@@ -115,11 +169,6 @@ def ffs_sample(T, N_FS, T_c, N_s):
     --------
     :py:func:`~pyffs.ffs.ffs`
 
-
-    .. TODO::
-
-        Check for odd `N_FS`
-
     """
     if T <= 0:
         raise ValueError("Parameter[T] must be positive.")
@@ -127,6 +176,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
         raise ValueError("Parameter[N_FS] must be at least 3.")
     if N_s < N_FS:
         raise ValueError("Parameter[N_s] must be greater or equal to the signal bandwidth.")
+    assert N_FS % 2 == 1, "Parameter[N_FS] must be odd."
 
     if N_s % 2 == 1:  # Odd-valued
         M = (N_s - 1) // 2
@@ -142,7 +192,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
 
 def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     r"""
-    Signal sample positions for :py:func:`~pyffs.ffs2`.
+    Signal sample positions for :py:func:`~pyffs.ffs.ffs2`.
 
     Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs.ffs2`.
 
@@ -211,6 +261,81 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     # all combos
     idx = [idx_x.reshape(N_sx, 1), idx_y.reshape(1, N_sy)]
     sample_points = [sample_points_x.reshape(N_sx, 1), sample_points_y.reshape(1, N_sy)]
+
+    return sample_points, idx
+
+
+def ffsn_sample(T, N_FS, T_c, N_s):
+    r"""
+    Signal sample positions for :py:func:`~pyffs.ffs.ffsn`.
+
+    Return the coordinates at which a signal must be sampled to use :py:func:`~pyffs.ffs.ffsn`.
+
+    Parameters
+    ----------
+    T : list(float)
+        Function period along each dimension.
+    N_FS : list(int)
+        Function bandwidth along each dimension.
+    T_c : list(float)
+        Period mid-point for each dimension.
+    N_s : list(int)
+        Number of sample points for each dimension.
+
+    Returns
+    -------
+    S0, ..., SD : list(:py:class:`~numpy.ndarray`)
+        (N_D,) coordinates at which to sample a signal in the d-th dimension (in the right order).
+    i1, ..., iD : list(:py:class:~numpy.ndarray)
+        (N_D,) sample indices in the d-th dimension. May be useful to reorder samples.
+
+    Examples
+    --------
+    Let :math:`\phi: \mathbb{R}^2 \to \mathbb{C}` be a bandlimited periodic function with periods
+    :math:`T_x = 1` and :math:`T_y = 1`, bandwidths :math:`N_{FS,x} = 3` and :math:`N_{FS,y} = 3`,
+    and with one period centered at :math:`(T_{c,x}, T_{c,y}) = (0, 0)`. The sampling points
+    :math:`[x[m], y[n]] \in \mathbb{R}^2` at which :math:`\phi` must be evaluated to compute the
+    Fourier Series coefficients :math:`\left\{ \phi_{k_x, k_y}^{FS}, k_x, k_y = -1, \ldots, 1
+    \right\}` with :py:func:`~pyffs.ffs.ffsn` are obtained as follows:
+
+    .. testsetup::
+
+       from pyffs import ffsn_sample
+       from numpy.testing import assert_array_equal
+
+    .. doctest::
+
+       # Ideally choose number of samples to be highly-composite for ffsn().
+       >>> sample_points, idx = ffsn_sample(T=[1, 1], N_FS=[3, 3], T_c=[0, 0], N_s=[4, 3])
+       >>> assert_array_equal(sample_points[0][:, 0], np.array([0.125, 0.375, -0.375, -0.125]))
+       >>> assert_array_equal(sample_points[1][0, :], np.array([0, 1 / 3, -1 / 3]))
+       >>> assert_array_equal(idx[0][:, 0], np.array([0, 1, -2, -1]))
+       >>> assert_array_equal(idx[1][0, :], np.array([0, 1, -1]))
+
+    See Also
+    --------
+    :py:func:`~pyffs.ffs.ffsn`
+
+    """
+
+    D = len(T)
+    assert len(N_FS) == D, "Length of [N_FS] must match that of [T]."
+    assert len(T_c) == D, "Length of [T_c] must match that of [T]."
+    assert len(N_s) == D, "Length of [N_s] must match that of [T]."
+
+    # loop over dimensions
+    sample_points = []
+    idx = []
+    for d in range(D):
+
+        # get values for d-dimension
+        _sample_points, _idx = ffs_sample(T=T[d], N_FS=N_FS[d], T_c=T_c[d], N_s=N_s[d])
+
+        # reshape for sparse array
+        sh = [1] * D
+        sh[d] = N_s[d]
+        sample_points.append(_sample_points.reshape(sh))
+        idx.append(_idx.reshape(sh))
 
     return sample_points, idx
 

@@ -21,6 +21,9 @@ Available submodules
 :py:obj:`pyfft.ffs`
     Methods for computing Fast Fourier Series.
 
+:py:obj:`pyfft.func`
+    Methods for computing samples and Fourier Series coefficients of specific functions.
+
 :py:obj:`pyfft.interp`
     Methods for interpolating with Fourier Series coefficients.
 
@@ -33,3 +36,4 @@ from .czt import *
 from .ffs import *
 from .interp import *
 from .util import *
+from . import func
