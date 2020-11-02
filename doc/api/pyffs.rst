@@ -8,6 +8,8 @@ pyffs
    .. autosummary::
    
       czt.czt
+      czt.czt2
+      czt.cztn
       ffs.ffs
       ffs.ffs2
       util.ffs_sample

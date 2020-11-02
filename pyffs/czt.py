@@ -160,12 +160,36 @@ def czt2(Phi, Ax, Ay, Wx, Wy, Mx, My, axes=(-2, -1)):
     -----
     Due to numerical instability when using large `Mx`, `My`, this implementation only supports
     transforms where `Ax`, `Ay`, `Wx, and `Wy` have unit norm.
+
+    Examples
+    --------
+    .. testsetup::
+
+       import numpy as np
+
+       from pyffs import czt2
+
+    Implementation of the 2D DFT:
+
+    .. doctest::
+
+       >>> N = M = 10
+       >>> W = np.exp(-1j * 2 * np.pi / N)
+       >>> Phi = np.random.randn(N, N) + 1j * np.random.randn(N, N)
+
+       >>> dft_Phi = np.fft.fft2(Phi)
+       >>> czt_Phi = czt2(Phi, Ax=1, Ay=1, Wx=W, Wy=W, Mx=M, My=M)
+
+       >>> np.allclose(dft_Phi, czt_Phi)
+       True
     """
     return cztn(Phi, A=[Ax, Ay], W=[Wx, Wy], M=[Mx, My], axes=axes)
 
 
 def cztn(Phi, A, W, M, axes=None):
     """
+    Multi-dimensional Chirp Z-transform.
+
     Perform multi-dimensional CZT from signal samples, using the multi-dimensional FFT.
 
     Parameters
@@ -189,7 +213,29 @@ def cztn(Phi, A, W, M, axes=None):
     Notes
     -----
     Due to numerical instability when using large `M`, this implementation only supports transforms
-    where `A` and `W` have unit norm.
+    where each element of `A` and `W` has unit norm.
+
+    Examples
+    --------
+    .. testsetup::
+
+       import numpy as np
+
+       from pyffs import cztn
+
+    Implementation of N-dimensional DFT:
+
+    .. doctest::
+
+       >>> N = M = 10
+       >>> W = np.exp(-1j * 2 * np.pi / N)
+       >>> Phi = np.random.randn(N, N, N) + 1j * np.random.randn(N, N, N)  # extra dimension
+
+       >>> dft_Phi = np.fft.fftn(Phi, axes=(1, 2))
+       >>> czt_Phi = cztn(Phi, A=[1, 1], W=[W, W], M=[M, M], axes=(1, 2))
+
+       >>> np.allclose(dft_Phi, czt_Phi)
+       True
     """
 
     axes, A, W = _verify_cztn_input(Phi, A, W, M, axes)
