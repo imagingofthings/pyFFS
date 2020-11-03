@@ -6,9 +6,6 @@
 # Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
-
-import cmath
-
 import numpy as np
 from scipy import fftpack as fftpack
 from pyffs.util import _verify_cztn_input, _index_n
