@@ -270,7 +270,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
     return sample_points, idx
 
 
-def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
+def ffs2_sample(T_x, T_y, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs.ffs2`.
 
@@ -278,9 +278,9 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
 
     Parameters
     ----------
-    Tx : float
+    T_x : float
         Function period along x-axis.
-    Ty : float
+    T_y : float
         Function period along y-axis.
     N_FSx : int
         Function bandwidth along x-axis.
@@ -321,7 +321,7 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
 
        # Ideally choose N_sx and N_sy to be highly-composite for ffs2().
        >>> sample_points, idx = ffs2_sample(
-       ... Tx=1, Ty=1, N_FSx=3, N_FSy=3, T_cx=0, T_cy=0, N_sx=4, N_sy=3
+       ... T_x=1, T_y=1, N_FSx=3, N_FSy=3, T_cx=0, T_cy=0, N_sx=4, N_sy=3
        ... )
        >>> assert_array_equal(sample_points[0][:, 0], np.array([0.125, 0.375, -0.375, -0.125]))
        >>> assert_array_equal(sample_points[1][0, :], np.array([0, 1 / 3, -1 / 3]))
@@ -335,8 +335,8 @@ def ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy):
     """
 
     # each dimension separately
-    sample_points_x, idx_x = ffs_sample(Tx, N_FSx, T_cx, N_sx)
-    sample_points_y, idx_y = ffs_sample(Ty, N_FSy, T_cy, N_sy)
+    sample_points_x, idx_x = ffs_sample(T_x, N_FSx, T_cx, N_sx)
+    sample_points_y, idx_y = ffs_sample(T_y, N_FSy, T_cy, N_sy)
 
     # all combos
     idx = [idx_x.reshape(N_sx, 1), idx_y.reshape(1, N_sy)]

@@ -92,27 +92,7 @@ def ffs(x, T, T_c, N_FS, axis=-1):
     --------
     :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.iffs`
     """
-    N_s = x.shape[axis]
-
-    if T <= 0:
-        raise ValueError("Parameter[T] must be positive.")
-    if not (3 <= N_FS <= N_s):
-        raise ValueError(f"Parameter[N_FS] must lie in {{3, ..., N_s}}.")
-
-    # compute modulation vectors
-    A, B = _create_modulation_vectors(N_s, N_FS, T, T_c)
-    sh = [1] * x.ndim
-    sh[axis] = N_s
-    C_1 = A.conj().reshape(sh)
-    C_2 = B.conj().reshape(sh)
-
-    # Cast C_2 to 32 bits if x is 32 bits. (Allows faster transforms.)
-    if (x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")):
-        C_2 = C_2.astype(np.complex64)
-
-    x_FS = fftpack.fft(x * C_2, axis=axis)
-    x_FS *= C_1 / N_s
-    return x_FS
+    return ffsn(Phi=x, T=[T], T_c=[T_c], N_FS=[N_FS], axes=tuple([axis]))
 
 
 def iffs(x_FS, T, T_c, N_FS, axis=-1):
@@ -151,30 +131,10 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     --------
     :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.ffs`
     """
-    N_s = x_FS.shape[axis]
-
-    if T <= 0:
-        raise ValueError("Parameter[T] must be positive.")
-    if not (3 <= N_FS <= N_s):
-        raise ValueError(f"Parameter[N_FS] must lie in {{3, ..., N_s}}.")
-
-    # compute modulation vectors
-    A, B = _create_modulation_vectors(N_s, N_FS, T, T_c)
-    sh = [1] * x_FS.ndim
-    sh[axis] = N_s
-    C_1 = A.reshape(sh)
-    C_2 = B.reshape(sh)
-
-    # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
-    if (x_FS.dtype == np.dtype("complex64")) or (x_FS.dtype == np.dtype("float32")):
-        C_1 = C_1.astype(np.complex64)
-
-    x = fftpack.ifft(x_FS * C_1, axis=axis)
-    x *= C_2 * N_s
-    return x
+    return iffsn(Phi_FS=x_FS, T=[T], T_c=[T_c], N_FS=[N_FS], axes=tuple([axis]))
 
 
-def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
+def ffs2(Phi, T_x, T_y, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     r"""
     Fourier Series coefficients from signal samples of a 2D function.
 
@@ -183,9 +143,9 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     Phi : :py:class:`~numpy.ndarray`
         (..., N_sx, N_sy, ...) function values at sampling points specified by
         :py:func:`~pyffs.util.ffs2_sample`.
-    Tx : float
+    T_x : float
         Function period along x-axis.
-    Ty : float
+    T_y : float
         Function period along y-axis.
     T_cx : float
         Period mid-point, x-axis.
@@ -244,19 +204,19 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
 
     .. doctest::
 
-       >>> Tx = Ty = 1
+       >>> T_x = T_y = 1
        >>> T_cx = T_cy = 0
        >>> N_FSx = N_FSy = 3
        >>> N_sx = 4
        >>> N_sy = 3
 
        # Sample the kernel and do the transform.
-       >>> sample_points, _ = ffs2_sample(Tx, Ty, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy)
-       >>> diric_samples = dirichlet_2D(sample_points, [Tx, Ty], [T_cx, T_cy], [N_FSx, N_FSy])
-       >>> diric_FS = ffs2(diric_samples, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy)
+       >>> sample_points, _ = ffs2_sample(T_x, T_y, N_FSx, N_FSy, T_cx, T_cy, N_sx, N_sy)
+       >>> diric_samples = dirichlet_2D(sample_points, [T_x, T_y], [T_cx, T_cy], [N_FSx, N_FSy])
+       >>> diric_FS = ffs2(diric_samples, T_x, T_y, T_cx, T_cy, N_FSx, N_FSy)
 
        # Compare with theoretical result.
-       >>> diric_FS_exact = np.outer(dirichlet_fs(N_FSx, Tx, T_cx), dirichlet_fs(N_FSy, Ty, T_cy))
+       >>> diric_FS_exact = np.outer(dirichlet_fs(N_FSx, T_x, T_cx), dirichlet_fs(N_FSy, T_y, T_cy))
        >>> np.allclose(diric_FS[:N_FSx, :N_FSy], diric_FS_exact)
        True
 
@@ -269,38 +229,10 @@ def ffs2(Phi, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     :py:func:`~pyffs.util.ffs2_sample`, :py:func:`~pyffs.ffs.iffs2`
     """
 
-    N_sx = Phi.shape[axes[0]]
-    N_sy = Phi.shape[axes[1]]
-    N_s = N_sx * N_sy
-
-    if Tx <= 0:
-        raise ValueError("Parameter[Tx] must be positive.")
-    if Ty <= 0:
-        raise ValueError("Parameter[Ty] must be positive.")
-    if not (3 <= N_FSx <= N_sx):
-        raise ValueError(f"Parameter[N_FSx] must lie in {{3, ..., N_sx}}.")
-    if not (3 <= N_FSy <= N_sy):
-        raise ValueError(f"Parameter[N_FSy] must lie in {{3, ..., N_sy}}.")
-
-    # create modulation vectors for each dimension
-    Ax, Bx = _create_modulation_vectors(N_sx, N_FSx, Tx, T_cx)
-    Ay, By = _create_modulation_vectors(N_sy, N_FSy, Ty, T_cy)
-    sh = [1] * Phi.ndim
-    sh[axes[0]] = N_sx
-    sh[axes[1]] = N_sy
-    C_1 = np.outer(Ax.conj(), Ay.conj()).reshape(sh)
-    C_2 = np.outer(Bx.conj(), By.conj()).reshape(sh)
-
-    # Cast C_2 to 32 bits if x is 32 bits. (Allows faster transforms.)
-    if (Phi.dtype == np.dtype("complex64")) or (Phi.dtype == np.dtype("float32")):
-        C_2 = C_2.astype(np.complex64)
-
-    x_FS = fftpack.fft2(Phi * C_2, axes=axes)
-    x_FS *= C_1 / N_s
-    return x_FS
+    return ffsn(Phi=Phi, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy], axes=axes)
 
 
-def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
+def iffs2(Phi_FS, T_x, T_y, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     r"""
     Signal samples from Fourier Series coefficients of a 2D function.
 
@@ -310,9 +242,9 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     ----------
     Phi_FS : :py:class:`~numpy.ndarray`
         (..., N_sx, N_sy, ...) FS coefficients in ascending order, namely in the top-left corner.
-    Tx : float
+    T_x : float
         Function period along x-axis.
-    Ty : float
+    T_y : float
         Function period along y-axis.
     T_cx : float
         Period mid-point, x-axis.
@@ -342,35 +274,7 @@ def iffs2(Phi_FS, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
     :py:func:`~pyffs.util.ffs2_sample`, :py:func:`~pyffs.ffs.ffs2`
     """
 
-    N_sx = Phi_FS.shape[axes[0]]
-    N_sy = Phi_FS.shape[axes[1]]
-    N_s = N_sx * N_sy
-
-    if Tx <= 0:
-        raise ValueError("Parameter[Tx] must be positive.")
-    if Ty <= 0:
-        raise ValueError("Parameter[Ty] must be positive.")
-    if not (3 <= N_FSx <= N_sx):
-        raise ValueError(f"Parameter[N_FSx] must lie in {{3, ..., N_sx}}.")
-    if not (3 <= N_FSy <= N_sy):
-        raise ValueError(f"Parameter[N_FSy] must lie in {{3, ..., N_sy}}.")
-
-    # create modulation vectors for each dimension
-    Ax, Bx = _create_modulation_vectors(N_sx, N_FSx, Tx, T_cx)
-    Ay, By = _create_modulation_vectors(N_sy, N_FSy, Ty, T_cy)
-    sh = [1] * Phi_FS.ndim
-    sh[axes[0]] = N_sx
-    sh[axes[1]] = N_sy
-    C_1 = np.outer(Ax, Ay).reshape(sh)
-    C_2 = np.outer(Bx, By).reshape(sh)
-
-    # Cast C_1 to 32 bits if x_FS is 32 bits. (Allows faster transforms.)
-    if (Phi_FS.dtype == np.dtype("complex64")) or (Phi_FS.dtype == np.dtype("float32")):
-        C_1 = C_1.astype(np.complex64)
-
-    Phi = fftpack.ifft2(Phi_FS * C_1, axes=axes)
-    Phi *= C_2 * N_s
-    return Phi
+    return iffsn(Phi_FS=Phi_FS, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy], axes=axes)
 
 
 def ffsn_comp(Phi, T, T_c, N_FS, axes=None):
