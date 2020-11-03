@@ -133,7 +133,7 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     --------
     :py:func:`~pyffs.czt.czt`, :py:func:`~pyffs.interp.fs_interpn`
     """
-    return fs_interpn(Phi_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=tuple([axis]), real_Phi=real_x)
+    return fs_interpn(Phi_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_Phi=real_x)
 
 
 def fs_interp2(Phi_FS, T_x, T_y, a_x, a_y, b_x, b_y, M_x, M_y, axes=(-2, -1), real_Phi=False):
