@@ -195,7 +195,7 @@ def cztn(Phi, A, W, M, axes=None):
     Parameters
     ----------
     Phi : :py:class:`~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) input values.
+        (..., N_1, N_2, ..., N_D, ...) input values.
     A : list(float or complex)
         Circular offset from the positive real-axis, for each dimension.
     W : list(float or complex)
@@ -254,12 +254,12 @@ def cztn(Phi, A, W, M, axes=None):
     sh_U = list(Phi.shape)
     for d in range(D):
         sh_U[axes[d]] = L[d]
-    u_dtype = (
+    dtype_u = (
         np.complex64
         if ((Phi.dtype == np.dtype("complex64")) or (Phi.dtype == np.dtype("float32")))
         else np.complex128
     )
-    u = np.zeros(sh_U, dtype=u_dtype)
+    u = np.zeros(sh_U, dtype=dtype_u)
     idx = _index_n(u, axes, [slice(n) for n in N])
     u[idx] = Phi
 
@@ -307,7 +307,7 @@ def cztn_comp(Phi, A, W, M, axes=None):
     Parameters
     ----------
     Phi : :py:class:`~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) input values.
+        (..., N_1, N_2, ..., N_D, ...) input values.
     A : list(float or complex)
         Circular offset from the positive real-axis, for each dimension.
     W : list(float or complex)

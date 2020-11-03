@@ -32,11 +32,7 @@ def _index(x, axis, index_spec):
     indexer : tuple
         Indexing tuple.
     """
-    idx = [slice(None)] * x.ndim
-    idx[axis] = index_spec
-
-    indexer = tuple(idx)
-    return indexer
+    return _index_n(x=x, axes=[axis], index_spec=[index_spec])
 
 
 def _index_n(x, axes, index_spec):
@@ -82,7 +78,7 @@ def _verify_cztn_input(x, A, W, M, axes):
     Parameters
     ----------
     x : :py:class:`~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) input values.
+        (..., N_1, N_2, ..., N_D, ...) input values.
     A : list(float or complex)
         Circular offset from the positive real-axis, for each dimension.
     W : list(float or complex)
