@@ -1,31 +1,7 @@
 import math
 import numpy as np
 from pyffs.interp import fs_interp, fs_interp2
-
-
-def dirichlet(x, T, T_c, N_FS):
-    y = x - T_c
-
-    n, d = np.zeros((2, len(x)))
-    nan_mask = np.isclose(np.fmod(y, np.pi), 0)
-    n[~nan_mask] = np.sin(N_FS * np.pi * y[~nan_mask] / T)
-    d[~nan_mask] = np.sin(np.pi * y[~nan_mask] / T)
-    n[nan_mask] = N_FS * np.cos(N_FS * np.pi * y[nan_mask] / T)
-    d[nan_mask] = np.cos(np.pi * y[nan_mask] / T)
-
-    return n / d
-
-
-def dirichlet_fs(N_FS, T, T_c):
-    N = (N_FS - 1) // 2
-    return np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N : N + 1])
-
-
-def dirichlet_2D(sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy):
-    # compute along x and y, then combine
-    x_vals = dirichlet(x=sample_points[0][:, 0], T=Tx, T_c=T_cx, N_FS=N_FSx)
-    y_vals = dirichlet(x=sample_points[1][0, :], T=Ty, T_c=T_cy, N_FS=N_FSy)
-    return np.outer(x_vals, y_vals)
+from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
 
 
 def test_fs_interp():
@@ -75,12 +51,14 @@ def test_fs_interp2():
     sample_points_x = a_x + (b_x - a_x) / (M_x - 1) * np.arange(M_x)
     sample_points_y = a_y + (b_y - a_y) / (M_y - 1) * np.arange(M_y)
     sample_points = [sample_points_x.reshape(M_x, 1), sample_points_y.reshape(1, M_y)]
-    diric_sig_exact = dirichlet_2D(sample_points, T_x, T_y, T_cx, T_cy, N_FSx, N_FSy)
+    diric_sig_exact = dirichlet_2D(
+        sample_points, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
+    )
     assert np.allclose(diric_sig, diric_sig_exact)
 
-    # # Try real version
-    # diric_sig_real = fs_interp2(diric_FS, T_x, T_y, a_x, a_y, b_x, b_y, M_x, M_y, real_Phi=True)
-    # assert np.allclose(diric_sig, diric_sig_real)
+    # Try real version
+    diric_sig_real = fs_interp2(diric_FS, T_x, T_y, a_x, a_y, b_x, b_y, M_x, M_y, real_Phi=True)
+    assert np.allclose(diric_sig, diric_sig_real)
 
 
 if __name__ == "__main__":

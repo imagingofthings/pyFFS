@@ -71,13 +71,13 @@ def _verify_axes(x, axes):
     return axes
 
 
-def _verify_cztn_input(x, A, W, M, axes):
+def _verify_cztn_input(Phi, A, W, M, axes):
     """
-    Verify input values to CZTN, and return axes values.
+    Verify input values to :py:func:`~pyffs.czt.cztn`, and return axes values.
 
     Parameters
     ----------
-    x : :py:class:`~numpy.ndarray`
+    Phi : :py:class:`~numpy.ndarray`
         (..., N_1, N_2, ..., N_D, ...) input values.
     A : list(float or complex)
         Circular offset from the positive real-axis, for each dimension.
@@ -99,12 +99,12 @@ def _verify_cztn_input(x, A, W, M, axes):
     if not (len(W) == len(M) == D):
         raise ValueError("Length of [A], [W], and [M] must match.")
 
-    if x.ndim < D:
+    if Phi.ndim < D:
         raise ValueError("[Phi] does not have enough dimensions.")
 
     if axes is not None:
         assert len(axes) == D, "Length of [axes] must match [A], [W], and [M]."
-        axes = _verify_axes(x, axes)
+        axes = _verify_axes(Phi, axes)
     else:
         axes = list(range(D))
 
@@ -122,9 +122,61 @@ def _verify_cztn_input(x, A, W, M, axes):
     return axes, A, W
 
 
+def _verify_fs_interp_input(Phi_FS, T, a, b, M, axes):
+    """
+    Verify input values to :py:func:`~pyffs.interp.fs_interpn`, and return axes values.
+
+    Parameters
+    ----------
+    Phi_FS : :py:class:`~numpy.ndarray`
+        (..., N_1, N_2, ..., N_D, ...) input values.
+    T : list(float)
+        Function period along each dimension.
+    a : list(float)
+        Interval LHS for each dimension.
+    b : list(float)
+        Interval RHS for each dimension.
+    M : list(int)
+        Number of points to interpolate for each dimension.
+    axes : tuple
+        Dimensions of `x` along which transform should be applied.
+
+    Returns
+    -------
+    axes : tuple
+        Indexing tuple.
+
+    """
+
+    D = len(T)
+    if not (len(a) == len(b) == len(M) == D):
+        raise ValueError("Length of [T], [a], [b], and [M] must match.")
+
+    if Phi_FS.ndim < D:
+        raise ValueError("[Phi] does not have enough dimensions.")
+
+    if axes is not None:
+        assert len(axes) == D, "Length of [axes] must match [T], [a], [b], and [M]."
+        axes = _verify_axes(Phi_FS, axes)
+    else:
+        axes = list(range(D))
+
+    # check valid values
+    for d in range(D):
+        if T[d] <= 0:
+            raise ValueError("Parameter[T[d]] must be positive.")
+        if not (a[d] < b[d]):
+            raise ValueError(f"Parameter[a[d]] must be smaller than Parameter[b[d]].")
+        if M[d] <= 0:
+            raise ValueError("Parameter[M[d]] must be positive.")
+
+    return axes
+
+
 def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     """
-    Verify input values to FFSN and iFFSN, and return axes values.
+    Verify input values to :py:func:`~pyffs.ffs.ffsn` and :py:func:`~pyffs.ffs.iffsn`, and return
+    axes values.
 
     Parameters
     ----------
