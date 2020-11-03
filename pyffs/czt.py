@@ -3,7 +3,7 @@
 # ===========
 # Author :
 # Sepand KASHANI [kashani.sepand@gmail.com]
-# Eric BEZZAM [eric.bezzam@gmail.com]
+# Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
 
