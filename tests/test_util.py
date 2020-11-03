@@ -16,14 +16,14 @@ def test_ffs_sample():
 
 
 def test_ffs2_sample():
-    Tx = Ty = 1
+    T_x = T_y = 1
     N_FSx = N_FSy = 3
     T_cx = T_cy = 0
     N_sx = 4
     N_sy = 3
     sample_points, idx = ffs2_sample(
-        Tx=Tx,
-        Ty=Ty,
+        T_x=T_x,
+        T_y=T_y,
         N_FSx=N_FSx,
         N_FSy=N_FSy,
         T_cx=T_cx,

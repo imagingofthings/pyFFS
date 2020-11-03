@@ -36,7 +36,7 @@ def test_ffs():
 
 
 def test_ffs2():
-    Tx = Ty = 1
+    T_x = T_y = 1
     T_cx = T_cy = 0
     N_FSx = N_FSy = 3
     N_sx = 4
@@ -44,8 +44,8 @@ def test_ffs2():
 
     # Sample the kernel and do the transform.
     sample_points, _ = ffs2_sample(
-        Tx=Tx,
-        Ty=Ty,
+        T_x=T_x,
+        T_y=T_y,
         N_FSx=N_FSx,
         N_FSy=N_FSy,
         T_cx=T_cx,
@@ -54,12 +54,12 @@ def test_ffs2():
         N_sy=N_sy,
     )
     diric_samples = dirichlet_2D(
-        sample_points=sample_points, T=[Tx, Ty], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
+        sample_points=sample_points, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
     )
     diric_FS = ffs2(
         Phi=diric_samples,
-        Tx=Tx,
-        Ty=Ty,
+        T_x=T_x,
+        T_y=T_y,
         T_cx=T_cx,
         T_cy=T_cy,
         N_FSx=N_FSx,
@@ -67,14 +67,14 @@ def test_ffs2():
     )
 
     # Compare with theoretical result.
-    diric_FS_exact = np.outer(dirichlet_fs(N_FSx, Tx, T_cx), dirichlet_fs(N_FSy, Ty, T_cy))
+    diric_FS_exact = np.outer(dirichlet_fs(N_FSx, T_x, T_cx), dirichlet_fs(N_FSy, T_y, T_cy))
     assert np.allclose(diric_FS[:N_FSx, :N_FSy], diric_FS_exact)
 
     # Inverse transform.
     diric_samples_recov = iffs2(
         Phi_FS=diric_FS,
-        Tx=Tx,
-        Ty=Ty,
+        T_x=T_x,
+        T_y=T_y,
         T_cx=T_cx,
         T_cy=T_cy,
         N_FSx=N_FSx,
@@ -86,7 +86,7 @@ def test_ffs2():
 
 
 def test_ffs2_axes():
-    Tx = Ty = 1
+    T_x = T_y = 1
     T_cx = T_cy = 0
     N_FSx = N_FSy = 3
     N_sx = 4
@@ -94,8 +94,8 @@ def test_ffs2_axes():
 
     # Sample the kernel.
     sample_points, _ = ffs2_sample(
-        Tx=Tx,
-        Ty=Ty,
+        T_x=T_x,
+        T_y=T_y,
         N_FSx=N_FSx,
         N_FSy=N_FSy,
         T_cx=T_cx,
@@ -104,7 +104,7 @@ def test_ffs2_axes():
         N_sy=N_sy,
     )
     diric_samples = dirichlet_2D(
-        sample_points=sample_points, T=[Tx, Ty], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
+        sample_points=sample_points, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
     )
 
     # Add new dimension.
@@ -114,8 +114,8 @@ def test_ffs2_axes():
     # Perform transform.
     diric_FS = ffs2(
         Phi=diric_samples,
-        Tx=Tx,
-        Ty=Ty,
+        T_x=T_x,
+        T_y=T_y,
         T_cx=T_cx,
         T_cy=T_cy,
         N_FSx=N_FSx,
@@ -124,14 +124,14 @@ def test_ffs2_axes():
     )
 
     # Compare with theoretical result.
-    diric_FS_exact = np.outer(dirichlet_fs(N_FSx, Tx, T_cx), dirichlet_fs(N_FSy, Ty, T_cy))
+    diric_FS_exact = np.outer(dirichlet_fs(N_FSx, T_x, T_cx), dirichlet_fs(N_FSy, T_y, T_cy))
     assert np.allclose(diric_FS[:N_FSx, 0, :N_FSy], diric_FS_exact)
 
     # Inverse transform.
     diric_samples_recov = iffs2(
         Phi_FS=diric_FS,
-        Tx=Tx,
-        Ty=Ty,
+        T_x=T_x,
+        T_y=T_y,
         T_cx=T_cx,
         T_cy=T_cy,
         N_FSx=N_FSx,
