@@ -92,7 +92,7 @@ def ffs(x, T, T_c, N_FS, axis=-1):
     --------
     :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.iffs`
     """
-    return ffsn(Phi=x, T=[T], T_c=[T_c], N_FS=[N_FS], axes=tuple([axis]))
+    return ffsn(Phi=x, T=[T], T_c=[T_c], N_FS=[N_FS], axes=(axis,))
 
 
 def iffs(x_FS, T, T_c, N_FS, axis=-1):
@@ -131,7 +131,7 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     --------
     :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.ffs`
     """
-    return iffsn(Phi_FS=x_FS, T=[T], T_c=[T_c], N_FS=[N_FS], axes=tuple([axis]))
+    return iffsn(Phi_FS=x_FS, T=[T], T_c=[T_c], N_FS=[N_FS], axes=(axis,))
 
 
 def ffs2(Phi, T_x, T_y, T_cx, T_cy, N_FSx, N_FSy, axes=(-2, -1)):
