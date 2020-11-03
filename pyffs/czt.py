@@ -11,7 +11,7 @@ import cmath
 
 import numpy as np
 from scipy import fftpack as fftpack
-from pyffs.util import _verify_cztn_input, _index, _index_n
+from pyffs.util import _verify_cztn_input, _index_n
 
 
 def czt(x, A, W, M, axis=-1):
@@ -77,55 +77,7 @@ def czt(x, A, W, M, axis=-1):
        >>> np.allclose(idft_x, czt_x / N)  # czt() does not do the scaling.
        True
     """
-    A = complex(A)
-    W = complex(W)
-
-    if not cmath.isclose(abs(A), 1):
-        raise ValueError("Parameter[A] must lie on the unit circle for numerical stability.")
-    if not cmath.isclose(abs(W), 1):
-        raise ValueError("Parameter[W] must lie on the unit circle.")
-    if M <= 0:
-        raise ValueError("Parameter[M] must be positive.")
-
-    # Shape Parameters
-    N = x.shape[axis]
-    sh_N = [1] * x.ndim
-    sh_N[axis] = N
-    sh_M = [1] * x.ndim
-    sh_M[axis] = M
-
-    L = fftpack.next_fast_len(N + M - 1)
-    sh_L = [1] * x.ndim
-    sh_L[axis] = L
-    sh_Y = list(x.shape)
-    sh_Y[axis] = L
-
-    y_dtype = (
-        np.complex64
-        if ((x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")))
-        else np.complex128
-    )
-
-    n = np.arange(L)
-    y = np.zeros(sh_Y, dtype=y_dtype)
-    y_mod = (A ** -n[:N]) * np.float_power(W, (n[:N] ** 2) / 2)
-    y[_index(y, axis, slice(N))] = x
-    y[_index(y, axis, slice(N))] *= y_mod.reshape(sh_N)
-    Y = fftpack.fft(y, axis=axis)
-
-    v = np.zeros(L, dtype=complex)
-    v[:M] = np.float_power(W, -(n[:M] ** 2) / 2)
-    v[L - N + 1 :] = np.float_power(W, -((L - n[L - N + 1 :]) ** 2) / 2)
-    V = fftpack.fft(v).reshape(sh_L)
-
-    G = Y
-    G *= V
-    g = fftpack.ifft(G, axis=axis)
-    g_mod = np.float_power(W, (n[:M] ** 2) / 2)
-    g[_index(g, axis, slice(M))] *= g_mod.reshape(sh_M)
-
-    X = g[_index(g, axis, slice(M))]
-    return X
+    return cztn(Phi=x, A=[A], W=[W], M=[M], axes=(axis,))
 
 
 def czt2(Phi, Ax, Ay, Wx, Wy, Mx, My, axes=(-2, -1)):
