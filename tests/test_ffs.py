@@ -1,31 +1,19 @@
 import numpy as np
 import math
-from pyffs import ffs, ffs_sample, ffs2, ffs2_sample, iffs, iffs2
-
-
-def dirichlet(x, T, T_c, N_FS):
-    y = x - T_c
-
-    n, d = np.zeros((2, len(x)))
-    nan_mask = np.isclose(np.fmod(y, np.pi), 0)
-    n[~nan_mask] = np.sin(N_FS * np.pi * y[~nan_mask] / T)
-    d[~nan_mask] = np.sin(np.pi * y[~nan_mask] / T)
-    n[nan_mask] = N_FS * np.cos(N_FS * np.pi * y[nan_mask] / T)
-    d[nan_mask] = np.cos(np.pi * y[nan_mask] / T)
-
-    return n / d
-
-
-def dirichlet_fs(N_FS, T, T_c):
-    N = (N_FS - 1) // 2
-    return np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N : N + 1])
-
-
-def dirichlet_2D(sample_points, Tx, Ty, T_cx, T_cy, N_FSx, N_FSy):
-    # compute along x and y, then combine
-    x_vals = dirichlet(x=sample_points[0][:, 0], T=Tx, T_c=T_cx, N_FS=N_FSx)
-    y_vals = dirichlet(x=sample_points[1][0, :], T=Ty, T_c=T_cy, N_FS=N_FSy)
-    return np.outer(x_vals, y_vals)
+from pyffs import (
+    ffs,
+    ffs_sample,
+    ffs2,
+    ffs2_sample,
+    iffs,
+    iffs2,
+    ffsn_sample,
+    ffsn_comp,
+    iffsn_comp,
+    ffsn,
+    iffsn,
+)
+from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
 
 
 def test_ffs():
@@ -66,13 +54,7 @@ def test_ffs2():
         N_sy=N_sy,
     )
     diric_samples = dirichlet_2D(
-        sample_points=sample_points,
-        Tx=Tx,
-        Ty=Ty,
-        T_cx=T_cx,
-        T_cy=T_cy,
-        N_FSx=N_FSx,
-        N_FSy=N_FSy,
+        sample_points=sample_points, T=[Tx, Ty], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
     )
     diric_FS = ffs2(
         Phi=diric_samples,
@@ -122,13 +104,7 @@ def test_ffs2_axes():
         N_sy=N_sy,
     )
     diric_samples = dirichlet_2D(
-        sample_points=sample_points,
-        Tx=Tx,
-        Ty=Ty,
-        T_cx=T_cx,
-        T_cy=T_cy,
-        N_FSx=N_FSx,
-        N_FSy=N_FSy,
+        sample_points=sample_points, T=[Tx, Ty], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
     )
 
     # Add new dimension.
@@ -167,8 +143,58 @@ def test_ffs2_axes():
     assert np.allclose(diric_samples, diric_samples_recov)
 
 
+def test_ffsn_comp():
+    T = [1, 1]
+    T_c = [0, 0]
+    N_FS = [3, 3]
+    N_s = [4, 3]
+
+    # Sample the kernel and do the transform.
+    sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
+    diric_samples = dirichlet_2D(sample_points=sample_points, T=T, T_c=T_c, N_FS=N_FS)
+    diric_FS = ffsn_comp(Phi=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
+
+    # Compare with theoretical result.
+    diric_FS_exact = np.outer(
+        dirichlet_fs(N_FS[0], T[0], T_c[0]), dirichlet_fs(N_FS[1], T[1], T_c[1])
+    )
+    assert np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
+
+    # Inverse transform.
+    diric_samples_recov = iffsn_comp(Phi_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
+
+    # Compare with original samples.
+    assert np.allclose(diric_samples, diric_samples_recov)
+
+
+def test_ffsn():
+    T = [1, 1]
+    T_c = [0, 0]
+    N_FS = [3, 3]
+    N_s = [4, 3]
+
+    # Sample the kernel and do the transform.
+    sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
+    diric_samples = dirichlet_2D(sample_points=sample_points, T=T, T_c=T_c, N_FS=N_FS)
+    diric_FS = ffsn(Phi=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
+
+    # Compare with theoretical result.
+    diric_FS_exact = np.outer(
+        dirichlet_fs(N_FS[0], T[0], T_c[0]), dirichlet_fs(N_FS[1], T[1], T_c[1])
+    )
+    assert np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
+
+    # Inverse transform.
+    diric_samples_recov = iffsn(Phi_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
+
+    # Compare with original samples.
+    assert np.allclose(diric_samples, diric_samples_recov)
+
+
 if __name__ == "__main__":
 
     test_ffs()
     test_ffs2()
     test_ffs2_axes()
+    test_ffsn_comp()
+    test_ffsn()

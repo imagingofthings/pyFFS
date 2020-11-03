@@ -54,18 +54,7 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
        import numpy as np
 
        from pyffs import fs_interp
-
-       def dirichlet(x, T, T_c, N_FS):
-           y = x - T_c
-
-           n, d = np.zeros((2, len(x)))
-           nan_mask = np.isclose(np.fmod(y, np.pi), 0)
-           n[~nan_mask] = np.sin(N_FS * np.pi * y[~nan_mask] / T)
-           d[~nan_mask] = np.sin(np.pi * y[~nan_mask] / T)
-           n[nan_mask] = N_FS * np.cos(N_FS * np.pi * y[nan_mask] / T)
-           d[nan_mask] = np.cos(np.pi * y[nan_mask] / T)
-
-           return n / d
+       from pyffs.func import dirichlet
 
        # Parameters of the signal.
        T, T_c, N_FS = math.pi, math.e, 15
