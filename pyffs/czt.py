@@ -1,7 +1,9 @@
 # #############################################################################
 # czt.py
 # ===========
-# Author : Sepand KASHANI [kashani.sepand@gmail.com]
+# Author :
+# Sepand KASHANI [kashani.sepand@gmail.com]
+# Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
 
@@ -9,8 +11,7 @@ import cmath
 
 import numpy as np
 from scipy import fftpack as fftpack
-
-from pyffs import util as _util
+from pyffs.util import _verify_cztn_input, _index, _index_n
 
 
 def czt(x, A, W, M, axis=-1):
@@ -108,8 +109,8 @@ def czt(x, A, W, M, axis=-1):
     n = np.arange(L)
     y = np.zeros(sh_Y, dtype=y_dtype)
     y_mod = (A ** -n[:N]) * np.float_power(W, (n[:N] ** 2) / 2)
-    y[_util._index(y, axis, slice(N))] = x
-    y[_util._index(y, axis, slice(N))] *= y_mod.reshape(sh_N)
+    y[_index(y, axis, slice(N))] = x
+    y[_index(y, axis, slice(N))] *= y_mod.reshape(sh_N)
     Y = fftpack.fft(y, axis=axis)
 
     v = np.zeros(L, dtype=complex)
@@ -121,7 +122,217 @@ def czt(x, A, W, M, axis=-1):
     G *= V
     g = fftpack.ifft(G, axis=axis)
     g_mod = np.float_power(W, (n[:M] ** 2) / 2)
-    g[_util._index(g, axis, slice(M))] *= g_mod.reshape(sh_M)
+    g[_index(g, axis, slice(M))] *= g_mod.reshape(sh_M)
 
-    X = g[_util._index(g, axis, slice(M))]
+    X = g[_index(g, axis, slice(M))]
     return X
+
+
+def czt2(Phi, Ax, Ay, Wx, Wy, Mx, My, axes=(-2, -1)):
+    """
+    2D Chirp Z-Transform.
+
+    Parameters
+    ----------
+    Phi : :py:class:`~numpy.ndarray`
+        (..., N_x, N_y, ...) input array.
+    Ax : float or complex
+        Circular offset from the positive real-axis, x-axis.
+    Ax : float or complex
+        Circular offset from the positive real-axis, y-axis.
+    Wx : float or complex
+        Circular spacing between transform points, x-axis.
+    Wy : float or complex
+        Circular spacing between transform points, y-axis.
+    Mx : int
+        Length of the transform, x-axis.
+    My : int
+        Length of the transform, y-axis.
+    axes : tuple
+        Dimensions of `Phi` along which the samples are stored.
+
+    Returns
+    -------
+    Phi_czt : :py:class:`~numpy.ndarray`
+        (..., Mx, My, ...) transformed input along the axes indicated by `axes`.
+
+    Notes
+    -----
+    Due to numerical instability when using large `Mx`, `My`, this implementation only supports
+    transforms where `Ax`, `Ay`, `Wx, and `Wy` have unit norm.
+
+    Examples
+    --------
+    .. testsetup::
+
+       import numpy as np
+
+       from pyffs import czt2
+
+    Implementation of the 2D DFT:
+
+    .. doctest::
+
+       >>> N = M = 10
+       >>> W = np.exp(-1j * 2 * np.pi / N)
+       >>> Phi = np.random.randn(N, N) + 1j * np.random.randn(N, N)
+
+       >>> dft_Phi = np.fft.fft2(Phi)
+       >>> czt_Phi = czt2(Phi, Ax=1, Ay=1, Wx=W, Wy=W, Mx=M, My=M)
+
+       >>> np.allclose(dft_Phi, czt_Phi)
+       True
+    """
+    return cztn(Phi, A=[Ax, Ay], W=[Wx, Wy], M=[Mx, My], axes=axes)
+
+
+def cztn(Phi, A, W, M, axes=None):
+    """
+    Multi-dimensional Chirp Z-transform.
+
+    Perform multi-dimensional CZT from signal samples, using the multi-dimensional FFT.
+
+    Parameters
+    ----------
+    Phi : :py:class:`~numpy.ndarray`
+        (..., N_1, N_2, ..., N_D, ...) input values.
+    A : list(float or complex)
+        Circular offset from the positive real-axis, for each dimension.
+    W : list(float or complex)
+        Circular spacing between transform points, for each dimension.
+    M : list(int)
+        Length of transform for each dimension.
+    axes : tuple
+        Dimensions of `Phi` along which transform should be applied.
+
+    Returns
+    -------
+    Phi_czt : :py:class:`~numpy.ndarray`
+        (..., M_1, M_2, ..., M_D, ...) transformed input along the axes indicated by `axes`.
+
+    Notes
+    -----
+    Due to numerical instability when using large `M`, this implementation only supports transforms
+    where each element of `A` and `W` has unit norm.
+
+    Examples
+    --------
+    .. testsetup::
+
+       import numpy as np
+
+       from pyffs import cztn
+
+    Implementation of N-dimensional DFT:
+
+    .. doctest::
+
+       >>> N = M = 10
+       >>> W = np.exp(-1j * 2 * np.pi / N)
+       >>> Phi = np.random.randn(N, N, N) + 1j * np.random.randn(N, N, N)  # extra dimension
+
+       >>> dft_Phi = np.fft.fftn(Phi, axes=(1, 2))
+       >>> czt_Phi = cztn(Phi, A=[1, 1], W=[W, W], M=[M, M], axes=(1, 2))
+
+       >>> np.allclose(dft_Phi, czt_Phi)
+       True
+    """
+
+    axes, A, W = _verify_cztn_input(Phi, A, W, M, axes)
+
+    # Initialize variables
+    D = len(axes)
+    N = np.array(Phi.shape)[axes]
+    L = []
+    n = []
+    for d in range(D):
+        _L = fftpack.next_fast_len(N[d] + M[d] - 1)
+        L.append(_L)
+        n.append(np.arange(_L))
+
+    # Initialize input
+    sh_U = list(Phi.shape)
+    for d in range(D):
+        sh_U[axes[d]] = L[d]
+    dtype_u = (
+        np.complex64
+        if ((Phi.dtype == np.dtype("complex64")) or (Phi.dtype == np.dtype("float32")))
+        else np.complex128
+    )
+    u = np.zeros(sh_U, dtype=dtype_u)
+    idx = _index_n(u, axes, [slice(n) for n in N])
+    u[idx] = Phi
+
+    # Modulate along each dimension
+    for d in range(D):
+        _n = n[d]
+        _N = N[d]
+        sh_N = [1] * Phi.ndim
+        sh_N[axes[d]] = N[d]
+        u_mod_d = (A[d] ** -_n[:_N]) * np.float_power(W[d], (_n[:_N] ** 2) / 2)
+        u[idx] *= u_mod_d.reshape(sh_N)
+    U = fftpack.fftn(u, axes=axes)
+
+    # Convolve along each dimension -> multiply in frequency domain
+    for d in range(D):
+        _N = N[d]
+        sh_L = [1] * Phi.ndim
+        sh_L[axes[d]] = L[d]
+        v = np.zeros(L[d], dtype=complex)
+        v[: M[d]] = np.float_power(W[d], -(n[d][: M[d]] ** 2) / 2)
+        v[L[d] - _N + 1 :] = np.float_power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
+        V = fftpack.fft(v).reshape(sh_L)
+        U *= V
+    g = fftpack.ifftn(U, axes=axes)
+
+    # Final modulation in time
+    time_idx = _index_n(g, axes, [slice(m) for m in M])
+    for d in range(D):
+        _n = n[d]
+        _M = M[d]
+        sh_M = [1] * Phi.ndim
+        sh_M[axes[d]] = _M
+        g_mod = np.float_power(W[d], (_n[:_M] ** 2) / 2)
+        g[time_idx] *= g_mod.reshape(sh_M)
+
+    Phi_czt = g[time_idx]
+    return Phi_czt
+
+
+def cztn_comp(Phi, A, W, M, axes=None):
+    """
+    Perform multi-dimensional CZT from signal samples of a D-dimension signal by performing D 1D
+    CZTs along each dimension.
+
+    Parameters
+    ----------
+    Phi : :py:class:`~numpy.ndarray`
+        (..., N_1, N_2, ..., N_D, ...) input values.
+    A : list(float or complex)
+        Circular offset from the positive real-axis, for each dimension.
+    W : list(float or complex)
+        Circular spacing between transform points, for each dimension.
+    M : list(int)
+        Length of transform for each dimension.
+    axes : tuple
+        Dimensions of `Phi` along which transform should be applied.
+
+    Returns
+    -------
+    X : :py:class:`~numpy.ndarray`
+        (..., M_1, M_2, ..., M_D, ...) transformed input along the axis indicated by `axes`.
+
+    Notes
+    -----
+    Due to numerical instability when using large `M`, this implementation only supports transforms
+    where `A` and `W` have unit norm.
+    """
+
+    axes, A, W = _verify_cztn_input(Phi, A, W, M, axes)
+
+    # sequence of 1D FFS
+    Phi_czt = Phi.copy()
+    for d, ax in enumerate(axes):
+        Phi_czt = czt(Phi_czt, A[d], W[d], M[d], axis=ax)
+
+    return Phi_czt
