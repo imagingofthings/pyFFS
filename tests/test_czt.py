@@ -1,5 +1,17 @@
 import numpy as np
-from pyffs import czt, cztn, cztn_comp
+from pyffs import czt, cztn
+from pyffs.util import _verify_cztn_input
+
+
+def cztn_comp(Phi, A, W, M, axes=None):
+    axes, A, W = _verify_cztn_input(Phi, A, W, M, axes)
+
+    # sequence of 1D FFS
+    Phi_czt = Phi.copy()
+    for d, ax in enumerate(axes):
+        Phi_czt = czt(Phi_czt, A[d], W[d], M[d], axis=ax)
+
+    return Phi_czt
 
 
 def test_czt_dft():

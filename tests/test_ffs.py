@@ -5,12 +5,33 @@ from pyffs import (
     ffs_sample,
     iffs,
     ffsn_sample,
-    ffsn_comp,
-    iffsn_comp,
     ffsn,
     iffsn,
 )
 from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
+from pyffs.util import _verify_ffsn_input
+
+
+def ffsn_comp(Phi, T, T_c, N_FS, axes=None):
+    axes, _ = _verify_ffsn_input(Phi, T, T_c, N_FS, axes)
+
+    # sequence of 1D FFS
+    Phi_FS = Phi.copy()
+    for d, ax in enumerate(axes):
+        Phi_FS = ffs(Phi_FS, T[d], T_c[d], N_FS[d], axis=ax)
+
+    return Phi_FS
+
+
+def iffsn_comp(Phi_FS, T, T_c, N_FS, axes=None):
+    axes, _ = _verify_ffsn_input(Phi_FS, T, T_c, N_FS, axes)
+
+    # sequence of 1D iFFS
+    Phi = Phi_FS.copy()
+    for d, ax in enumerate(axes):
+        Phi = iffs(Phi, T[d], T_c[d], N_FS[d], axis=ax)
+
+    return Phi
 
 
 def test_ffs():

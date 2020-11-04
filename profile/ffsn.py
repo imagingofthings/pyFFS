@@ -1,6 +1,7 @@
 import time
 import numpy as np
-from pyffs import ffsn_sample, ffsn, ffsn_comp
+from pyffs import ffsn_sample, ffsn
+from tests.test_ffs import ffsn_comp
 from pyffs.func import dirichlet_2D
 import matplotlib.pyplot as plt
 import click
