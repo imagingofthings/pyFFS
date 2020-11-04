@@ -136,68 +136,6 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     return fs_interpn(Phi_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_Phi=real_x)
 
 
-def fs_interp2(Phi_FS, T_x, T_y, a_x, a_y, b_x, b_y, M_x, M_y, axes=(-2, -1), real_Phi=False):
-    r"""
-    Interpolate 2D bandlimited periodic signal.
-
-    If `Phi_FS` holds the Fourier Series coefficients of a 2D bandlimited periodic function
-    :math:`\phi(t): \mathbb{R}^2 \to \mathbb{C}`, then :py:func:`~pyffs.fs_interp2` computes the
-    values of :math:`\phi(t)` at points :math:`x_m = (a_x + \frac{b_x - a_x}{M_x - 1} k_x)
-    1_{[0,\ldots,M_x-1]}[k_x], y_n = (a_y + \frac{b_y - a_y}{M_y - 1} k_y)
-    1_{[0,\ldots,M_y-1]}[k_y]`.
-
-    Parameters
-    ----------
-    Phi_FS : :py:class:`~numpy.ndarray`
-        (..., N_FSx, N_FSy, ...) FS coefficients in ascending order.
-    T_x : float
-        Function period, x-axis.
-    T_y : float
-        Function period, y-axis.
-    a_x : float
-        Interval LHS, x-axis
-    a_y : float
-        Interval LHS, y-axis
-    b_x : float
-        Interval RHS, x-axis.
-    b_y : float
-        Interval RHS, y-axis.
-    M_x : int
-        Number of points to interpolate, x-axis.
-    M_y : int
-        Number of points to interpolate, y-axis.
-    axes : tuple, optional
-        Dimension of `Phi_FS` along which the FS coefficients are stored.
-    real_Phi : bool, optional
-        If True, assume that `Phi_FS` is conjugate symmetric and use a more efficient algorithm. In
-        this case, the FS coefficients corresponding to negative frequencies are not used.
-
-    Returns
-    -------
-    Phi : :py:class:`~numpy.ndarray`
-        (..., M_x, M_y, ...) interpolated values along the axes indicated by `axes`. If `real_x` is
-        :py:obj:`True`, the output is real-valued, otherwise it is complex-valued.
-
-    Notes
-    -----
-    Theory: :ref:`fp_interp_def`.
-
-    See Also
-    --------
-    :py:func:`~pyffs.czt.cztn`, :py:func:`~pyffs.interp.fs_interpn`
-    """
-
-    return fs_interpn(
-        Phi_FS=Phi_FS,
-        T=[T_x, T_y],
-        a=[a_x, a_y],
-        b=[b_x, b_y],
-        M=[M_x, M_y],
-        axes=axes,
-        real_Phi=real_Phi,
-    )
-
-
 def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
     r"""
     Interpolate D-dimensional bandlimited periodic signal.
