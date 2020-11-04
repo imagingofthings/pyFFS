@@ -155,7 +155,8 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
     axes : tuple, optional
         Dimensions of `Phi_FS` along which the FS coefficients are stored.
     real_Phi : bool, optional
-        Whether time samples are real-valued.
+        Whether time samples are real-valued, and to use a more efficient approach. Note that this
+        is only available for D < 3, and will raise an error otherwise.
 
     Returns
     -------
@@ -190,7 +191,7 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
         sh[d][axes[d]] = M[d]
         E.append(np.arange(M[d]))
 
-    if real_Phi and D < 3:
+    if real_Phi:
 
         Phi0_FS = Phi_FS[_index_n(Phi_FS, axes, [slice(n, n + 1) for n in N])]
 
@@ -220,6 +221,11 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
             # exploit conjugate symmetry
             Phi = 2 * Phi_pos_pos - Phi0_FS + 2 * Phi_neg_pos
 
+        else:
+            raise NotImplementedError("[real_Phi] approach not available for D > 2.")
+
+        return Phi.real
+
     else:
 
         # apply CZT
@@ -230,7 +236,4 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
             C = np.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
             Phi *= C
 
-    if real_Phi:
-        return Phi.real
-    else:
         return Phi
