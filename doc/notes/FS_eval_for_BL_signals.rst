@@ -128,9 +128,22 @@ arbitrarily chosen.
    Replace :math:`t[n]` in :eq:`BL_FS_expansion` and rearrange terms.
 
 
+Extension to multi-dimensional case
+-----------------------------------
+
+For a multi-dimensional signal, namely :math:`\phi: \mathbb{R}^D \to \mathbb{C}`, that is periodic
+with :math:`[T_1, T_2, \ldots, T_D]` and bandlimited with :math:`[N_{FS, 1}, N_{FS, 2}, \ldots,
+N_{FS, D}]`, we can obtain its Fourier Series coefficients by applying the above approach along each
+dimension.
+
+
 Implementation Notes
 ********************
 
-:py:func:`~pyffs.ffs` and :py:func:`~pyffs.iffs` can be used to obtain Fourier Series coefficients /
-spatial samples of a function using the algorithms above.  Due to the reliance on
+:py:func:`~pyffs.ffs.ffs` and :py:func:`~pyffs.ffs.iffs` can be used to obtain Fourier Series
+coefficients / spatial samples of a function using the algorithms above.  Due to the reliance on
 :math:`\text{(i)DFT}_{N_{s}}`, it is recommended to choose :math:`N_{s}` highly-composite.
+
+:py:func:`~pyffs.ffs.ffsn` and :py:func:`~pyffs.ffs.iffsn` can be used to obtain Fourier Series
+coefficients / spatial samples of a :math:`D`-dimensional function. In our implementation, we opt
+for a more efficient approach than applying the above method along each dimension.
