@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def comparison_plot(proc_time, proc_time_std, n_std):
+def comparison_plot(proc_time, proc_time_std, n_std, ax=None):
     """
     Compare processing times of multiple approaches.
 
@@ -17,14 +17,18 @@ def comparison_plot(proc_time, proc_time_std, n_std):
         approaches.
     n_std : float
         Number of standard deviations to plot.
+    ax : :py:class:`~matplotlib.axes.Axes`, optional
+        `Axes` object to fill, default is to create one.
 
     Return
     ------
-    fig : :py:class:`~matplotlib.figure.Figure`
     ax : :py:class:`~matplotlib.axes.Axes`
     """
     markers = ["o", "^", "v", "x", ">", "<", "D", "+"]
-    fig, ax = plt.subplots()
+
+    if ax is None:
+        _, ax = plt.subplots()
+
     x_vals = list(proc_time.keys())
     compare_vals = proc_time[x_vals[0]].keys()
     for i, _f in enumerate(compare_vals):
@@ -48,4 +52,4 @@ def comparison_plot(proc_time, proc_time_std, n_std):
     ax.set_ylabel("Processing time (s)")
     ax.grid()
 
-    return fig, ax
+    return ax

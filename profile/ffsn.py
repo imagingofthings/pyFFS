@@ -4,6 +4,7 @@ from pyffs import ffsn_sample, ffsn
 from tests.test_ffs import ffsn_comp
 from pyffs.func import dirichlet_2D
 import util
+import matplotlib.pyplot as plt
 import click
 from scipy.fftpack import next_fast_len
 
@@ -51,7 +52,8 @@ def profile_ffsn(n_trials):
             print("{} : {} seconds".format(_f, proc_time[_N_FS][_f]))
 
     # plot results
-    fig, ax = util.comparison_plot(proc_time, proc_time_std, n_std)
+    fig, ax = plt.subplots()
+    util.comparison_plot(proc_time, proc_time_std, n_std, ax)
     ax.set_xlabel("Number of FS coefficients")
     fig.tight_layout()
     fig.savefig("ffsn_comparison.png", dpi=300)

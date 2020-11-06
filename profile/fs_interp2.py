@@ -3,6 +3,7 @@ import math
 import time
 import numpy as np
 import util
+import matplotlib.pyplot as plt
 from pyffs.func import dirichlet_fs
 from pyffs.interp import fs_interpn
 
@@ -42,7 +43,8 @@ def profile_fs_interp2(n_trials):
             print("{} version : {} seconds".format(_f, proc_time[N_FS][_f]))
 
     # plot results
-    fig, ax = util.comparison_plot(proc_time, proc_time_std, n_std)
+    fig, ax = plt.subplots()
+    util.comparison_plot(proc_time, proc_time_std, n_std, ax)
     ax.set_title(f"{M} samples per dimension, {n_trials} trials")
     ax.set_xlabel("Number of FS coefficients per dimension")
     fig.tight_layout()
