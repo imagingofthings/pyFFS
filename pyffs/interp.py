@@ -133,16 +133,16 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     --------
     :py:func:`~pyffs.czt.czt`, :py:func:`~pyffs.interp.fs_interpn`
     """
-    return fs_interpn(Phi_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_Phi=real_x)
+    return fs_interpn(x_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_x=real_x)
 
 
-def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
+def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
     r"""
     Interpolate D-dimensional bandlimited periodic signal.
 
     Parameters
     ----------
-    Phi_FS : :py:class:`~numpy.ndarray`
+    x_FS : :py:class:`~numpy.ndarray`
         (..., N_FSx, N_FSy, ...) FS coefficients in ascending order.
     T : list(float)
         Function period along each dimension.
@@ -153,16 +153,16 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
     M : list(int)
         Number of points to interpolate for each dimension.
     axes : tuple, optional
-        Dimensions of `Phi_FS` along which the FS coefficients are stored.
-    real_Phi : bool, optional
+        Dimensions of `x_FS` along which the FS coefficients are stored.
+    real_x : bool, optional
         Whether time samples are real-valued, and to use a more efficient approach. Note that this
         is only available for D < 3, and will raise an error otherwise.
 
     Returns
     -------
-    Phi : :py:class:`~numpy.ndarray`
+    x : :py:class:`~numpy.ndarray`
         (..., M_1, M_2, ..., M_D, ...) interpolated values along the axes indicated by `axes`.
-        If `real_Phi` is :py:obj:`True`, the output is real-valued, otherwise it is complex-valued.
+        If `real_x` is :py:obj:`True`, the output is real-valued, otherwise it is complex-valued.
 
     Notes
     -----
@@ -174,11 +174,11 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
 
     """
 
-    axes = _verify_fs_interp_input(Phi_FS, T, a, b, M, axes)
+    axes = _verify_fs_interp_input(x_FS, T, a, b, M, axes)
     D = len(axes)
 
     # precompute modulation terms
-    N_FS = np.array(Phi_FS.shape)[list(axes)]
+    N_FS = np.array(x_FS.shape)[list(axes)]
     N = (N_FS - 1) // 2
     A = []
     W = []
@@ -187,53 +187,49 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
     for d in range(D):
         A.append(np.exp(-1j * 2 * np.pi / T[d] * a[d]))
         W.append(np.exp(1j * (2 * np.pi / T[d]) * (b[d] - a[d]) / (M[d] - 1)))
-        sh.append([1] * Phi_FS.ndim)
+        sh.append([1] * x_FS.ndim)
         sh[d][axes[d]] = M[d]
         E.append(np.arange(M[d]))
 
-    if real_Phi:
+    if real_x:
 
-        Phi0_FS = Phi_FS[_index_n(Phi_FS, axes, [slice(n, n + 1) for n in N])]
+        X0_FS = x_FS[_index_n(x_FS, axes, [slice(n, n + 1) for n in N])]
 
         if D == 1:
-            Phi_pos_FS = Phi_FS[_index(Phi_FS, axes[0], slice(N[0] + 1, N_FS[0]))]
+            X_pos_FS = x_FS[_index(x_FS, axes[0], slice(N[0] + 1, N_FS[0]))]
             C = np.reshape(W[0] ** E[0], sh[0]) / A[0]
-            Phi = czt(Phi_pos_FS, A[0], W[0], M[0], axis=axes[0])
-            Phi *= 2 * C
-            Phi += Phi0_FS
+            X = czt(X_pos_FS, A[0], W[0], M[0], axis=axes[0])
+            X *= 2 * C
+            X += X0_FS
 
         elif D == 2:
 
             # positive / positive
-            Phi_pos_pos_FS = Phi_FS[
-                _index_n(Phi_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])
-            ]
-            Phi_pos_pos = cztn(Phi_pos_pos_FS, A, W, M, axes=axes)
+            X_pos_pos_FS = x_FS[_index_n(x_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])]
+            X_pos_pos = cztn(X_pos_pos_FS, A, W, M, axes=axes)
 
             # negative / positive
-            Phi_neg_pos_FS = Phi_FS[
-                _index_n(Phi_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])
-            ]
-            Phi_neg_pos = cztn(Phi_neg_pos_FS, A, W, M, axes=axes)
-            Phi_neg_pos *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
-            Phi_neg_pos *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
+            X_neg_pos_FS = x_FS[_index_n(x_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
+            X_neg_pos = cztn(X_neg_pos_FS, A, W, M, axes=axes)
+            X_neg_pos *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
+            X_neg_pos *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
-            Phi = 2 * Phi_pos_pos - Phi0_FS + 2 * Phi_neg_pos
+            X = 2 * X_pos_pos - X0_FS + 2 * X_neg_pos
 
         else:
-            raise NotImplementedError("[real_Phi] approach not available for D > 2.")
+            raise NotImplementedError("[real_x] approach not available for D > 2.")
 
-        return Phi.real
+        return X.real
 
     else:
 
         # apply CZT
-        Phi = cztn(Phi_FS, A, W, M, axes=axes)
+        X = cztn(x_FS, A, W, M, axes=axes)
 
         # modulate along each dimension
         for d in range(D):
             C = np.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
-            Phi *= C
+            X *= C
 
-        return Phi
+        return X

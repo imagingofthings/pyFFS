@@ -3,15 +3,15 @@ from pyffs import czt, cztn
 from pyffs.util import _verify_cztn_input
 
 
-def cztn_comp(Phi, A, W, M, axes=None):
-    axes, A, W = _verify_cztn_input(Phi, A, W, M, axes)
+def cztn_comp(x, A, W, M, axes=None):
+    axes, A, W = _verify_cztn_input(x, A, W, M, axes)
 
     # sequence of 1D FFS
-    Phi_czt = Phi.copy()
+    x_czt = x.copy()
     for d, ax in enumerate(axes):
-        Phi_czt = czt(Phi_czt, A[d], W[d], M[d], axis=ax)
+        x_czt = czt(x_czt, A[d], W[d], M[d], axis=ax)
 
-    return Phi_czt
+    return x_czt
 
 
 def test_czt_dft():
@@ -33,19 +33,19 @@ def test_czt_idft():
 def test_cztn():
     N = M = 10
     W = np.exp(-1j * 2 * np.pi / N)
-    Phi = np.random.randn(N, N, N) + 1j * np.random.randn(N, N, N)  # extra dimension
-    dft_Phi = np.fft.fftn(Phi, axes=(1, 2))
-    czt_Phi = cztn(Phi, A=[1, 1], W=[W, W], M=[M, M], axes=(1, 2))
-    assert np.allclose(dft_Phi, czt_Phi)
+    x = np.random.randn(N, N, N) + 1j * np.random.randn(N, N, N)  # extra dimension
+    dft_x = np.fft.fftn(x, axes=(1, 2))
+    czt_x = cztn(x, A=[1, 1], W=[W, W], M=[M, M], axes=(1, 2))
+    assert np.allclose(dft_x, czt_x)
 
 
 def test_cztn_comp():
     N = M = 10
     W = np.exp(-1j * 2 * np.pi / N)
-    Phi = np.random.randn(N, N) + 1j * np.random.randn(N, N)
-    dft_Phi = np.fft.fft2(Phi)
-    czt_Phi = cztn_comp(Phi, A=[1, 1], W=[W, W], M=[M, M])
-    assert np.allclose(dft_Phi, czt_Phi)
+    x = np.random.randn(N, N) + 1j * np.random.randn(N, N)
+    dft_x = np.fft.fft2(x)
+    czt_x = cztn_comp(x, A=[1, 1], W=[W, W], M=[M, M])
+    assert np.allclose(dft_x, czt_x)
 
 
 if __name__ == "__main__":
