@@ -2,7 +2,8 @@ import click
 import math
 import time
 import numpy as np
-import matplotlib.pyplot as plt
+
+import util
 from pyffs.func import dirichlet_fs
 from pyffs.interp import fs_interp
 
@@ -42,35 +43,11 @@ def profile_fs_interp(n_trials):
             print("{} version : {} seconds".format(_f, proc_time[N_FS][_f]))
 
     # plot results
-    markers = ["o", "^", "v", "x", ">", "<", "D", "+"]
-    plt.figure()
-    for i, _f in enumerate(real_x):
-        _proc_time = []
-        _proc_time_std = []
-        for N_FS in N_FS_vals:
-            _proc_time.append(proc_time[N_FS][_f])
-            _proc_time_std.append(proc_time_std[N_FS][_f])
-        _proc_time = np.array(_proc_time)
-        _proc_time_std = np.array(_proc_time_std)
-
-        plt.loglog(N_FS_vals, _proc_time, label=_f, marker=markers[i])
-        ax = plt.gca()
-        ax.fill_between(
-            N_FS_vals,
-            (_proc_time - n_std * _proc_time_std),
-            (_proc_time + n_std * _proc_time_std),
-            alpha=0.2,
-        )
-
-    plt.legend()
-    plt.title(f"{M} samples, {n_trials} trials")
-    plt.xlabel("Number of FS coefficients")
-    plt.ylabel("Processing time (s)")
-    plt.grid()
-    ax = plt.gca()
-    ax.set_xticks(N_FS_vals)
-    plt.tight_layout()
-    plt.savefig("fs_interp_1D_real_speedup.png")
+    fig, ax = util.comparison_plot(proc_time, proc_time_std, n_std)
+    ax.set_title(f"{M} samples, {n_trials} trials")
+    ax.set_xlabel("Number of FS coefficients")
+    fig.tight_layout()
+    fig.savefig("fs_interp_1D_real_speedup.png", dpi=300)
 
 
 if __name__ == "__main__":
