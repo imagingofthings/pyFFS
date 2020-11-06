@@ -1,13 +1,18 @@
 # #############################################################################
 # czt.py
-# ===========
+# ======
 # Author :
 # Sepand KASHANI [kashani.sepand@gmail.com]
 # Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
+"""
+Methods for computing the chirp Z-transform.
+"""
+
 import numpy as np
 from scipy import fftpack as fftpack
+
 from pyffs.util import _verify_cztn_input, _index_n
 
 
@@ -37,8 +42,8 @@ def czt(x, A, W, M, axis=-1):
 
     Notes
     -----
-    Due to numerical instability when using large `M`, this implementation only supports transforms
-    where `A` and `W` have unit norm.
+    Due to numerical instability when using large `M`, this implementation only
+    supports transforms where `A` and `W` have unit norm.
 
     Examples
     --------
@@ -80,8 +85,6 @@ def czt(x, A, W, M, axis=-1):
 def cztn(Phi, A, W, M, axes=None):
     """
     Multi-dimensional Chirp Z-transform.
-
-    Perform multi-dimensional CZT from signal samples, using the multi-dimensional FFT.
 
     Parameters
     ----------
@@ -128,7 +131,6 @@ def cztn(Phi, A, W, M, axes=None):
        >>> np.allclose(dft_Phi, czt_Phi)
        True
     """
-
     axes, A, W = _verify_cztn_input(Phi, A, W, M, axes)
 
     # Initialize variables

@@ -1,16 +1,19 @@
 # #############################################################################
 # interp.py
-# ===========
+# =========
 # Author :
 # Sepand KASHANI [kashani.sepand@gmail.com]
 # Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
+"""
+Methods for interpolating functions using Fourier Series.
+"""
 
 import numpy as np
 
-from pyffs.util import _index, _index_n, _verify_fs_interp_input
 from pyffs.czt import czt, cztn
+from pyffs.util import _index, _index_n, _verify_fs_interp_input
 
 
 def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
@@ -89,7 +92,7 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
        >>> diric_FS = np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N:N+1])
 
 
-    Being bandlimited, we can use :py:func:`~pyffs.fs_interp` to numerically evaluate
+    Being bandlimited, we can use :py:func:`~pyffs.interp.fs_interp` to numerically evaluate
     :math:`\phi(t)` on the interval :math:`\left[ T_{c} - \frac{T}{2}, T_{c} + \frac{T}{2} \right]`:
 
     .. doctest::
@@ -155,8 +158,10 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
     axes : tuple, optional
         Dimensions of `Phi_FS` along which the FS coefficients are stored.
     real_Phi : bool, optional
-        Whether time samples are real-valued, and to use a more efficient approach. Note that this
-        is only available for D < 3, and will raise an error otherwise.
+        If True, assume that `Phi_FS` is conjugate symmetric in each dimension
+        and use a more efficient algorithm. In this case, the FS coefficients
+        corresponding to negative frequencies are not used. Note that this
+        approach is only available for D < 3, and will raise an error otherwise.
 
     Returns
     -------
@@ -173,7 +178,6 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
     :py:func:`~pyffs.czt.cztn`
 
     """
-
     axes = _verify_fs_interp_input(Phi_FS, T, a, b, M, axes)
     D = len(axes)
 
@@ -192,7 +196,6 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
         E.append(np.arange(M[d]))
 
     if real_Phi:
-
         Phi0_FS = Phi_FS[_index_n(Phi_FS, axes, [slice(n, n + 1) for n in N])]
 
         if D == 1:
@@ -201,34 +204,24 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
             Phi = czt(Phi_pos_FS, A[0], W[0], M[0], axis=axes[0])
             Phi *= 2 * C
             Phi += Phi0_FS
-
         elif D == 2:
-
             # positive / positive
-            Phi_pos_pos_FS = Phi_FS[
-                _index_n(Phi_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])
-            ]
-            Phi_pos_pos = cztn(Phi_pos_pos_FS, A, W, M, axes=axes)
+            Phi_FS_pp = Phi_FS[_index_n(Phi_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])]
+            Phi_pp = cztn(Phi_FS_pp, A, W, M, axes=axes)
 
             # negative / positive
-            Phi_neg_pos_FS = Phi_FS[
-                _index_n(Phi_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])
-            ]
-            Phi_neg_pos = cztn(Phi_neg_pos_FS, A, W, M, axes=axes)
-            Phi_neg_pos *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
-            Phi_neg_pos *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
+            Phi_FS_np = Phi_FS[_index_n(Phi_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
+            Phi_np = cztn(Phi_FS_np, A, W, M, axes=axes)
+            Phi_np *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
+            Phi_np *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
-            Phi = 2 * Phi_pos_pos - Phi0_FS + 2 * Phi_neg_pos
-
+            Phi = 2 * Phi_pp - Phi0_FS + 2 * Phi_np
         else:
             raise NotImplementedError("[real_Phi] approach not available for D > 2.")
 
         return Phi.real
-
-    else:
-
-        # apply CZT
+    else:  # General complex case.
         Phi = cztn(Phi_FS, A, W, M, axes=axes)
 
         # modulate along each dimension
