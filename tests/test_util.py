@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.testing import assert_array_equal
+
 from pyffs import ffs_sample, ffsn_sample
 
 
@@ -16,7 +17,6 @@ def test_ffs_sample():
 
 
 def test_ffsn_sample():
-    """ same test as `test_ffs2_sample` """
     N_s = [4, 3]
     sample_points, idx = ffsn_sample(T=[1, 1], N_FS=[3, 3], T_c=[0, 0], N_s=N_s)
 
@@ -51,7 +51,6 @@ def test_ffsn_sample_shape():
 
 
 if __name__ == "__main__":
-
     test_ffs_sample()
     test_ffsn_sample()
     test_ffsn_sample_shape()

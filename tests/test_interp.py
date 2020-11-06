@@ -1,11 +1,12 @@
 import math
+
 import numpy as np
-from pyffs.interp import fs_interp, fs_interpn
+
 from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
+from pyffs.interp import fs_interp, fs_interpn
 
 
 def test_fs_interp():
-
     # parameters of signal
     T, T_c, N_FS = math.pi, math.e, 15
 
@@ -28,14 +29,10 @@ def test_fs_interp():
 
 
 def test_fs_interp2():
-
     # parameters of signal
-    T_x = np.pi
-    T_y = np.pi
-    N_FSx = 5
-    N_FSy = 5
-    T_cx = math.e
-    T_cy = math.e
+    T_x = T_y = np.pi
+    N_FSx = N_FSy = 5
+    T_cx = T_cy = math.e
 
     # And the kernel's FS coefficients.
     diric_FS = np.outer(dirichlet_fs(N_FSx, T_x, T_cx), dirichlet_fs(N_FSy, T_y, T_cy))
@@ -43,8 +40,7 @@ def test_fs_interp2():
     # Generate interpolated signal
     a_x, b_x = T_cx + (T_x / 2) * np.r_[-1, 1]
     a_y, b_y = T_cy + (T_y / 2) * np.r_[-1, 1]
-    M_x = 6
-    M_y = 6
+    M_x = M_y = 6
     diric_sig = fs_interpn(diric_FS, T=[T_x, T_y], a=[a_x, a_y], b=[b_x, b_y], M=[M_x, M_y])
 
     # Compare with theoretical result.
@@ -64,6 +60,5 @@ def test_fs_interp2():
 
 
 if __name__ == "__main__":
-
     test_fs_interp()
     test_fs_interp2()

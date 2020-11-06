@@ -1,11 +1,13 @@
-import numpy as np
 import math
+
+import numpy as np
+
 from pyffs import (
     ffs,
     ffs_sample,
-    iffs,
-    ffsn_sample,
     ffsn,
+    ffsn_sample,
+    iffs,
     iffsn,
 )
 from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
@@ -57,8 +59,7 @@ def test_ffsn_axes():
     T_x = T_y = 1
     T_cx = T_cy = 0
     N_FSx = N_FSy = 3
-    N_sx = 4
-    N_sy = 3
+    N_sx, N_sy = 4, 3
 
     # Sample the kernel.
     sample_points, _ = ffsn_sample(
@@ -69,7 +70,7 @@ def test_ffsn_axes():
     )
 
     # Add new dimension.
-    diric_samples = diric_samples[:, np.newaxis]
+    diric_samples = diric_samples[:, np.newaxis, :]
     axes = (0, 2)
 
     # Perform transform.
@@ -139,7 +140,6 @@ def test_ffsn():
 
 
 if __name__ == "__main__":
-
     test_ffs()
     test_ffsn()
     test_ffsn_axes()

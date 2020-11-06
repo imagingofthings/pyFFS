@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyffs import czt, cztn
 from pyffs.util import _verify_cztn_input
 
@@ -49,7 +50,6 @@ def test_cztn_comp():
 
 
 if __name__ == "__main__":
-
     test_czt_dft()
     test_czt_idft()
     test_cztn()
