@@ -18,7 +18,7 @@ def profile_fs_interp2(n_trials):
     # sweep over number of interpolation points
     a, b = T_c + (T / 2) * np.r_[-1, 1]
     n_std = 1.0
-    real_Phi = {"complex": False, "real": True}
+    real_x = {"complex": False, "real": True}
     N_FS_vals = [11, 31, 101, 301, 1001, 3001]  # N_FS^2 coefficients
     proc_time = dict()
     proc_time_std = dict()
@@ -31,11 +31,11 @@ def profile_fs_interp2(n_trials):
         diric_FS = np.outer(dirichlet_fs(N_FS, T, T_c), dirichlet_fs(N_FS, T, T_c))
 
         # Loop through functions
-        for _f in real_Phi:
+        for _f in real_x:
             timings = []
             for _ in range(n_trials):
                 start_time = time.time()
-                fs_interpn(diric_FS, T=[T, T], a=[a, a], b=[b, b], M=[M, M], real_Phi=real_Phi[_f])
+                fs_interpn(diric_FS, T=[T, T], a=[a, a], b=[b, b], M=[M, M], real_x=real_x[_f])
                 timings.append(time.time() - start_time)
             proc_time[N_FS][_f] = np.mean(timings)
             proc_time_std[N_FS][_f] = np.std(timings)

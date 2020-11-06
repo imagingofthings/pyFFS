@@ -133,10 +133,10 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     --------
     :py:func:`~pyffs.czt.czt`, :py:func:`~pyffs.interp.fs_interpn`
     """
-    return fs_interpn(Phi_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_Phi=real_x)
+    return fs_interpn(Phi_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_x=real_x)
 
 
-def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
+def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_x=False):
     r"""
     Interpolate D-dimensional bandlimited periodic signal.
 
@@ -154,7 +154,7 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
         Number of points to interpolate for each dimension.
     axes : tuple, optional
         Dimensions of `Phi_FS` along which the FS coefficients are stored.
-    real_Phi : bool, optional
+    real_x : bool, optional
         Whether time samples are real-valued, and to use a more efficient approach. Note that this
         is only available for D < 3, and will raise an error otherwise.
 
@@ -191,7 +191,7 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
         sh[d][axes[d]] = M[d]
         E.append(np.arange(M[d]))
 
-    if real_Phi:
+    if real_x:
 
         Phi0_FS = Phi_FS[_index_n(Phi_FS, axes, [slice(n, n + 1) for n in N])]
 
@@ -222,7 +222,7 @@ def fs_interpn(Phi_FS, T, a, b, M, axes=None, real_Phi=False):
             Phi = 2 * Phi_pos_pos - Phi0_FS + 2 * Phi_neg_pos
 
         else:
-            raise NotImplementedError("[real_Phi] approach not available for D > 2.")
+            raise NotImplementedError("[real_x] approach not available for D > 2.")
 
         return Phi.real
 
