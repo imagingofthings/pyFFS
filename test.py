@@ -17,7 +17,10 @@ import sys
 
 project_root_dir = pathlib.Path(__file__).parent.absolute()
 cmds = dict(
-    doctest=[f'sphinx-build -b doctest "{project_root_dir}/doc" "{project_root_dir}/build/doctest"']
+    doctest=[
+        f'sphinx-build -b doctest "{project_root_dir}/doc" "{project_root_dir}/build/doctest"'
+    ],
+    functest=[f'pytest "{project_root_dir}/tests"'],
 )
 
 parser = argparse.ArgumentParser(
