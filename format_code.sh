@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
 black pyffs/* -l 100
 black tests/* -l 100
 black profile/* -l 100

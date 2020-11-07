@@ -1,18 +1,23 @@
 # #############################################################################
 # func.py
-# ===========
+# =======
 # Authors :
 # Sepand KASHANI [kashani.sepand@gmail.com]
 # Eric Bezzam [ebezzam@gmail.com]
 # #############################################################################
+
+"""
+Methods for computing samples and Fourier Series coefficients of specific
+functions.
+"""
 
 import numpy as np
 
 
 def dirichlet(x, T, T_c, N_FS):
     r"""
-    Return samples of a shifted Dirichlet kernel of period :math:`T` and bandwidth
-    :math:`N_{FS} = 2 N + 1`:
+    Return samples of a shifted Dirichlet kernel of period :math:`T` and
+    bandwidth :math:`N_{FS} = 2 N + 1`:
 
     .. math::
 
@@ -39,9 +44,7 @@ def dirichlet(x, T, T_c, N_FS):
     See Also
     --------
     :py:func:`~pyffs.func.dirichlet_fs`
-
     """
-
     y = x - T_c
     n, d = np.zeros((2, len(x)))
     nan_mask = np.isclose(np.fmod(y, np.pi), 0)
@@ -55,8 +58,8 @@ def dirichlet(x, T, T_c, N_FS):
 
 def dirichlet_fs(N_FS, T, T_c):
     """
-    Return Fourier Series coefficients of a shifted Dirichlet kernel of period :math:`T` and
-    bandwidth :math:`N_{FS} = 2 N + 1`.
+    Return Fourier Series coefficients of a shifted Dirichlet kernel of period
+    :math:`T` and bandwidth :math:`N_{FS} = 2 N + 1`.
 
     Parameters
     ----------
@@ -75,7 +78,7 @@ def dirichlet_fs(N_FS, T, T_c):
     See Also
     --------
     :py:func:`~pyffs.func.dirichlet`
-
+        (N_FS,) Fourier Series coefficients.
     """
     N = (N_FS - 1) // 2
     return np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N : N + 1])
@@ -83,8 +86,8 @@ def dirichlet_fs(N_FS, T, T_c):
 
 def dirichlet_2D(sample_points, T, T_c, N_FS):
     r"""
-    Return samples of a shifted 2D Dirichlet kernel of period :math:`(T_x, T_y)` and bandwidth
-    :math:`N_{FS, x} = 2 N_x + 1, N_{FS, y} = 2 N_y + 1`:
+    Return samples of a shifted 2D Dirichlet kernel of period :math:`(T_x, T_y)`
+    and bandwidth :math:`N_{FS, x} = 2 N_x + 1, N_{FS, y} = 2 N_y + 1`:
 
     .. math::
 
@@ -98,9 +101,10 @@ def dirichlet_2D(sample_points, T, T_c, N_FS):
     Parameters
     ----------
     sample_points : list(:py:class:`~numpy.ndarray`)
-        (2,) coordinates at which to sample the function in the x- and y- dimensions respectively.
+        (2,) coordinates at which to sample the function in the x- and
+        y-dimensions respectively.
     T : list(float)
-        Function periods
+        Function period.
     T_c : list(float)
         Period mid-point.
     N_FS : list(int)
@@ -114,9 +118,7 @@ def dirichlet_2D(sample_points, T, T_c, N_FS):
     See Also
     --------
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.func.dirichlet_fs`
-
     """
-
     # compute along x and y, then combine
     x_vals = dirichlet(x=sample_points[0][:, 0], T=T[0], T_c=T_c[0], N_FS=N_FS[0])
     y_vals = dirichlet(x=sample_points[1][0, :], T=T[1], T_c=T_c[1], N_FS=N_FS[1])

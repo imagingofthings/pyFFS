@@ -131,9 +131,9 @@ arbitrarily chosen.
 Extension to multi-dimensional case
 -----------------------------------
 
-For a multi-dimensional signal, namely :math:`\phi: \mathbb{R}^D \to \mathbb{C}`, that is periodic
-with :math:`[T_1, T_2, \ldots, T_D]` and bandlimited with :math:`[N_{FS, 1}, N_{FS, 2}, \ldots,
-N_{FS, D}]`, we can obtain its Fourier Series coefficients by applying the above approach along each
+For a multi-dimensional signal :math:`\phi: \mathbb{R}^D \to \mathbb{C}` that is
+:math:`[T_1, T_2, \ldots, T_D]`-periodic and :math:`[N_{FS, 1}, N_{FS, 2}, \ldots,
+N_{FS, D}]`-bandlimited, we can obtain its Fourier Series coefficients by applying the above approach along each
 dimension.
 
 

@@ -7,6 +7,7 @@
 #####
 pyFFS
 #####
+
 *pyFFS* is a library to compute Fourier Series.
 
 

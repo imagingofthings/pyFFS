@@ -1,16 +1,19 @@
 # #############################################################################
 # interp.py
-# ===========
+# =========
 # Author :
 # Sepand KASHANI [kashani.sepand@gmail.com]
 # Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
+"""
+Methods for interpolating functions using Fourier Series.
+"""
 
 import numpy as np
 
-from pyffs.util import _index, _index_n, _verify_fs_interp_input
 from pyffs.czt import czt, cztn
+from pyffs.util import _index, _index_n, _verify_fs_interp_input
 
 
 def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
@@ -89,7 +92,7 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
        >>> diric_FS = np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N:N+1])
 
 
-    Being bandlimited, we can use :py:func:`~pyffs.fs_interp` to numerically evaluate
+    Being bandlimited, we can use :py:func:`~pyffs.interp.fs_interp` to numerically evaluate
     :math:`\phi(t)` on the interval :math:`\left[ T_{c} - \frac{T}{2}, T_{c} + \frac{T}{2} \right]`:
 
     .. doctest::
@@ -155,8 +158,10 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
     axes : tuple, optional
         Dimensions of `x_FS` along which the FS coefficients are stored.
     real_x : bool, optional
-        Whether time samples are real-valued, and to use a more efficient approach. Note that this
-        is only available for D < 3, and will raise an error otherwise.
+        If True, assume that `x_FS` is conjugate symmetric in each dimension
+        and use a more efficient algorithm. In this case, the FS coefficients
+        corresponding to negative frequencies are not used. Note that this
+        approach is only available for D < 3, and will raise an error otherwise.
 
     Returns
     -------
@@ -173,7 +178,6 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
     :py:func:`~pyffs.czt.cztn`
 
     """
-
     axes = _verify_fs_interp_input(x_FS, T, a, b, M, axes)
     D = len(axes)
 
@@ -192,44 +196,38 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
         E.append(np.arange(M[d]))
 
     if real_x:
-
-        X0_FS = x_FS[_index_n(x_FS, axes, [slice(n, n + 1) for n in N])]
+        x0_FS = x_FS[_index_n(x_FS, axes, [slice(n, n + 1) for n in N])]
 
         if D == 1:
-            X_pos_FS = x_FS[_index(x_FS, axes[0], slice(N[0] + 1, N_FS[0]))]
+            x_FS_p = x_FS[_index(x_FS, axes[0], slice(N[0] + 1, N_FS[0]))]
             C = np.reshape(W[0] ** E[0], sh[0]) / A[0]
-            X = czt(X_pos_FS, A[0], W[0], M[0], axis=axes[0])
-            X *= 2 * C
-            X += X0_FS
 
+            x = czt(x_FS_p, A[0], W[0], M[0], axis=axes[0])
+            x *= 2 * C
+            x += x0_FS
         elif D == 2:
-
             # positive / positive
-            X_pos_pos_FS = x_FS[_index_n(x_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])]
-            X_pos_pos = cztn(X_pos_pos_FS, A, W, M, axes=axes)
+            x_FS_pp = x_FS[_index_n(x_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])]
+            x_pp = cztn(x_FS_pp, A, W, M, axes=axes)
 
             # negative / positive
-            X_neg_pos_FS = x_FS[_index_n(x_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
-            X_neg_pos = cztn(X_neg_pos_FS, A, W, M, axes=axes)
-            X_neg_pos *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
-            X_neg_pos *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
+            x_FS_np = x_FS[_index_n(x_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
+            x_np = cztn(x_FS_np, A, W, M, axes=axes)
+            x_np *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
+            x_np *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
-            X = 2 * X_pos_pos - X0_FS + 2 * X_neg_pos
-
+            x = 2 * x_pp - x0_FS + 2 * x_np
         else:
             raise NotImplementedError("[real_x] approach not available for D > 2.")
 
-        return X.real
-
-    else:
-
-        # apply CZT
-        X = cztn(x_FS, A, W, M, axes=axes)
+        return x.real
+    else:  # General complex case.
+        x = cztn(x_FS, A, W, M, axes=axes)
 
         # modulate along each dimension
         for d in range(D):
             C = np.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
-            X *= C
+            x *= C
 
-        return X
+        return x

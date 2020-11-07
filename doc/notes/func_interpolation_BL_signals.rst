@@ -122,9 +122,9 @@ Real-valued Functions
 Multi-dimensional Functions
 ---------------------------
 
-For a multi-dimensional signal, namely :math:`\phi: \mathbb{R}^D \to \mathbb{C}`, that is periodic
-with :math:`[T_1, T_2, \ldots, T_D]` and bandlimited with :math:`[N_{FS, 1}, N_{FS, 2}, \ldots,
-N_{FS, D}]`, we can also obtain arbitrary values of :math:`\phi` on a uniform grid in a similarly
+For a multi-dimensional signal :math:`\phi: \mathbb{R}^D \to \mathbb{C}` that is
+:math:`[T_1, T_2, \ldots, T_D]`-periodic and :math:`[N_{FS, 1}, N_{FS, 2}, \ldots,
+N_{FS, D}]`-bandlimited, we can also obtain arbitrary values of :math:`\phi` on a uniform grid in a similarly
 efficient manner. To do so, we need to perform a multi-dimensional :math:`\text{CZT}` and then
 modulate along each dimension as done in the complex-valued theorem above.
 

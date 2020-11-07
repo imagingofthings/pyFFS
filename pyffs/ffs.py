@@ -1,10 +1,14 @@
 # #############################################################################
 # ffs.py
-# ===========
+# ======
 # Authors :
 # Sepand KASHANI [kashani.sepand@gmail.com]
 # Eric Bezzam [ebezzam@gmail.com]
 # #############################################################################
+
+"""
+Methods for computing Fast Fourier Series.
+"""
 
 import numpy as np
 from scipy import fftpack as fftpack
@@ -136,8 +140,7 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
 
 def ffsn(x, T, T_c, N_FS, axes=None):
     r"""
-    Fourier Series coefficients from signal samples of a D-dimension signal by performing a
-    D-dimensional FFT.
+    Fourier Series coefficients from signal samples of a D-dimension signal.
 
     Parameters
     ----------
@@ -147,22 +150,22 @@ def ffsn(x, T, T_c, N_FS, axes=None):
     T : list(float)
         Function period along each dimension.
     T_c : list(float)
-        Function bandwidth along each dimension.
-    N_FS : list(int)
         Period mid-point for each dimension.
+    N_FS : list(int)
+        Function bandwidth along each dimension.
     axes : tuple
         Dimensions of `x` along which function samples are stored.
 
     Returns
     -------
     x_FS : :py:class:`~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) array containing Fourier Series coefficients in ascending
-        order (top-left of matrix).
+        (..., N_s1, N_s2, ..., N_sD, ...) array containing Fourier Series
+        coefficients in ascending order (top-left of matrix).
 
     Examples
     --------
-    Let :math:`\phi(x, y)` be a shifted Dirichlet kernel of periods :math:`(T_x, T_y)` and
-    bandwidths :math:`N_{FS, x} = 2 N_x + 1, N_{FS, y} = 2 N_y + 1`:
+    Let :math:`\phi(x, y)` be a shifted Dirichlet kernel of periods :math:`(T_x,
+    T_y)` and bandwidths :math:`N_{FS, x} = 2 N_x + 1, N_{FS, y} = 2 N_y + 1`:
 
     .. math::
 
@@ -173,8 +176,8 @@ def ffsn(x, T, T_c, N_FS, axes=None):
                [x - T_{c, x}] / T_x \right)} \frac{\sin\left( N_{FS, y} \pi [y - T_{c,y}] / T_y
                \right)}{\sin\left( \pi [y - T_{c, y}] / T_y \right)}.
 
-    Its Fourier Series (FS) coefficients :math:`\phi_{k_x, k_y}^{FS}` can be analytically evaluated
-    using the shift-modulation theorem:
+    Its Fourier Series (FS) coefficients :math:`\phi_{k_x, k_y}^{FS}` can be
+    analytically evaluated using the shift-modulation theorem:
 
     .. math::
 
@@ -185,8 +188,9 @@ def ffsn(x, T, T_c, N_FS, axes=None):
            0 & \text{otherwise}.
        \end{cases}
 
-    Being bandlimited, we can use :py:func:`~pyffs.ffs.ffsn` to numerically evaluate
-    :math:`\{\phi_{k_x, k_y}^{FS}, k_x = -N_x, \ldots, N_x, k_y = -N_y, \ldots, N_y\}`:
+    Being bandlimited, we can use :py:func:`~pyffs.ffs.ffsn` to numerically
+    evaluate :math:`\{\phi_{k_x, k_y}^{FS}, k_x = -N_x, \ldots, N_x, k_y = -N_y,
+    \ldots, N_y\}`:
 
     .. testsetup::
 
@@ -224,7 +228,6 @@ def ffsn(x, T, T_c, N_FS, axes=None):
     --------
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.iffsn`
     """
-
     axes, N_s = _verify_ffsn_input(x, T, T_c, N_FS, axes)
 
     # check for input type
@@ -235,7 +238,7 @@ def ffsn(x, T, T_c, N_FS, axes=None):
         is_complex64 = False
         x_FS = x.copy().astype(np.complex128)
 
-    # apply modulation before FFT
+    # apply pre-FFT modulation
     A = []
     for d, N_sd in enumerate(N_s):
         A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
@@ -247,10 +250,10 @@ def ffsn(x, T, T_c, N_FS, axes=None):
             C_2 = C_2.astype(np.complex64)
         x_FS *= C_2
 
-    # apply FFT
+    # apply post-FFT modulation
     x_FS = fftpack.fftn(x_FS, axes=axes)
 
-    # apply modulate after FFT
+    # apply modulation after FFT
     for d, ax in enumerate(axes):
         sh = [1] * x.ndim
         sh[ax] = N_s[d]
@@ -262,11 +265,9 @@ def ffsn(x, T, T_c, N_FS, axes=None):
 
 def iffsn(x_FS, T, T_c, N_FS, axes=None):
     r"""
-    Signal samples from Fourier Series coefficients of a D-dimension signal by performing a
-    D-dimensional iFFT.
+    Signal samples from Fourier Series coefficients of a D-dimension signal.
 
-    :py:func:`~pyffs.ffs.iffsn` is basically the inverse of :py:func:`~pyffs.ffs.ffsn` (and
-    :py:func:`~pyffs.ffs.ffsn_comp`).
+    :py:func:`~pyffs.ffs.iffsn` is basically the inverse of :py:func:`~pyffs.ffs.ffsn`.
 
     Parameters
     ----------
@@ -275,17 +276,17 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
     T : list(float)
         Function period along each dimension.
     T_c : list(float)
-        Function bandwidth along each dimension.
-    N_FS : list(int)
         Period mid-point for each dimension.
+    N_FS : list(int)
+        Function bandwidth along each dimension.
     axes : tuple
         Dimensions of `x_FS` along which FS coefficients are stored.
 
     Returns
     -------
     x : :py:class:`~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) matrices containing original function samples given to
-        :py:func:`~pyffs.ffs.ffsn`.
+        (..., N_s1, N_s2, ..., N_sD, ...) array containing original function
+        samples given to :py:func:`~pyffs.ffs.ffsn`.
 
         In short: :math:`(\text{iFFS} \circ \text{FFS})\{ x \} = x`.
 
@@ -297,7 +298,6 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
     --------
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.ffs.ffsn`
     """
-
     axes, N_s = _verify_ffsn_input(x_FS, T, T_c, N_FS, axes)
 
     # check for input type
@@ -308,7 +308,7 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
         is_complex64 = False
         x = x_FS.copy().astype(np.complex128)
 
-    # apply modulation before iFFT
+    # apply pre-iFFT modulation
     B = []
     for d, N_sd in enumerate(N_s):
         A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
@@ -323,7 +323,7 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
     # apply FFT
     x = fftpack.ifftn(x, axes=axes)
 
-    # apply modulate after iFFT
+    # apply post-iFFT modulation
     for d, ax in enumerate(axes):
         sh = [1] * x.ndim
         sh[ax] = N_s[d]
