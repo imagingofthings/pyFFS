@@ -44,7 +44,7 @@ def profile_ffsn(n_trials):
             timings = []
             for _ in range(n_trials):
                 start_time = time.time()
-                func[_f](Phi=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
+                func[_f](x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
                 timings.append(time.time() - start_time)
             proc_time[_N_FS][_f] = np.mean(timings)
             proc_time_std[_N_FS][_f] = np.std(timings)
