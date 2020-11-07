@@ -1,3 +1,4 @@
+import pathlib
 import time
 
 import click
@@ -7,7 +8,6 @@ from scipy.fftpack import next_fast_len
 
 import util
 from pyffs import ffsn_sample, ffsn
-from tests.test_ffs import ffsn_comp
 from pyffs.func import dirichlet_2D
 from test.test_ffs import ffsn_comp
 
@@ -59,7 +59,9 @@ def profile_ffsn(n_trials):
     util.comparison_plot(proc_time, proc_time_std, n_std, ax)
     ax.set_xlabel("Number of FS coefficients")
     fig.tight_layout()
-    fig.savefig("ffsn_comparison.png", dpi=300)
+
+    fname = pathlib.Path(__file__).resolve().parent / "ffsn_comparison.png"
+    fig.savefig(fname, dpi=300)
 
 
 if __name__ == "__main__":
