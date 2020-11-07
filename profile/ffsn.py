@@ -7,9 +7,8 @@ import numpy as np
 from scipy.fftpack import next_fast_len
 
 import util
-from pyffs import ffsn_sample, ffsn
+from pyffs import ffsn_sample, ffsn, _ffsn
 from pyffs.func import dirichlet_2D
-from test.test_ffs import ffsn_comp
 
 
 @click.command()
@@ -23,7 +22,7 @@ def profile_ffsn(n_trials):
 
     n_std = 1
 
-    func = {"ffsn_fftn": ffsn, "ffsn_comp": ffsn_comp}
+    func = {"ffsn_fftn": ffsn, "ffsn_ref": _ffsn}
 
     proc_time = dict()
     proc_time_std = dict()
