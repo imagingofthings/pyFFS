@@ -38,4 +38,4 @@ defined above, with :math:`L \ge N + M - 1` optimally chosen.
 :py:func:`~pyffs.czt.cztn` can be used to compute :math:`\text{CZT}_{N_1, N_2,
 \ldots, N_D}^{M_1, M_2, \ldots, M_D}`, with :math:`L_d \ge N_d + M_d - 1` optimally chosen for
 :math:`d = 1, 2, \ldots, D`. In our implementation, we opt for a more efficient approach than
-applying the 1D CZT along each dimension.
+applying the 1D :math:`\text{CZT}` along each dimension.
