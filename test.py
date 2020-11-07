@@ -20,7 +20,7 @@ cmds = dict(
     doctest=[
         f'sphinx-build -b doctest "{project_root_dir}/doc" "{project_root_dir}/build/doctest"'
     ],
-    functest=[f'pytest "{project_root_dir}/tests"'],
+    functest=[f'pytest "{project_root_dir}/test"'],
 )
 
 parser = argparse.ArgumentParser(
