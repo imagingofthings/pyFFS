@@ -416,9 +416,8 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`, :py:func:`~pyffs.ffs.ffsn`,
-    :py:func:`~pyffs.ffs.iffsn`
-
+    :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`,
+    :py:func:`~pyffs.ffs.ffsn`, :py:func:`~pyffs.ffs.iffsn`
     """
     M, N = np.r_[N_s, N_FS] // 2
     E_1 = np.r_[-N : (N + 1), np.zeros((N_s - N_FS,), dtype=int)]
