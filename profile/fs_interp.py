@@ -1,10 +1,11 @@
-import click
 import math
 import time
+
+import click
+import matplotlib.pyplot as plt
 import numpy as np
 
 import util
-import matplotlib.pyplot as plt
 from pyffs.func import dirichlet_fs
 from pyffs.interp import fs_interp
 
