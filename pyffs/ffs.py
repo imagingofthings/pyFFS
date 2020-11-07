@@ -10,6 +10,8 @@
 Methods for computing Fast Fourier Series.
 """
 
+__all__ = ["ffs", "ffsn", "iffs", "iffsn", "_ffsn", "_iffsn"]
+
 import numpy as np
 from scipy import fftpack as fftpack
 
@@ -329,5 +331,53 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
         sh[ax] = N_s[d]
         C_2 = B[d].reshape(sh)
         x *= C_2 * N_s[d]
+
+    return x
+
+
+def _ffsn(x, T, T_c, N_FS, axes=None):
+    """
+    [Slow] Fourier Series coefficients from signal samples of a D-dimension signal.
+
+    For testing purposes only.
+
+    Parameters
+    ----------
+    See :py:func:`~pyffs.ffs.ffsn`
+
+    Returns
+    -------
+    See :py:func:`~pyffs.ffs.ffsn`
+    """
+    axes, _ = _verify_ffsn_input(x, T, T_c, N_FS, axes)
+
+    # sequence of 1D FFS
+    x_FS = x.copy()
+    for d, ax in enumerate(axes):
+        x_FS = ffs(x_FS, T[d], T_c[d], N_FS[d], axis=ax)
+
+    return x_FS
+
+
+def _iffsn(x_FS, T, T_c, N_FS, axes=None):
+    """
+    [Slow] Signal samples from Fourier Series coefficients of a D-dimension signal.
+
+    For testing purposes only.
+
+    Parameters
+    ----------
+    See :py:func:`~pyffs.ffs.iffsn`
+
+    Returns
+    -------
+    See :py:func:`~pyffs.ffs.iffsn`
+    """
+    axes, _ = _verify_ffsn_input(x_FS, T, T_c, N_FS, axes)
+
+    # sequence of 1D iFFS
+    x = x_FS.copy()
+    for d, ax in enumerate(axes):
+        x = iffs(x, T[d], T_c[d], N_FS[d], axis=ax)
 
     return x

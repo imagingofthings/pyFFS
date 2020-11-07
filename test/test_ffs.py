@@ -18,31 +18,11 @@ from pyffs import (
     ffsn_sample,
     iffs,
     iffsn,
+    _ffsn,
+    _iffsn,
 )
 from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
 from pyffs.util import _verify_ffsn_input
-
-
-def ffsn_comp(x, T, T_c, N_FS, axes=None):
-    axes, _ = _verify_ffsn_input(x, T, T_c, N_FS, axes)
-
-    # sequence of 1D FFS
-    x_FS = x.copy()
-    for d, ax in enumerate(axes):
-        x_FS = ffs(x_FS, T[d], T_c[d], N_FS[d], axis=ax)
-
-    return x_FS
-
-
-def iffsn_comp(x_FS, T, T_c, N_FS, axes=None):
-    axes, _ = _verify_ffsn_input(x_FS, T, T_c, N_FS, axes)
-
-    # sequence of 1D iFFS
-    x = x_FS.copy()
-    for d, ax in enumerate(axes):
-        x = iffs(x, T[d], T_c[d], N_FS[d], axis=ax)
-
-    return x
 
 
 class TestFFS:
@@ -103,7 +83,7 @@ class TestFFS:
         # Compare with original samples.
         assert np.allclose(diric_samples, diric_samples_recov)
 
-    def test_ffsn_comp(self):
+    def test_ffsn_ref(self):
         T = [1, 1]
         T_c = [0, 0]
         N_FS = [3, 3]
@@ -112,7 +92,7 @@ class TestFFS:
         # Sample the kernel and do the transform.
         sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
         diric_samples = dirichlet_2D(sample_points=sample_points, T=T, T_c=T_c, N_FS=N_FS)
-        diric_FS = ffsn_comp(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
+        diric_FS = _ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
 
         # Compare with theoretical result.
         diric_FS_exact = np.outer(
@@ -121,7 +101,7 @@ class TestFFS:
         assert np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
 
         # Inverse transform.
-        diric_samples_recov = iffsn_comp(x_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
+        diric_samples_recov = _iffsn(x_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
 
         # Compare with original samples.
         assert np.allclose(diric_samples, diric_samples_recov)

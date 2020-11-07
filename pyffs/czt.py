@@ -10,6 +10,8 @@
 Methods for computing the chirp Z-transform.
 """
 
+__all__ = ["czt", "cztn", "_cztn"]
+
 import numpy as np
 from scipy import fftpack as fftpack
 
@@ -189,4 +191,28 @@ def cztn(x, A, W, M, axes=None):
         g[time_idx] *= g_mod.reshape(sh_M)
 
     x_czt = g[time_idx]
+    return x_czt
+
+
+def _cztn(x, A, W, M, axes=None):
+    """
+    [Slow] Multi-dimensional Chirp Z-transform based on 1D composition.
+
+    For testing purposes only.
+
+    Parameters
+    ----------
+    See :py:func:`~pyffs.czt.cztn`
+
+    Returns
+    -------
+    See :py:func:`~pyffs.czt.cztn`
+    """
+    axes, A, W = _verify_cztn_input(x, A, W, M, axes)
+
+    # sequence of 1D CZT
+    x_czt = x.copy()
+    for d, ax in enumerate(axes):
+        x_czt = czt(x_czt, A[d], W[d], M[d], axis=ax)
+
     return x_czt
