@@ -9,19 +9,8 @@
 import numpy as np
 import pytest
 
-from pyffs import czt, cztn
+from pyffs import czt, cztn, _cztn
 from pyffs.util import _verify_cztn_input
-
-
-def cztn_comp(x, A, W, M, axes=None):
-    axes, A, W = _verify_cztn_input(x, A, W, M, axes)
-
-    # sequence of 1D FFS
-    x_czt = x.copy()
-    for d, ax in enumerate(axes):
-        x_czt = czt(x_czt, A[d], W[d], M[d], axis=ax)
-
-    return x_czt
 
 
 class TestCZT:
@@ -51,10 +40,10 @@ class TestCZT:
         czt_x = cztn(x, A=[1, 1], W=[W, W], M=[M, M], axes=(1, 2))
         assert np.allclose(dft_x, czt_x)
 
-    def test_cztn_comp(self):
+    def test_cztn_ref(self):
         N = M = 10
         W = np.exp(-1j * 2 * np.pi / N)
         x = np.random.randn(N, N) + 1j * np.random.randn(N, N)
         dft_x = np.fft.fft2(x)
-        czt_x = cztn_comp(x, A=[1, 1], W=[W, W], M=[M, M])
+        czt_x = _cztn(x, A=[1, 1], W=[W, W], M=[M, M])
         assert np.allclose(dft_x, czt_x)
