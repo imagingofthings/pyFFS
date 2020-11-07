@@ -1,4 +1,5 @@
 import math
+import pathlib
 import time
 
 import click
@@ -50,7 +51,9 @@ def profile_fs_interp2(n_trials):
     ax.set_title(f"{M} samples per dimension, {n_trials} trials")
     ax.set_xlabel("Number of FS coefficients per dimension")
     fig.tight_layout()
-    fig.savefig("fs_interp_2D_real_speedup.png", dpi=300)
+
+    fname = pathlib.Path(__file__).resolve().parent / "fs_interp_2D_real_speedup.png"
+    fig.savefig(fname, dpi=300)
 
 
 if __name__ == "__main__":
