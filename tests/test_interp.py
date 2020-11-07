@@ -67,6 +67,6 @@ class TestInterp:
 
         # Try real version
         diric_sig_real = fs_interpn(
-            diric_FS, T=[T_x, T_y], a=[a_x, a_y], b=[b_x, b_y], M=[M_x, M_y], real_Phi=True
+            diric_FS, T=[T_x, T_y], a=[a_x, a_y], b=[b_x, b_y], M=[M_x, M_y], real_x=True
         )
         assert np.allclose(diric_sig, diric_sig_real)

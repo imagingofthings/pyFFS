@@ -23,26 +23,26 @@ from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
 from pyffs.util import _verify_ffsn_input
 
 
-def ffsn_comp(Phi, T, T_c, N_FS, axes=None):
-    axes, _ = _verify_ffsn_input(Phi, T, T_c, N_FS, axes)
+def ffsn_comp(x, T, T_c, N_FS, axes=None):
+    axes, _ = _verify_ffsn_input(x, T, T_c, N_FS, axes)
 
     # sequence of 1D FFS
-    Phi_FS = Phi.copy()
+    x_FS = x.copy()
     for d, ax in enumerate(axes):
-        Phi_FS = ffs(Phi_FS, T[d], T_c[d], N_FS[d], axis=ax)
+        x_FS = ffs(x_FS, T[d], T_c[d], N_FS[d], axis=ax)
 
-    return Phi_FS
+    return x_FS
 
 
-def iffsn_comp(Phi_FS, T, T_c, N_FS, axes=None):
-    axes, _ = _verify_ffsn_input(Phi_FS, T, T_c, N_FS, axes)
+def iffsn_comp(x_FS, T, T_c, N_FS, axes=None):
+    axes, _ = _verify_ffsn_input(x_FS, T, T_c, N_FS, axes)
 
     # sequence of 1D iFFS
-    Phi = Phi_FS.copy()
+    x = x_FS.copy()
     for d, ax in enumerate(axes):
-        Phi = iffs(Phi, T[d], T_c[d], N_FS[d], axis=ax)
+        x = iffs(x, T[d], T_c[d], N_FS[d], axis=ax)
 
-    return Phi
+    return x
 
 
 class TestFFS:
@@ -88,7 +88,7 @@ class TestFFS:
 
         # Perform transform.
         diric_FS = ffsn(
-            Phi=diric_samples, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy], axes=axes
+            x=diric_samples, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy], axes=axes
         )
 
         # Compare with theoretical result.
@@ -97,7 +97,7 @@ class TestFFS:
 
         # Inverse transform.
         diric_samples_recov = iffsn(
-            Phi_FS=diric_FS, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy], axes=axes
+            x_FS=diric_FS, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy], axes=axes
         )
 
         # Compare with original samples.
@@ -112,7 +112,7 @@ class TestFFS:
         # Sample the kernel and do the transform.
         sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
         diric_samples = dirichlet_2D(sample_points=sample_points, T=T, T_c=T_c, N_FS=N_FS)
-        diric_FS = ffsn_comp(Phi=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
+        diric_FS = ffsn_comp(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
 
         # Compare with theoretical result.
         diric_FS_exact = np.outer(
@@ -121,7 +121,7 @@ class TestFFS:
         assert np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
 
         # Inverse transform.
-        diric_samples_recov = iffsn_comp(Phi_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
+        diric_samples_recov = iffsn_comp(x_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
 
         # Compare with original samples.
         assert np.allclose(diric_samples, diric_samples_recov)
@@ -135,7 +135,7 @@ class TestFFS:
         # Sample the kernel and do the transform.
         sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
         diric_samples = dirichlet_2D(sample_points=sample_points, T=T, T_c=T_c, N_FS=N_FS)
-        diric_FS = ffsn(Phi=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
+        diric_FS = ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
 
         # Compare with theoretical result.
         diric_FS_exact = np.outer(
@@ -144,7 +144,7 @@ class TestFFS:
         assert np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
 
         # Inverse transform.
-        diric_samples_recov = iffsn(Phi_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
+        diric_samples_recov = iffsn(x_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
 
         # Compare with original samples.
         assert np.allclose(diric_samples, diric_samples_recov)
