@@ -17,7 +17,7 @@ pyFFS documentation
    :hidden:
 
    general/index
-   notes/index
+   theory/index
    api/index
 
 
