@@ -1,12 +1,15 @@
 import time
+
+import click
+import matplotlib.pyplot as plt
 import numpy as np
+from scipy.fftpack import next_fast_len
+
+import util
 from pyffs import ffsn_sample, ffsn
 from tests.test_ffs import ffsn_comp
 from pyffs.func import dirichlet_2D
-import util
-import matplotlib.pyplot as plt
-import click
-from scipy.fftpack import next_fast_len
+from test.test_ffs import ffsn_comp
 
 
 @click.command()
