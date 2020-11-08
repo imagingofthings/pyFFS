@@ -10,29 +10,24 @@ Installation
 
 ::
 
-    $ cd <pyFFS_dir>/
-    $ pip install .
+    $ pip install pyFFS
 
 
-Documentation / Tests
----------------------
+Developer Install
+-----------------
 
 ::
 
-    $ conda install sphinx=='2.1.*'            \
-                    sphinx_rtd_theme=='0.4.*'
-    $ python3 test.py                # Run test suite (optional, recommended)
-    $ python3 setup.py build_sphinx  # Generate documentation (optional)
+    $ git clone https://github.com/imagingofthings/pyFFS.git
+    $ cd pyFFS/
+    $ # git checkout <commit>
+
+    $ pip install --user -e .[dev]
+    $ python3 test.py                # Run test suite
+    $ python3 setup.py build_sphinx  # Generate documentation
 
 
 Remarks
 -------
 
-* pyFFS is developed and tested on x86_64 systems running Linux.
-
-* It is recommended to install dependencies using `Miniconda <https://conda.io/miniconda.html>`_ or
-  `Anaconda <https://www.anaconda.com/download/#linux>`_::
-
-    $ conda install --channel=defaults    \
-                    --channel=conda-forge \
-                    --file=requirements.txt
+pyFFS is developed and tested on x86_64 systems running Linux.
