@@ -16,8 +16,8 @@ API Reference
 
    .. autosummary::
 
-      czt.czt
-      czt.cztn
+      ~czt.czt
+      ~czt.cztn
 
 
    FFS Functions
@@ -25,12 +25,12 @@ API Reference
 
    .. autosummary::
 
-      ffs.ffs
-      ffs.ffsn
-      ffs.iffs
-      ffs.iffsn
-      util.ffs_sample
-      util.ffsn_sample
+      ~ffs.ffs
+      ~ffs.ffsn
+      ~ffs.iffs
+      ~ffs.iffsn
+      ~util.ffs_sample
+      ~util.ffsn_sample
 
 
    Interpolation Functions
@@ -38,8 +38,8 @@ API Reference
 
    .. autosummary::
 
-      interp.fs_interp
-      interp.fs_interpn
+      ~interp.fs_interp
+      ~interp.fs_interpn
 
 
 
