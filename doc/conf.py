@@ -25,32 +25,11 @@ def setup_config() -> configparser.ConfigParser:
     return cfg
 
 
-def pkg_info() -> Mapping:
-    """
-    Load information contained in `PKG-INFO`.
-    """
-    sphinx_src_dir = pathlib.Path(__file__).parent
-    info_path = sphinx_src_dir / ".." / "pyFFS.egg-info" / "PKG-INFO"
-    info_path = info_path.resolve(strict=True)
-
-    # Pattern definitions
-    pat_version = r"Version: (.+)$"
-
-    with info_path.open(mode="r") as f:
-        info = dict(version=None)
-        for line in f:
-            m = re.match(pat_version, line)
-            if m is not None:
-                info["version"] = m.group(1)
-    return info
-
-
 # -- Project information -----------------------------------------------------
-cfg, info = setup_config(), pkg_info()
+cfg = setup_config()
 project = cfg.get("metadata", "name")
 copyright = f"{datetime.date.today().year}, Imaging of Things Group (ImoT)"
 author = cfg.get("metadata", "author")
-version = release = info["version"]
 
 # -- General configuration ---------------------------------------------------
 extensions = [
