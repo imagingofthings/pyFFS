@@ -9,7 +9,6 @@
 import math
 
 import numpy as np
-import pytest
 
 from pyffs import (
     ffs,
@@ -22,7 +21,6 @@ from pyffs import (
     _iffsn,
 )
 from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
-from pyffs.util import _verify_ffsn_input
 
 
 class TestFFS:
