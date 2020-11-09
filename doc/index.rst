@@ -46,7 +46,6 @@ pyFFS is developed and tested on x86_64 systems running Linux and macOS Catalina
    :caption: Contents
    :hidden:
 
-   general/index
    theory/index
    api/index
 
