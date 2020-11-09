@@ -11,7 +11,7 @@
 pyFFS documentation
 ###################
 
-*pyFFS* is a library to compute Fourier Series.
+*pyFFS* is a collection of efficient algorithms to compute Fourier Series and related transforms.
 
 
 Installation
