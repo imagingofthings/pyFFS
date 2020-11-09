@@ -30,4 +30,4 @@ Developer Install
 Remarks
 -------
 
-pyFFS is developed and tested on x86_64 systems running Linux.
+pyFFS is developed and tested on x86_64 systems running Linux and macOS Catalina.
