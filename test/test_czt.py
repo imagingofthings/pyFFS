@@ -7,10 +7,7 @@
 # #############################################################################
 
 import numpy as np
-import pytest
-
 from pyffs import czt, cztn, _cztn
-from pyffs.util import _verify_cztn_input
 
 
 class TestCZT:
