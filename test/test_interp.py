@@ -9,7 +9,6 @@
 import math
 
 import numpy as np
-import pytest
 
 from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
 from pyffs.interp import fs_interp, fs_interpn
