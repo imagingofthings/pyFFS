@@ -294,7 +294,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
        >>> np.around(sample_points, 2)  # Notice points are not sorted.
        array([3.2 , 3.33, 3.45, 3.58, 2.7 , 2.83, 2.95, 3.08])
        >>> idx
-       array([ 0,  1,  2,  3, -4, -3, -2, -1])
+       array([4, 5, 6, 7, 0, 1, 2, 3])
 
 
     See Also
@@ -319,7 +319,7 @@ def ffs_sample(T, N_FS, T_c, N_s):
         idx = np.r_[0:M, -M:0]
         sample_points = T_c + (T / N_s) * (0.5 + idx)
 
-    return sample_points, idx
+    return sample_points, idx + M
 
 
 def ffsn_sample(T, N_FS, T_c, N_s):
@@ -366,8 +366,8 @@ def ffsn_sample(T, N_FS, T_c, N_s):
        >>> sample_points, idx = ffsn_sample(T=[1, 1], N_FS=[3, 3], T_c=[0, 0], N_s=[4, 3])
        >>> assert_array_equal(sample_points[0][:, 0], np.array([0.125, 0.375, -0.375, -0.125]))
        >>> assert_array_equal(sample_points[1][0, :], np.array([0, 1 / 3, -1 / 3]))
-       >>> assert_array_equal(idx[0][:, 0], np.array([0, 1, -2, -1]))
-       >>> assert_array_equal(idx[1][0, :], np.array([0, 1, -1]))
+       >>> assert_array_equal(idx[0][:, 0], np.array([2, 3, 0, 1]))
+       >>> assert_array_equal(idx[1][0, :], np.array([1, 2, 0]))
 
     See Also
     --------

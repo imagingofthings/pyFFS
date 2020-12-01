@@ -11,7 +11,7 @@ def test_ffs_sample():
     )
     assert_array_equal(
         idx,
-        np.array([0, 1, 2, 3, -4, -3, -2, -1]),
+        np.array([4, 5, 6, 7, 0, 1, 2, 3]),
     )
 
 
@@ -29,8 +29,8 @@ def test_ffsn_sample():
     # check index values
     assert idx[0].shape == (N_s[0], 1)
     assert idx[1].shape == (1, N_s[1])
-    assert_array_equal(idx[0][:, 0], np.array([0, 1, -2, -1]))
-    assert_array_equal(idx[1][0, :], np.array([0, 1, -1]))
+    assert_array_equal(idx[0][:, 0], np.array([2, 3, 0, 1]))
+    assert_array_equal(idx[1][0, :], np.array([1, 2, 0]))
 
 
 def test_ffsn_sample_shape():
