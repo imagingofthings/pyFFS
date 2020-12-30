@@ -7,9 +7,35 @@
 #####
 pyFFS
 #####
-*pyFFS* is a library to compute Fourier Series.
+
+*pyFFS* is a collection of efficient algorithms to compute Fourier Series and
+related transforms.
 
 
 Installation
 ------------
-See ``doc/general/install.rst``
+
+::
+
+    $ pip install pyFFS
+
+
+Developer Install
+-----------------
+
+::
+
+    $ git clone https://github.com/imagingofthings/pyFFS.git
+    $ cd pyFFS/
+    $ # git checkout <commit>
+
+    $ pip install --user -e .[dev]
+    $ python3 test.py                # Run test suite
+    $ python3 setup.py build_sphinx  # Generate documentation
+
+
+Remarks
+-------
+
+pyFFS is developed and tested on x86_64 systems running Linux and macOS
+Catalina.

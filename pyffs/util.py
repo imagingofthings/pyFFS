@@ -6,17 +6,21 @@
 # Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
-import numpy as np
+"""
+Helper functions.
+"""
+
 import cmath
-from itertools import product
+
+import numpy as np
 
 
 def _index(x, axis, index_spec):
     """
     Form indexing tuple for NumPy arrays.
 
-    Given an array `x`, generates the indexing tuple that has :py:class:`slice` in each axis except
-    `axis`, where `index_spec` is used instead.
+    Given an array `x`, generates the indexing tuple that has :py:class:`slice`
+    in each axis except `axis`, where `index_spec` is used instead.
 
     Parameters
     ----------
@@ -71,13 +75,13 @@ def _verify_axes(x, axes):
     return axes
 
 
-def _verify_cztn_input(Phi, A, W, M, axes):
+def _verify_cztn_input(x, A, W, M, axes):
     """
     Verify input values to :py:func:`~pyffs.czt.cztn`, and return axes values.
 
     Parameters
     ----------
-    Phi : :py:class:`~numpy.ndarray`
+    x : :py:class:`~numpy.ndarray`
         (..., N_1, N_2, ..., N_D, ...) input values.
     A : list(float or complex)
         Circular offset from the positive real-axis, for each dimension.
@@ -91,20 +95,20 @@ def _verify_cztn_input(Phi, A, W, M, axes):
     Returns
     -------
     axes : tuple
-        Indexing tuple.
-
+        Transform dimensions.
+    A : complex
+    W : complex
     """
-
     D = len(A)
     if not (len(W) == len(M) == D):
         raise ValueError("Length of [A], [W], and [M] must match.")
 
-    if Phi.ndim < D:
-        raise ValueError("[Phi] does not have enough dimensions.")
+    if x.ndim < D:
+        raise ValueError("[x] does not have enough dimensions.")
 
     if axes is not None:
         assert len(axes) == D, "Length of [axes] must match [A], [W], and [M]."
-        axes = _verify_axes(Phi, axes)
+        axes = _verify_axes(x, axes)
     else:
         axes = list(range(D))
 
@@ -122,13 +126,14 @@ def _verify_cztn_input(Phi, A, W, M, axes):
     return axes, A, W
 
 
-def _verify_fs_interp_input(Phi_FS, T, a, b, M, axes):
+def _verify_fs_interp_input(x_FS, T, a, b, M, axes):
     """
-    Verify input values to :py:func:`~pyffs.interp.fs_interpn`, and return axes values.
+    Verify input values to :py:func:`~pyffs.interp.fs_interpn`, and return axes
+    values.
 
     Parameters
     ----------
-    Phi_FS : :py:class:`~numpy.ndarray`
+    x_FS : :py:class:`~numpy.ndarray`
         (..., N_1, N_2, ..., N_D, ...) input values.
     T : list(float)
         Function period along each dimension.
@@ -145,19 +150,17 @@ def _verify_fs_interp_input(Phi_FS, T, a, b, M, axes):
     -------
     axes : tuple
         Indexing tuple.
-
     """
-
     D = len(T)
     if not (len(a) == len(b) == len(M) == D):
         raise ValueError("Length of [T], [a], [b], and [M] must match.")
 
-    if Phi_FS.ndim < D:
-        raise ValueError("[Phi] does not have enough dimensions.")
+    if x_FS.ndim < D:
+        raise ValueError("[x_FS] does not have enough dimensions.")
 
     if axes is not None:
         assert len(axes) == D, "Length of [axes] must match [T], [a], [b], and [M]."
-        axes = _verify_axes(Phi_FS, axes)
+        axes = _verify_axes(x_FS, axes)
     else:
         axes = list(range(D))
 
@@ -175,19 +178,19 @@ def _verify_fs_interp_input(Phi_FS, T, a, b, M, axes):
 
 def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     """
-    Verify input values to :py:func:`~pyffs.ffs.ffsn` and :py:func:`~pyffs.ffs.iffsn`, and return
-    axes values.
+    Verify input values to :py:func:`~pyffs.ffs.ffsn`,
+    :py:func:`~pyffs.ffs.iffsn`, and return axes values.
 
     Parameters
     ----------
     x : :py: class: `~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) input values; either for FFSN or iFFSN.
+        (..., N_s1, N_s2, ..., N_sD, ...) input values; either for FFSn or iFFSn.
     T : list(float)
         Function period along each dimension.
     T_c : list(float)
-        Function bandwidth along each dimension.
-    N_FS : list(int)
         Period mid-point for each dimension.
+    N_FS : list(int)
+        Function bandwidth along each dimension.
     axes : tuple
         Dimensions of `x` along which transform should be applied.
 
@@ -198,13 +201,12 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     N_s : :py:class:`~numpy.ndarray`
         Number of samples per dimension.
     """
-
     D = len(T)
     if not (len(T_c) == len(N_FS) == D):
         raise ValueError("Length of [T], [T_c], and [N_FS] must match.")
 
     if x.ndim < D:
-        raise ValueError("[Phi] does not have enough dimensions.")
+        raise ValueError("[x] does not have enough dimensions.")
 
     if axes is not None:
         assert len(axes) == D, "Length of [axes] must match [T], [T_c], and [N_FS]."
@@ -229,24 +231,23 @@ def cartesian_product(x1, x2):
     Return
     `Cartesian product <https://en.wikipedia.org/wiki/Cartesian_product>`_ of two arrays.
 
-
     Parameters
     ----------
     x1 : :py:class:`~numpy.ndarray`
-        (M, ) array.
+        (M,) array.
     x2 : :py:class:`~numpy.ndarray`
-        (N, ) array.
+        (N,) array.
 
     Returns
     -------
     y : :py:class:`~numpy.ndarray`
         (M, N, 2) array.
-
     """
-
-    M = len(x1)
-    N = len(x2)
-    return np.reshape(np.array(list(product(x1, x2))), (M, N, 2))
+    sh = len(x1), len(x2)
+    y = np.stack(
+        [np.broadcast_to(x1.reshape(-1, 1), sh), np.broadcast_to(x2.reshape(1, -1), sh)], axis=-1
+    )
+    return y
 
 
 def ffs_sample(T, N_FS, T_c, N_s):
@@ -300,7 +301,6 @@ def ffs_sample(T, N_FS, T_c, N_s):
     See Also
     --------
     :py:func:`~pyffs.ffs.ffs`
-
     """
     if T <= 0:
         raise ValueError("Parameter[T] must be positive.")
@@ -372,9 +372,7 @@ def ffsn_sample(T, N_FS, T_c, N_s):
     See Also
     --------
     :py:func:`~pyffs.ffs.ffsn`
-
     """
-
     D = len(T)
     assert len(N_FS) == D, "Length of [N_FS] must match that of [T]."
     assert len(T_c) == D, "Length of [T_c] must match that of [T]."
@@ -384,7 +382,6 @@ def ffsn_sample(T, N_FS, T_c, N_s):
     sample_points = []
     idx = []
     for d in range(D):
-
         # get values for d-dimension
         _sample_points, _idx = ffs_sample(T=T[d], N_FS=N_FS[d], T_c=T_c[d], N_s=N_s[d])
 
@@ -419,11 +416,9 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
 
     See Also
     --------
-    :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`, :py:func:`~pyffs.ffs.ffsn`,
-    :py:func:`~pyffs.ffs.iffsn`
-
+    :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`,
+    :py:func:`~pyffs.ffs.ffsn`, :py:func:`~pyffs.ffs.iffsn`
     """
-
     M, N = np.r_[N_s, N_FS] // 2
     E_1 = np.r_[-N : (N + 1), np.zeros((N_s - N_FS,), dtype=int)]
     B_2 = np.exp(-1j * 2 * np.pi / N_s)

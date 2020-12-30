@@ -5,10 +5,13 @@
 .. ############################################################################
 
 
-General
-=======
+Theory
+======
 
 .. toctree::
    :maxdepth: 1
 
-   install
+   DFT
+   CZT
+   FS_eval_for_BL_signals
+   func_interpolation_BL_signals
