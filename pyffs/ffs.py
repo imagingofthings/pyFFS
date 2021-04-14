@@ -246,7 +246,7 @@ def ffsn(x, T, T_c, N_FS, axes=None):
         A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
         A.append(A_d.conj())
         sh = [1] * x.ndim
-        sh[axes[d]] = N_s[d]
+        sh[axes[d]] = int(N_s[d])
         C_2 = B_d.conj().reshape(sh)
         if is_complex64:
             C_2 = C_2.astype(np.complex64)
@@ -258,9 +258,9 @@ def ffsn(x, T, T_c, N_FS, axes=None):
     # apply modulation after FFT
     for d, ax in enumerate(axes):
         sh = [1] * x.ndim
-        sh[ax] = N_s[d]
+        sh[ax] = int(N_s[d])
         C_1 = A[d].reshape(sh)
-        x_FS *= C_1 / N_s[d]
+        x_FS *= C_1 / int(N_s[d])
 
     return x_FS
 
