@@ -178,9 +178,12 @@ def cztn(x, A, W, M, axes=None):
         _N = N[d]
         sh_L = [1] * x.ndim
         sh_L[axes[d]] = L[d]
-        v = np.zeros(L[d], dtype=complex)
-        v[: M[d]] = np.float_power(W[d], -(n[d][: M[d]] ** 2) / 2)
-        v[L[d] - _N + 1 :] = np.float_power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
+        v = xp.zeros(L[d], dtype=complex)
+        # TODO : float_power not supported by cupy as of April 14, 2021
+        # v[: M[d]] = np.float_power(W[d], -(n[d][: M[d]] ** 2) / 2)
+        # v[L[d] - _N + 1 :] = np.float_power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
+        v[: M[d]] = xp.power(W[d], -(n[d][: M[d]] ** 2) / 2)
+        v[L[d] - _N + 1 :] = xp.power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
         V = fftpack.fft(v).reshape(sh_L)  # TODO : change for cupy support
         U *= V
     g = ifftn(U, axes=axes)
@@ -192,7 +195,9 @@ def cztn(x, A, W, M, axes=None):
         _M = M[d]
         sh_M = [1] * x.ndim
         sh_M[axes[d]] = _M
-        g_mod = np.float_power(W[d], (_n[:_M] ** 2) / 2)
+        # TODO : float_power not supported by cupy as of April 14, 2021
+        # g_mod = np.float_power(W[d], (_n[:_M] ** 2) / 2)
+        g_mod = xp.power(W[d], (_n[:_M] ** 2) / 2)
         g[time_idx] *= g_mod.reshape(sh_M)
 
     x_czt = g[time_idx]
