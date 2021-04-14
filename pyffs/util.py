@@ -424,8 +424,10 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
     :py:func:`~pyffs.ffs.ffsn`, :py:func:`~pyffs.ffs.iffsn`
     """
     xp = get_backend()
-    M = int(N_s // 2)
-    N = int(N_FS // 2)
+    N_s = int(N_s)
+    N_FS = int(N_FS)
+    M = N_s // 2
+    N = N_FS // 2
     E_1 = xp.r_[xp.arange(start=-N, stop=N + 1), xp.zeros(N_s - N_FS, dtype=int)]
     B_2 = xp.exp(-1j * 2 * xp.pi / N_s)
 
