@@ -216,7 +216,7 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
         axes = list(range(D))
 
     xp = get_array_module(x)
-    N_s = xp.array(x.shape)[axes]
+    N_s = xp.array(x.shape, dtype=int)[axes]
 
     # check valid values
     for d in range(D):
