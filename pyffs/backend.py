@@ -14,9 +14,10 @@ Code is heavily inspired by `PyLops` library: https://github.com/PyLops/pylops/b
 import os
 from importlib import util
 import numpy as np
+from scipy import fftpack as fftpack
 
 
-cupy_enabled = util.find_spec("cupy") is not None and int(os.getenv('CUPY_PYFFS', 1)) == 1
+cupy_enabled = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
 if cupy_enabled:
     import cupy as cp
 
@@ -67,6 +68,13 @@ def get_module_name(mod):
     return backend
 
 
+def get_backend():
+    if cupy_enabled:
+        return cp
+    else:
+        return np
+
+
 def get_array_module(x):
     """
     Returns correct numerical module based on input.
@@ -85,3 +93,49 @@ def get_array_module(x):
         return cp.get_array_module(x)
     else:
         return np
+
+
+def fftn(x, axes=None):
+    """
+    Applies correct fftn module based on input.
+
+    Parameters
+    ----------
+    x : :obj:`numpy.ndarray` or :obj:`cupy.ndarray`
+        Array
+    axes : tuple
+        Dimension of `x` along which to perform FFT.
+
+    Returns
+    -------
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`)
+    """
+
+    if get_array_module(x) == np:
+        return fftpack.fftn(x, axes=axes)
+    else:
+        return cp.fft.fftn(x, axes=axes)
+
+
+def ifftn(x, axes=None):
+    """
+    Apply correct ifftn module based on input.
+
+    Parameters
+    ----------
+    x : :obj:`numpy.ndarray` or :obj:`cupy.ndarray`
+        Array
+    axes : tuple
+        Dimension of `x` along which to perform IFFT.
+
+    Returns
+    -------
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`)
+    """
+
+    if get_array_module(x) == np:
+        return fftpack.ifftn(x, axes=axes)
+    else:
+        return cp.fft.ifftn(x, axes=axes)

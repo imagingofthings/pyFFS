@@ -13,9 +13,9 @@ Methods for computing Fast Fourier Series.
 __all__ = ["ffs", "ffsn", "iffs", "iffsn", "_ffsn", "_iffsn"]
 
 import numpy as np
-from scipy import fftpack as fftpack
 
 from pyffs.util import _create_modulation_vectors, _verify_ffsn_input
+from pyffs.backend import fftn, ifftn
 
 
 def ffs(x, T, T_c, N_FS, axis=-1):
@@ -253,7 +253,7 @@ def ffsn(x, T, T_c, N_FS, axes=None):
         x_FS *= C_2
 
     # apply post-FFT modulation
-    x_FS = fftpack.fftn(x_FS, axes=axes)
+    x_FS = fftn(x_FS, axes=axes)
 
     # apply modulation after FFT
     for d, ax in enumerate(axes):
@@ -323,7 +323,7 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
         x *= C_1
 
     # apply FFT
-    x = fftpack.ifftn(x, axes=axes)
+    x = ifftn(x, axes=axes)
 
     # apply post-iFFT modulation
     for d, ax in enumerate(axes):

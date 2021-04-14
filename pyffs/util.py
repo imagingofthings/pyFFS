@@ -13,6 +13,7 @@ Helper functions.
 import cmath
 
 import numpy as np
+from pyffs.backend import get_backend, get_array_module
 
 
 def _index(x, axis, index_spec):
@@ -214,7 +215,8 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     else:
         axes = list(range(D))
 
-    N_s = np.array(x.shape)[axes]
+    xp = get_array_module(x)
+    N_s = xp.array(x.shape)[axes]
 
     # check valid values
     for d in range(D):
@@ -310,13 +312,15 @@ def ffs_sample(T, N_FS, T_c, N_s):
         raise ValueError("Parameter[N_s] must be greater or equal to the signal bandwidth.")
     assert N_FS % 2 == 1, "Parameter[N_FS] must be odd."
 
+    xp = get_backend()
     if N_s % 2 == 1:  # Odd-valued
         M = (N_s - 1) // 2
-        idx = np.r_[0 : (M + 1), -M:0]
+        # CuPy does not support slicing
+        idx = xp.r_[xp.arange(M + 1), xp.arange(start=-M, stop=0)]
         sample_points = T_c + (T / N_s) * idx
     else:  # Even case
         M = N_s // 2
-        idx = np.r_[0:M, -M:0]
+        idx = xp.r_[xp.arange(M), xp.arange(start=-M, stop=0)]
         sample_points = T_c + (T / N_s) * (0.5 + idx)
 
     return sample_points, idx + M
@@ -419,15 +423,16 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
     :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`,
     :py:func:`~pyffs.ffs.ffsn`, :py:func:`~pyffs.ffs.iffsn`
     """
-    M, N = np.r_[N_s, N_FS] // 2
-    E_1 = np.r_[-N : (N + 1), np.zeros((N_s - N_FS,), dtype=int)]
-    B_2 = np.exp(-1j * 2 * np.pi / N_s)
+    xp = get_backend()
+    M, N = xp.r_[N_s, N_FS] // 2
+    E_1 = xp.r_[xp.arange(start=-N, stop=N + 1), np.zeros((N_s - N_FS,), dtype=int)]
+    B_2 = xp.exp(-1j * 2 * np.pi / N_s)
 
     if N_s % 2 == 1:
-        B_1 = np.exp(1j * (2 * np.pi / T) * T_c)
-        E_2 = np.r_[0 : (M + 1), -M:0]
+        B_1 = xp.exp(1j * (2 * np.pi / T) * T_c)
+        E_2 = xp.r_[xp.arange(start=0, stop=M + 1), xp.arange(start=-M, stop=0)]
     else:
-        B_1 = np.exp(1j * (2 * np.pi / T) * (T_c + T / (2 * N_s)))
-        E_2 = np.r_[0:M, -M:0]
+        B_1 = xp.exp(1j * (2 * np.pi / T) * (T_c + T / (2 * N_s)))
+        E_2 = xp.r_[xp.arange(start=0, stop=M), xp.arange(start=-M, stop=0)]
 
     return B_1 ** E_1, B_2 ** (N * E_2)
