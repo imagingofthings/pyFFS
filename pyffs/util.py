@@ -428,7 +428,7 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
     N = N_FS // 2
 
     fs_idx = xp.arange(start=-N, stop=N + 1)
-    zero_pad = xp.zeros((N_s - N_FS,), dtype=xp.int)
+    zero_pad = xp.zeros((int(N_s) - N_FS,), dtype=xp.int)
     E_1 = xp.concatenate((fs_idx, zero_pad))
 
     # E_1 = xp.r_[xp.arange(start=-N, stop=N + 1), xp.zeros(N_s - N_FS, dtype=xp.int)]
