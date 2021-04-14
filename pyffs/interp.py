@@ -203,7 +203,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
 
         if D == 1:
             x_FS_p = x_FS[_index(x_FS, axes[0], slice(N[0] + 1, N_FS[0]))]
-            C = np.reshape(W[0] ** E[0], sh[0]) / A[0]
+            C = xp.reshape(W[0] ** E[0], sh[0]) / A[0]
 
             x = czt(x_FS_p, A[0], W[0], M[0], axis=axes[0])
             x *= 2 * C
