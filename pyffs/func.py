@@ -86,7 +86,7 @@ def dirichlet_fs(N_FS, T, T_c):
     """
     xp = get_backend()
     N = (N_FS - 1) // 2
-    return xp.exp(-1j * (2 * np.pi / T) * T_c * np.arange(start=-N, stop=N + 1))
+    return xp.exp(-1j * (2 * np.pi / T) * T_c * xp.arange(start=-N, stop=N + 1))
 
 
 def dirichlet_2D(sample_points, T, T_c, N_FS):
