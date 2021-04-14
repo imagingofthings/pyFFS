@@ -14,6 +14,7 @@ import numpy as np
 
 from pyffs.czt import czt, cztn
 from pyffs.util import _index, _index_n, _verify_fs_interp_input
+from pyffs.backend import get_array_module
 
 
 def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
@@ -181,6 +182,8 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
     axes = _verify_fs_interp_input(x_FS, T, a, b, M, axes)
     D = len(axes)
 
+    xp = get_array_module(x_FS)
+
     # precompute modulation terms
     N_FS = np.array(x_FS.shape)[list(axes)]
     N = (N_FS - 1) // 2
@@ -227,7 +230,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
 
         # modulate along each dimension
         for d in range(D):
-            C = np.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
+            C = xp.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
             x *= C
 
         return x
