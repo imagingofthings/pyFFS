@@ -196,7 +196,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
         W.append(np.exp(1j * (2 * np.pi / T[d]) * (b[d] - a[d]) / (M[d] - 1)))
         sh.append([1] * x_FS.ndim)
         sh[d][axes[d]] = M[d]
-        E.append(np.arange(M[d]))
+        E.append(xp.arange(M[d]))
 
     if real_x:
         x0_FS = x_FS[_index_n(x_FS, axes, [slice(n, n + 1) for n in N])]
