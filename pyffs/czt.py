@@ -16,6 +16,7 @@ import numpy as np
 from scipy import fftpack as fftpack
 
 from pyffs.util import _verify_cztn_input, _index_n
+from pyffs.backend import get_array_module, fftn, ifftn
 
 
 def czt(x, A, W, M, axis=-1):
@@ -135,6 +136,8 @@ def cztn(x, A, W, M, axes=None):
     """
     axes, A, W = _verify_cztn_input(x, A, W, M, axes)
 
+    xp = get_array_module(x)
+
     # Initialize variables
     D = len(axes)
     N = np.array(x.shape)[axes]
@@ -143,7 +146,7 @@ def cztn(x, A, W, M, axes=None):
     for d in range(D):
         _L = fftpack.next_fast_len(N[d] + M[d] - 1)
         L.append(_L)
-        n.append(np.arange(_L))
+        n.append(xp.arange(_L))
 
     # Initialize input
     sh_U = list(x.shape)
@@ -154,7 +157,7 @@ def cztn(x, A, W, M, axes=None):
         if ((x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")))
         else np.complex128
     )
-    u = np.zeros(sh_U, dtype=dtype_u)
+    u = xp.zeros(sh_U, dtype=dtype_u)
     idx = _index_n(u, axes, [slice(n) for n in N])
     u[idx] = x
 
@@ -166,7 +169,7 @@ def cztn(x, A, W, M, axes=None):
         sh_N[axes[d]] = N[d]
         u_mod_d = (A[d] ** -_n[:_N]) * np.float_power(W[d], (_n[:_N] ** 2) / 2)
         u[idx] *= u_mod_d.reshape(sh_N)
-    U = fftpack.fftn(u, axes=axes)
+    U = fftn(u, axes=axes)
 
     # Convolve along each dimension -> multiply in frequency domain
     for d in range(D):
@@ -176,9 +179,9 @@ def cztn(x, A, W, M, axes=None):
         v = np.zeros(L[d], dtype=complex)
         v[: M[d]] = np.float_power(W[d], -(n[d][: M[d]] ** 2) / 2)
         v[L[d] - _N + 1 :] = np.float_power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
-        V = fftpack.fft(v).reshape(sh_L)
+        V = fftpack.fft(v).reshape(sh_L)  # TODO : change for cupy support
         U *= V
-    g = fftpack.ifftn(U, axes=axes)
+    g = ifftn(U, axes=axes)
 
     # Final modulation in time
     time_idx = _index_n(g, axes, [slice(m) for m in M])
