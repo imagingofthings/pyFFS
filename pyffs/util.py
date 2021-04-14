@@ -425,14 +425,14 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
     """
     xp = get_backend()
     M, N = xp.r_[N_s, N_FS] // 2
-    E_1 = xp.r_[xp.arange(start=-N, stop=N + 1), np.zeros((N_s - N_FS,), dtype=int)]
-    B_2 = xp.exp(-1j * 2 * np.pi / N_s)
+    E_1 = xp.r_[xp.arange(start=-N, stop=N + 1), xp.zeros((N_s - N_FS,), dtype=int)]
+    B_2 = xp.exp(-1j * 2 * xp.pi / N_s)
 
     if N_s % 2 == 1:
-        B_1 = xp.exp(1j * (2 * np.pi / T) * T_c)
+        B_1 = xp.exp(1j * (2 * xp.pi / T) * T_c)
         E_2 = xp.r_[xp.arange(start=0, stop=M + 1), xp.arange(start=-M, stop=0)]
     else:
-        B_1 = xp.exp(1j * (2 * np.pi / T) * (T_c + T / (2 * N_s)))
+        B_1 = xp.exp(1j * (2 * xp.pi / T) * (T_c + T / (2 * N_s)))
         E_2 = xp.r_[xp.arange(start=0, stop=M), xp.arange(start=-M, stop=0)]
 
     return B_1 ** E_1, B_2 ** (N * E_2)
