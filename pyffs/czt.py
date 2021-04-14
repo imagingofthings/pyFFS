@@ -167,7 +167,9 @@ def cztn(x, A, W, M, axes=None):
         _N = N[d]
         sh_N = [1] * x.ndim
         sh_N[axes[d]] = N[d]
-        u_mod_d = (A[d] ** -_n[:_N]) * np.float_power(W[d], (_n[:_N] ** 2) / 2)
+        # TODO : float_power not supported by cupy as of April 14, 2021
+        # u_mod_d = (A[d] ** -_n[:_N]) * np.float_power(W[d], (_n[:_N] ** 2) / 2)
+        u_mod_d = (A[d] ** -_n[:_N]) * xp.power(W[d], (_n[:_N] ** 2) / 2)
         u[idx] *= u_mod_d.reshape(sh_N)
     U = fftn(u, axes=axes)
 
