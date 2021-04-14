@@ -16,7 +16,7 @@ import numpy as np
 from scipy import fftpack as fftpack
 
 from pyffs.util import _verify_cztn_input, _index_n
-from pyffs.backend import get_array_module, fftn, ifftn
+from pyffs.backend import get_array_module, fftn, ifftn, fft
 
 
 def czt(x, A, W, M, axis=-1):
@@ -184,7 +184,7 @@ def cztn(x, A, W, M, axes=None):
         # v[L[d] - _N + 1 :] = np.float_power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
         v[: M[d]] = xp.power(W[d], -(n[d][: M[d]] ** 2) / 2)
         v[L[d] - _N + 1 :] = xp.power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
-        V = fftpack.fft(v).reshape(sh_L)  # TODO : change for cupy support
+        V = fft(v).reshape(sh_L)
         U *= V
     g = ifftn(U, axes=axes)
 

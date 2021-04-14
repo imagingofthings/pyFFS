@@ -118,6 +118,27 @@ def fftn(x, axes=None):
         return cp.fft.fftn(x, axes=axes)
 
 
+def fft(x):
+    """
+    Applies correct fft module based on input.
+
+    Parameters
+    ----------
+    x : :obj:`numpy.ndarray` or :obj:`cupy.ndarray`
+        Array
+
+    Returns
+    -------
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`)
+    """
+
+    if get_array_module(x) == np:
+        return fftpack.fft(x)
+    else:
+        return cp.fft.fft(x)
+
+
 def ifftn(x, axes=None):
     """
     Apply correct ifftn module based on input.
