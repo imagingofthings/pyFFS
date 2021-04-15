@@ -7,9 +7,6 @@
 # #############################################################################
 
 import math
-
-import numpy as np
-
 from pyffs import (
     ffs,
     ffs_sample,
@@ -41,13 +38,13 @@ class TestFFS:
             diric_FS = ffs(diric_samples, T, T_c, N_FS)
 
             # Compare with theoretical result.
-            assert np.allclose(diric_FS[:N_FS], dirichlet_fs(N_FS, T, T_c))
+            assert mod.allclose(diric_FS[:N_FS], dirichlet_fs(N_FS, T, T_c))
 
             # Inverse transform.
             diric_samples_recov = iffs(diric_FS, T, T_c, N_FS)
 
             # Compare with original samples.
-            assert np.allclose(diric_samples, diric_samples_recov)
+            assert mod.allclose(diric_samples, diric_samples_recov)
 
     def test_ffsn_axes(self):
         T_x = T_y = 1
@@ -66,7 +63,7 @@ class TestFFS:
             )
 
             # Add new dimension.
-            diric_samples = diric_samples[:, np.newaxis, :]
+            diric_samples = diric_samples[:, mod.newaxis, :]
             axes = (0, 2)
 
             # Perform transform.
@@ -75,10 +72,10 @@ class TestFFS:
             )
 
             # Compare with theoretical result.
-            diric_FS_exact = np.outer(
-                dirichlet_fs(N_FSx, T_x, T_cx), dirichlet_fs(N_FSy, T_y, T_cy)
+            diric_FS_exact = mod.outer(
+                dirichlet_fs(N_FSx, T_x, T_cx, mod=mod), dirichlet_fs(N_FSy, T_y, T_cy, mod=mod)
             )
-            assert np.allclose(diric_FS[:N_FSx, 0, :N_FSy], diric_FS_exact)
+            assert mod.allclose(diric_FS[:N_FSx, 0, :N_FSy], diric_FS_exact)
 
             # Inverse transform.
             diric_samples_recov = iffsn(
@@ -86,7 +83,7 @@ class TestFFS:
             )
 
             # Compare with original samples.
-            assert np.allclose(diric_samples, diric_samples_recov)
+            assert mod.allclose(diric_samples, diric_samples_recov)
 
     def test_ffsn_ref(self):
         T = [1, 1]
@@ -102,16 +99,17 @@ class TestFFS:
             diric_FS = _ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
 
             # Compare with theoretical result.
-            diric_FS_exact = np.outer(
-                dirichlet_fs(N_FS[0], T[0], T_c[0]), dirichlet_fs(N_FS[1], T[1], T_c[1])
+            diric_FS_exact = mod.outer(
+                dirichlet_fs(N_FS[0], T[0], T_c[0], mod=mod),
+                dirichlet_fs(N_FS[1], T[1], T_c[1], mod=mod),
             )
-            assert np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
+            assert mod.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
 
             # Inverse transform.
             diric_samples_recov = _iffsn(x_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
 
             # Compare with original samples.
-            assert np.allclose(diric_samples, diric_samples_recov)
+            assert mod.allclose(diric_samples, diric_samples_recov)
 
     def test_ffsn(self):
         T = [1, 1]
@@ -127,13 +125,14 @@ class TestFFS:
             diric_FS = ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)
 
             # Compare with theoretical result.
-            diric_FS_exact = np.outer(
-                dirichlet_fs(N_FS[0], T[0], T_c[0]), dirichlet_fs(N_FS[1], T[1], T_c[1])
+            diric_FS_exact = mod.outer(
+                dirichlet_fs(N_FS[0], T[0], T_c[0], mod=mod),
+                dirichlet_fs(N_FS[1], T[1], T_c[1], mod=mod),
             )
-            assert np.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
+            assert mod.allclose(diric_FS[: N_FS[0], : N_FS[1]], diric_FS_exact)
 
             # Inverse transform.
             diric_samples_recov = iffsn(x_FS=diric_FS, T=T, T_c=T_c, N_FS=N_FS)
 
             # Compare with original samples.
-            assert np.allclose(diric_samples, diric_samples_recov)
+            assert mod.allclose(diric_samples, diric_samples_recov)
