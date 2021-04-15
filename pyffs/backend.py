@@ -20,6 +20,7 @@ from scipy import fftpack as fftpack  # TODO : replace with `scipy.fft`?
 cupy_enabled = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
 if cupy_enabled:
     import cupy as cp
+    import cupyx
 
 
 def get_module(backend="numpy"):
@@ -180,4 +181,4 @@ def next_fast_len(len):
     if get_backend() == np:
         return fftpack.next_fast_len(len)
     else:
-        return cp.scipy.fft.next_fast_len(len)
+        return cupyx.scipy.fft.next_fast_len(len)
