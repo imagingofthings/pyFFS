@@ -17,10 +17,13 @@ import numpy as np
 from scipy import fftpack as fftpack  # TODO : replace with `scipy.fft`?
 
 
-cupy_enabled = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
-if cupy_enabled:
+CUPY_ENABLED = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
+AVAILABLE_MOD = [np]
+if CUPY_ENABLED:
     import cupy as cp
     import cupyx
+
+    AVAILABLE_MOD.append(cp)
 
 
 def get_module(backend="numpy"):
@@ -70,7 +73,7 @@ def get_module_name(mod):
 
 
 def get_backend():
-    if cupy_enabled:
+    if CUPY_ENABLED:
         return cp
     else:
         return np
@@ -90,7 +93,7 @@ def get_array_module(x):
     mod : :obj:`func`
         Module to be used to process array (:mod:`numpy` or :mod:`cupy`)
     """
-    if cupy_enabled:
+    if CUPY_ENABLED:
         return cp.get_array_module(x)
     else:
         return np
