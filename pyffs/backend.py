@@ -14,7 +14,7 @@ Code is heavily inspired by `PyLops` library: https://github.com/PyLops/pylops/b
 import os
 from importlib import util
 import numpy as np
-from scipy import fftpack as fftpack
+from scipy import fftpack as fftpack  # TODO : replace with `scipy.fft`?
 
 
 cupy_enabled = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
@@ -97,7 +97,7 @@ def get_array_module(x):
 
 def fftn(x, axes=None):
     """
-    Applies correct fftn module based on input.
+    Applies correct fftn method based on input.
 
     Parameters
     ----------
@@ -120,7 +120,7 @@ def fftn(x, axes=None):
 
 def fft(x):
     """
-    Applies correct fft module based on input.
+    Applies correct fft method based on input.
 
     Parameters
     ----------
@@ -141,7 +141,7 @@ def fft(x):
 
 def ifftn(x, axes=None):
     """
-    Apply correct ifftn module based on input.
+    Apply correct ifftn method based on input.
 
     Parameters
     ----------
@@ -160,3 +160,24 @@ def ifftn(x, axes=None):
         return fftpack.ifftn(x, axes=axes)
     else:
         return cp.fft.ifftn(x, axes=axes)
+
+
+def next_fast_len(len):
+    """
+    Apply correct next_fast_len method based on backend.
+
+    Parameters
+    ----------
+    len : int
+        Desired FFT length.
+
+    Returns
+    -------
+    next_fast_len : int
+        next_fast_len >= len such that FFT computation is optimized.
+    """
+
+    if get_backend() == np:
+        return fftpack.next_fast_len(len)
+    else:
+        return cp.scipy.fft.next_fast_len(len)
