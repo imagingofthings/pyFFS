@@ -367,11 +367,14 @@ def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
     idx = []
     for d in range(D):
         # get values for d-dimension
-        _sample_points, _idx = ffs_sample(T=T[d], N_FS=N_FS[d], T_c=T_c[d], N_s=N_s[d], mod=mod)
+        # cast to int in case cupy array is passed
+        _sample_points, _idx = ffs_sample(
+            T=int(T[d]), N_FS=int(N_FS[d]), T_c=int(T_c[d]), N_s=int(N_s[d]), mod=mod
+        )
 
         # reshape for sparse array
         sh = [1] * D
-        sh[d] = N_s[d]
+        sh[d] = int(N_s[d])
         sample_points.append(_sample_points.reshape(sh))
         idx.append(_idx.reshape(sh))
 

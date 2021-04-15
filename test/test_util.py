@@ -6,9 +6,6 @@
 # Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
-import numpy as np
-from numpy.testing import assert_array_equal
-
 from pyffs import ffs_sample, ffsn_sample
 from pyffs.backend import AVAILABLE_MOD, get_array_module
 
@@ -20,12 +17,12 @@ class TestUtil:
 
     def test_ffs_sample(self):
         for mod in AVAILABLE_MOD:
-            sample_points, idx = ffs_sample(T=1, N_FS=5, T_c=np.pi, N_s=8, mod=mod)
-            assert_array_equal(
+            sample_points, idx = ffs_sample(T=1, N_FS=5, T_c=mod.pi, N_s=8, mod=mod)
+            mod.testing.assert_array_equal(
                 mod.around(sample_points, 2),
                 mod.array([3.2, 3.33, 3.45, 3.58, 2.7, 2.83, 2.95, 3.08]),
             )
-            assert_array_equal(
+            mod.testing.assert_array_equal(
                 idx,
                 mod.array([4, 5, 6, 7, 0, 1, 2, 3]),
             )
@@ -40,26 +37,27 @@ class TestUtil:
             # check sample points
             assert sample_points[0].shape == (N_s[0], 1)
             assert sample_points[1].shape == (1, N_s[1])
-            assert_array_equal(sample_points[0][:, 0], mod.array([0.125, 0.375, -0.375, -0.125]))
-            assert_array_equal(sample_points[1][0, :], mod.array([0, 1 / 3, -1 / 3]))
+            mod.testing.assert_array_equal(
+                sample_points[0][:, 0], mod.array([0.125, 0.375, -0.375, -0.125])
+            )
+            mod.testing.assert_array_equal(sample_points[1][0, :], mod.array([0, 1 / 3, -1 / 3]))
 
             # check index values
             assert idx[0].shape == (N_s[0], 1)
             assert idx[1].shape == (1, N_s[1])
-            assert_array_equal(idx[0][:, 0], mod.array([2, 3, 0, 1]))
-            assert_array_equal(idx[1][0, :], mod.array([1, 2, 0]))
+            mod.testing.assert_array_equal(idx[0][:, 0], mod.array([2, 3, 0, 1]))
+            mod.testing.assert_array_equal(idx[1][0, :], mod.array([1, 2, 0]))
 
-            assert get_array_module(sample_points) == mod
-            assert get_array_module(idx) == mod
+            assert all([get_array_module(s) == mod for s in sample_points])
+            assert all([get_array_module(i) == mod for i in idx])
 
     def test_ffsn_sample_shape(self):
-        D = 5
-        T = np.ones(D)
-        N_FS = np.arange(D) * 2 + 3
-        T_c = np.zeros(D)
-        N_s = N_FS
-
         for mod in AVAILABLE_MOD:
+            D = 5
+            T = mod.ones(D)
+            N_FS = mod.arange(D) * 2 + 3
+            T_c = mod.zeros(D)
+            N_s = N_FS
 
             sample_points, idx = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s, mod=mod)
 
@@ -70,5 +68,5 @@ class TestUtil:
                 assert list(sample_points[d].shape) == sh
                 assert list(idx[d].shape) == sh
 
-            assert get_array_module(sample_points) == mod
-            assert get_array_module(idx) == mod
+            assert all([get_array_module(s) == mod for s in sample_points])
+            assert all([get_array_module(i) == mod for i in idx])

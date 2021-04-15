@@ -7,9 +7,6 @@
 # #############################################################################
 
 import math
-
-import numpy as np
-
 from pyffs.func import dirichlet, dirichlet_fs, dirichlet_2D
 from pyffs.interp import fs_interp, fs_interpn
 from pyffs.backend import AVAILABLE_MOD
@@ -30,26 +27,25 @@ class TestInterp:
             diric_FS = dirichlet_fs(N_FS, T, T_c, mod=mod)
 
             # Generate interpolated signal
-            a, b = T_c + (T / 2) * np.r_[-1, 1]
+            a, b = T_c + (T / 2) * mod.r_[-1, 1]
             M = 100  # We want lots of points.
             diric_sig = fs_interp(diric_FS, T, a, b, M)
 
             # Compare with theoretical result.
-            t = a + (b - a) / (M - 1) * np.arange(M)
+            t = a + (b - a) / (M - 1) * mod.arange(M)
             diric_sig_exact = dirichlet(t, T, T_c, N_FS)
-            assert np.allclose(diric_sig, diric_sig_exact)
+            assert mod.allclose(diric_sig, diric_sig_exact)
 
             # Try real version
             diric_sig_real = fs_interp(diric_FS, T, a, b, M, real_x=True)
-            assert np.allclose(diric_sig, diric_sig_real)
+            assert mod.allclose(diric_sig, diric_sig_real)
 
     def test_fs_interp2(self):
-        # parameters of signal
-        T_x = T_y = np.pi
-        N_FSx = N_FSy = 5
-        T_cx = T_cy = math.e
-
         for mod in AVAILABLE_MOD:
+            # parameters of signal
+            T_x = T_y = mod.pi
+            N_FSx = N_FSy = 5
+            T_cx = T_cy = math.e
 
             # And the kernel's FS coefficients.
             diric_FS = mod.outer(
@@ -57,8 +53,8 @@ class TestInterp:
             )
 
             # Generate interpolated signal
-            a_x, b_x = T_cx + (T_x / 2) * np.r_[-1, 1]
-            a_y, b_y = T_cy + (T_y / 2) * np.r_[-1, 1]
+            a_x, b_x = T_cx + (T_x / 2) * mod.r_[-1, 1]
+            a_y, b_y = T_cy + (T_y / 2) * mod.r_[-1, 1]
             M_x = M_y = 6
             diric_sig = fs_interpn(diric_FS, T=[T_x, T_y], a=[a_x, a_y], b=[b_x, b_y], M=[M_x, M_y])
 
@@ -69,10 +65,10 @@ class TestInterp:
             diric_sig_exact = dirichlet_2D(
                 sample_points, T=[T_x, T_y], T_c=[T_cx, T_cy], N_FS=[N_FSx, N_FSy]
             )
-            assert np.allclose(diric_sig, diric_sig_exact)
+            assert mod.allclose(diric_sig, diric_sig_exact)
 
             # Try real version
             diric_sig_real = fs_interpn(
                 diric_FS, T=[T_x, T_y], a=[a_x, a_y], b=[b_x, b_y], M=[M_x, M_y], real_x=True
             )
-            assert np.allclose(diric_sig, diric_sig_real)
+            assert mod.allclose(diric_sig, diric_sig_real)
