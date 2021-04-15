@@ -12,10 +12,8 @@ Methods for computing Fast Fourier Series.
 
 __all__ = ["ffs", "ffsn", "iffs", "iffsn", "_ffsn", "_iffsn"]
 
-import numpy as np
-
 from pyffs.util import _create_modulation_vectors, _verify_ffsn_input
-from pyffs.backend import fftn, ifftn
+from pyffs.backend import fftn, ifftn, get_array_module
 
 
 def ffs(x, T, T_c, N_FS, axis=-1):
@@ -232,13 +230,15 @@ def ffsn(x, T, T_c, N_FS, axes=None):
     """
     axes, N_s = _verify_ffsn_input(x, T, T_c, N_FS, axes)
 
+    xp = get_array_module(x)
+
     # check for input type
-    if (x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")):
+    if (x.dtype == xp.dtype("complex64")) or (x.dtype == xp.dtype("float32")):
         is_complex64 = True
-        x_FS = x.copy().astype(np.complex64)
+        x_FS = x.copy().astype(xp.complex64)
     else:
         is_complex64 = False
-        x_FS = x.copy().astype(np.complex128)
+        x_FS = x.copy().astype(xp.complex128)
 
     # apply pre-FFT modulation
     A = []
@@ -249,7 +249,7 @@ def ffsn(x, T, T_c, N_FS, axes=None):
         sh[axes[d]] = N_s[d]
         C_2 = B_d.conj().reshape(sh)
         if is_complex64:
-            C_2 = C_2.astype(np.complex64)
+            C_2 = C_2.astype(xp.complex64)
         x_FS *= C_2
 
     # apply post-FFT modulation
@@ -302,13 +302,15 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
     """
     axes, N_s = _verify_ffsn_input(x_FS, T, T_c, N_FS, axes)
 
+    xp = get_array_module(x_FS)
+
     # check for input type
-    if (x_FS.dtype == np.dtype("complex64")) or (x_FS.dtype == np.dtype("float32")):
+    if (x_FS.dtype == xp.dtype("complex64")) or (x_FS.dtype == xp.dtype("float32")):
         is_complex64 = True
-        x = x_FS.copy().astype(np.complex64)
+        x = x_FS.copy().astype(xp.complex64)
     else:
         is_complex64 = False
-        x = x_FS.copy().astype(np.complex128)
+        x = x_FS.copy().astype(xp.complex128)
 
     # apply pre-iFFT modulation
     B = []
@@ -319,7 +321,7 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
         sh[axes[d]] = N_s[d]
         C_1 = A_d.reshape(sh)
         if is_complex64:
-            C_1 = C_1.astype(np.complex64)
+            C_1 = C_1.astype(xp.complex64)
         x *= C_1
 
     # apply FFT

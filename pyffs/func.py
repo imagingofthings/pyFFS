@@ -11,8 +11,6 @@ Methods for computing samples and Fourier Series coefficients of specific
 functions.
 """
 
-import numpy as np
-
 from pyffs.backend import get_array_module, get_backend
 
 
@@ -51,11 +49,11 @@ def dirichlet(x, T, T_c, N_FS):
 
     y = x - T_c
     n, d = xp.zeros((2, len(x)))
-    nan_mask = xp.isclose(np.fmod(y, np.pi), 0)
-    n[~nan_mask] = xp.sin(N_FS * np.pi * y[~nan_mask] / T)
-    d[~nan_mask] = xp.sin(np.pi * y[~nan_mask] / T)
-    n[nan_mask] = N_FS * xp.cos(N_FS * np.pi * y[nan_mask] / T)
-    d[nan_mask] = xp.cos(np.pi * y[nan_mask] / T)
+    nan_mask = xp.isclose(xp.fmod(y, xp.pi), 0)
+    n[~nan_mask] = xp.sin(N_FS * xp.pi * y[~nan_mask] / T)
+    d[~nan_mask] = xp.sin(xp.pi * y[~nan_mask] / T)
+    n[nan_mask] = N_FS * xp.cos(N_FS * xp.pi * y[nan_mask] / T)
+    d[nan_mask] = xp.cos(xp.pi * y[nan_mask] / T)
 
     return n / d
 
@@ -86,7 +84,7 @@ def dirichlet_fs(N_FS, T, T_c):
     """
     xp = get_backend()
     N = (N_FS - 1) // 2
-    return xp.exp(-1j * (2 * np.pi / T) * T_c * xp.arange(start=-N, stop=N + 1))
+    return xp.exp(-1j * (2 * xp.pi / T) * T_c * xp.arange(start=-N, stop=N + 1))
 
 
 def dirichlet_2D(sample_points, T, T_c, N_FS):

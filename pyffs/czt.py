@@ -12,11 +12,8 @@ Methods for computing the chirp Z-transform.
 
 __all__ = ["czt", "cztn", "_cztn"]
 
-import numpy as np
-from scipy import fftpack as fftpack
-
 from pyffs.util import _verify_cztn_input, _index_n
-from pyffs.backend import get_array_module, fftn, ifftn, fft
+from pyffs.backend import get_array_module, fftn, ifftn, fft, next_fast_len
 
 
 def czt(x, A, W, M, axis=-1):
@@ -140,11 +137,11 @@ def cztn(x, A, W, M, axes=None):
 
     # Initialize variables
     D = len(axes)
-    N = np.array(x.shape)[axes]
+    N = [x.shape[d] for d in axes]
     L = []
     n = []
     for d in range(D):
-        _L = fftpack.next_fast_len(N[d] + M[d] - 1)
+        _L = next_fast_len(N[d] + M[d] - 1)
         L.append(_L)
         n.append(xp.arange(_L))
 
@@ -153,9 +150,9 @@ def cztn(x, A, W, M, axes=None):
     for d in range(D):
         sh_U[axes[d]] = L[d]
     dtype_u = (
-        np.complex64
-        if ((x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")))
-        else np.complex128
+        xp.complex64
+        if ((x.dtype == xp.dtype("complex64")) or (x.dtype == xp.dtype("float32")))
+        else xp.complex128
     )
     u = xp.zeros(sh_U, dtype=dtype_u)
     idx = _index_n(u, axes, [slice(n) for n in N])

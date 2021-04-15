@@ -4,10 +4,9 @@ import time
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.fftpack import next_fast_len
 
 import util
-from pyffs import ffsn_sample, ffsn, _ffsn
+from pyffs import ffsn_sample, ffsn, _ffsn, next_fast_len
 from pyffs.func import dirichlet_2D
 
 

@@ -10,8 +10,6 @@
 Methods for interpolating functions using Fourier Series.
 """
 
-import numpy as np
-
 from pyffs.czt import czt, cztn
 from pyffs.util import _index, _index_n, _verify_fs_interp_input
 from pyffs.backend import get_array_module
@@ -185,15 +183,15 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
     xp = get_array_module(x_FS)
 
     # precompute modulation terms
-    N_FS = np.array(x_FS.shape)[list(axes)]
-    N = (N_FS - 1) // 2
+    N_FS = [x_FS.shape[d] for d in axes]
+    N = [(nfs - 1) // 2 for nfs in N_FS]
     A = []
     W = []
     sh = []
     E = []
     for d in range(D):
-        A.append(np.exp(-1j * 2 * np.pi / T[d] * a[d]))
-        W.append(np.exp(1j * (2 * np.pi / T[d]) * (b[d] - a[d]) / (M[d] - 1)))
+        A.append(xp.exp(-1j * 2 * xp.pi / T[d] * a[d]))
+        W.append(xp.exp(1j * (2 * xp.pi / T[d]) * (b[d] - a[d]) / (M[d] - 1)))
         sh.append([1] * x_FS.ndim)
         sh[d][axes[d]] = M[d]
         E.append(xp.arange(M[d]))
@@ -216,8 +214,8 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
             # negative / positive
             x_FS_np = x_FS[_index_n(x_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
             x_np = cztn(x_FS_np, A, W, M, axes=axes)
-            x_np *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
-            x_np *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
+            x_np *= xp.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
+            x_np *= xp.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
             x = 2 * x_pp - x0_FS + 2 * x_np

@@ -12,8 +12,7 @@ Helper functions.
 
 import cmath
 
-import numpy as np
-from pyffs.backend import get_backend, get_array_module
+from pyffs.backend import get_backend
 
 
 def _index(x, axis, index_spec):
@@ -215,7 +214,7 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     else:
         axes = list(range(D))
 
-    N_s = np.array(x.shape)[axes]
+    N_s = [x.shape[d] for d in axes]
 
     # check valid values
     for d in range(D):
@@ -225,30 +224,6 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
             raise ValueError(f"Parameter[N_FS[d]] must lie in {{3, ..., N_s[d]}}.")
 
     return tuple(axes), N_s
-
-
-def cartesian_product(x1, x2):
-    """
-    Return
-    `Cartesian product <https://en.wikipedia.org/wiki/Cartesian_product>`_ of two arrays.
-
-    Parameters
-    ----------
-    x1 : :py:class:`~numpy.ndarray`
-        (M,) array.
-    x2 : :py:class:`~numpy.ndarray`
-        (N,) array.
-
-    Returns
-    -------
-    y : :py:class:`~numpy.ndarray`
-        (M, N, 2) array.
-    """
-    sh = len(x1), len(x2)
-    y = np.stack(
-        [np.broadcast_to(x1.reshape(-1, 1), sh), np.broadcast_to(x2.reshape(1, -1), sh)], axis=-1
-    )
-    return y
 
 
 def ffs_sample(T, N_FS, T_c, N_s):
