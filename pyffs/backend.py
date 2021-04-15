@@ -116,7 +116,7 @@ def fftn(x, axes=None):
     if get_array_module(x) == np:
         return fftpack.fftn(x, axes=axes)
     else:
-        return cp.fft.fftn(x, axes=axes)
+        return cupyx.scipy.fft.fftn(x, axes=axes)
 
 
 def fft(x):
@@ -137,7 +137,7 @@ def fft(x):
     if get_array_module(x) == np:
         return fftpack.fft(x)
     else:
-        return cp.fft.fft(x)
+        return cupyx.scipy.fft.fft(x)
 
 
 def ifftn(x, axes=None):
@@ -160,7 +160,7 @@ def ifftn(x, axes=None):
     if get_array_module(x) == np:
         return fftpack.ifftn(x, axes=axes)
     else:
-        return cp.fft.ifftn(x, axes=axes)
+        return cupyx.scipy.fft.ifftn(x, axes=axes)
 
 
 def next_fast_len(len):
