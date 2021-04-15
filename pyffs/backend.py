@@ -14,7 +14,7 @@ Code is heavily inspired by `PyLops` library: https://github.com/PyLops/pylops/b
 import os
 from importlib import util
 import numpy as np
-from scipy import fftpack as fftpack  # TODO : replace with `scipy.fft`?
+import scipy
 
 
 CUPY_ENABLED = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
@@ -117,7 +117,7 @@ def fftn(x, axes=None):
     """
 
     if get_array_module(x) == np:
-        return fftpack.fftn(x, axes=axes)
+        return scipy.fft.fftn(x, axes=axes)
     else:
         return cupyx.scipy.fft.fftn(x, axes=axes)
 
@@ -138,7 +138,7 @@ def fft(x):
     """
 
     if get_array_module(x) == np:
-        return fftpack.fft(x)
+        return scipy.fft.fft(x)
     else:
         return cupyx.scipy.fft.fft(x)
 
@@ -161,27 +161,27 @@ def ifftn(x, axes=None):
     """
 
     if get_array_module(x) == np:
-        return fftpack.ifftn(x, axes=axes)
+        return scipy.fft.ifftn(x, axes=axes)
     else:
         return cupyx.scipy.fft.ifftn(x, axes=axes)
 
 
-def next_fast_len(len):
+def next_fast_len(target):
     """
     Apply correct next_fast_len method based on backend.
 
     Parameters
     ----------
-    len : int
+    target : int
         Desired FFT length.
 
     Returns
     -------
     next_fast_len : int
-        next_fast_len >= len such that FFT computation is optimized.
+        The smallest fast length greater than or equal to `target`.
     """
 
     if get_backend() == np:
-        return fftpack.next_fast_len(len)
+        return scipy.fft.next_fast_len(target)
     else:
-        return cupyx.scipy.fft.next_fast_len(len)
+        return cupyx.scipy.fft.next_fast_len(target)
