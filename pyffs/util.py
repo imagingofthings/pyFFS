@@ -226,7 +226,7 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     return tuple(axes), N_s
 
 
-def ffs_sample(T, N_FS, T_c, N_s):
+def ffs_sample(T, N_FS, T_c, N_s, mod=None):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs.ffs`.
 
@@ -242,6 +242,8 @@ def ffs_sample(T, N_FS, T_c, N_s):
         Period mid-point.
     N_s : int
         Number of samples.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
 
     Returns
     -------
@@ -286,21 +288,23 @@ def ffs_sample(T, N_FS, T_c, N_s):
         raise ValueError("Parameter[N_s] must be greater or equal to the signal bandwidth.")
     assert N_FS % 2 == 1, "Parameter[N_FS] must be odd."
 
-    xp = get_backend()
+    if mod is None:
+        mod = get_backend()
+
     if N_s % 2 == 1:  # Odd-valued
         M = (N_s - 1) // 2
         # CuPy does not support slicing
-        idx = xp.r_[xp.arange(M + 1), xp.arange(start=-M, stop=0)]
+        idx = mod.r_[mod.arange(M + 1), mod.arange(start=-M, stop=0)]
         sample_points = T_c + (T / N_s) * idx
     else:  # Even case
         M = N_s // 2
-        idx = xp.r_[xp.arange(M), xp.arange(start=-M, stop=0)]
+        idx = mod.r_[mod.arange(M), mod.arange(start=-M, stop=0)]
         sample_points = T_c + (T / N_s) * (0.5 + idx)
 
     return sample_points, idx + M
 
 
-def ffsn_sample(T, N_FS, T_c, N_s):
+def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs.ffsn`.
 
@@ -316,6 +320,8 @@ def ffsn_sample(T, N_FS, T_c, N_s):
         Period mid-point for each dimension.
     N_s : list(int)
         Number of sample points for each dimension.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
 
     Returns
     -------
@@ -361,7 +367,7 @@ def ffsn_sample(T, N_FS, T_c, N_s):
     idx = []
     for d in range(D):
         # get values for d-dimension
-        _sample_points, _idx = ffs_sample(T=T[d], N_FS=N_FS[d], T_c=T_c[d], N_s=N_s[d])
+        _sample_points, _idx = ffs_sample(T=T[d], N_FS=N_FS[d], T_c=T_c[d], N_s=N_s[d], mod=mod)
 
         # reshape for sparse array
         sh = [1] * D
@@ -372,7 +378,7 @@ def ffsn_sample(T, N_FS, T_c, N_s):
     return sample_points, idx
 
 
-def _create_modulation_vectors(N_s, N_FS, T, T_c):
+def _create_modulation_vectors(N_s, N_FS, T, T_c, mod=None):
     """
     Compute modulation vectors for FFS.
 
@@ -386,6 +392,8 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
         Function period.
     T_c : float
         Period mid-point.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
 
     Returns
     -------
@@ -397,19 +405,20 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
     :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`,
     :py:func:`~pyffs.ffs.ffsn`, :py:func:`~pyffs.ffs.iffsn`
     """
-    xp = get_backend()
+    if mod is None:
+        mod = get_backend()
     N_s = int(N_s)
     N_FS = int(N_FS)
     M = N_s // 2
     N = N_FS // 2
-    E_1 = xp.r_[xp.arange(start=-N, stop=N + 1), xp.zeros(N_s - N_FS, dtype=int)]
-    B_2 = xp.exp(-1j * 2 * xp.pi / N_s)
+    E_1 = mod.r_[mod.arange(start=-N, stop=N + 1), mod.zeros(N_s - N_FS, dtype=int)]
+    B_2 = mod.exp(-1j * 2 * mod.pi / N_s)
 
     if N_s % 2 == 1:
-        B_1 = xp.exp(1j * (2 * xp.pi / T) * T_c)
-        E_2 = xp.r_[xp.arange(start=0, stop=M + 1), xp.arange(start=-M, stop=0)]
+        B_1 = mod.exp(1j * (2 * mod.pi / T) * T_c)
+        E_2 = mod.r_[mod.arange(start=0, stop=M + 1), mod.arange(start=-M, stop=0)]
     else:
-        B_1 = xp.exp(1j * (2 * xp.pi / T) * (T_c + T / (2 * N_s)))
-        E_2 = xp.r_[xp.arange(start=0, stop=M), xp.arange(start=-M, stop=0)]
+        B_1 = mod.exp(1j * (2 * mod.pi / T) * (T_c + T / (2 * N_s)))
+        E_2 = mod.r_[mod.arange(start=0, stop=M), mod.arange(start=-M, stop=0)]
 
     return B_1 ** E_1, B_2 ** (N * E_2)

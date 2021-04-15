@@ -58,7 +58,7 @@ def dirichlet(x, T, T_c, N_FS):
     return n / d
 
 
-def dirichlet_fs(N_FS, T, T_c):
+def dirichlet_fs(N_FS, T, T_c, mod=None):
     """
     Return Fourier Series coefficients of a shifted Dirichlet kernel of period
     :math:`T` and bandwidth :math:`N_{FS} = 2 N + 1`.
@@ -71,6 +71,9 @@ def dirichlet_fs(N_FS, T, T_c):
         Function period.
     T_c : float
         Period mid-point.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
+
 
     Returns
     -------
@@ -82,9 +85,10 @@ def dirichlet_fs(N_FS, T, T_c):
     :py:func:`~pyffs.func.dirichlet`
         (N_FS,) Fourier Series coefficients.
     """
-    xp = get_backend()
+    if mod is None:
+        mod = get_backend()
     N = (N_FS - 1) // 2
-    return xp.exp(-1j * (2 * xp.pi / T) * T_c * xp.arange(start=-N, stop=N + 1))
+    return mod.exp(-1j * (2 * mod.pi / T) * T_c * mod.arange(start=-N, stop=N + 1))
 
 
 def dirichlet_2D(sample_points, T, T_c, N_FS):

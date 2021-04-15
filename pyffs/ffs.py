@@ -243,7 +243,7 @@ def ffsn(x, T, T_c, N_FS, axes=None):
     # apply pre-FFT modulation
     A = []
     for d, N_sd in enumerate(N_s):
-        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
+        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d], xp)
         A.append(A_d.conj())
         sh = [1] * x.ndim
         sh[axes[d]] = N_s[d]
@@ -315,7 +315,7 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
     # apply pre-iFFT modulation
     B = []
     for d, N_sd in enumerate(N_s):
-        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
+        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d], xp)
         B.append(B_d)
         sh = [1] * x.ndim
         sh[axes[d]] = N_s[d]
