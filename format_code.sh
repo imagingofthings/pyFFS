@@ -1,6 +1,6 @@
 #!/bin/sh
 
-black pyffs/* -l 100
-black test/* -l 100
-black profile/* -l 100
+black pyffs/*.py -l 100
+black test/*.py -l 100
+black profile/*.py -l 100
 black test.py -l 100
