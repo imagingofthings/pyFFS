@@ -33,7 +33,7 @@ def profile_fs_interp(n_trials):
 
     # parameters of signal
     T, T_c, M = math.pi, math.e, 1000
-    N_FS_vals = [11, 31, 101, 301, 1001, 3001, 10001]
+    N_FS_vals = [11, 31, 101, 301, 1001, 3001, 10001, 30001, 100001]
 
     # sweep over number of interpolation points
     a, b = T_c + (T / 2) * np.r_[-1, 1]
