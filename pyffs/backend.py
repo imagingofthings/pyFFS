@@ -166,7 +166,7 @@ def ifftn(x, axes=None):
         return cupyx.scipy.fft.ifftn(x, axes=axes)
 
 
-def next_fast_len(target):
+def next_fast_len(target, mod=None):
     """
     Apply correct next_fast_len method based on backend.
 
@@ -174,6 +174,8 @@ def next_fast_len(target):
     ----------
     target : int
         Desired FFT length.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
 
     Returns
     -------
@@ -181,7 +183,10 @@ def next_fast_len(target):
         The smallest fast length greater than or equal to `target`.
     """
 
-    if get_backend() == np:
+    if mod is None:
+        mod = get_backend()
+
+    if mod == np:
         return scipy.fft.next_fast_len(target)
     else:
         return cupyx.scipy.fft.next_fast_len(target)

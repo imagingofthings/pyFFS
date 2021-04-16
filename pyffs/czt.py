@@ -141,7 +141,7 @@ def cztn(x, A, W, M, axes=None):
     L = []
     n = []
     for d in range(D):
-        _L = next_fast_len(N[d] + M[d] - 1)
+        _L = next_fast_len(N[d] + M[d] - 1, mod=xp)
         L.append(_L)
         n.append(xp.arange(_L))
 
