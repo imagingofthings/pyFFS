@@ -12,7 +12,7 @@ Methods for computing Fast Fourier Series.
 
 __all__ = ["ffs", "ffsn", "iffs", "iffsn", "_ffsn", "_iffsn"]
 
-from pyffs.util import _create_modulation_vectors, _verify_ffsn_input
+from pyffs.util import _create_modulation_vectors, _verify_ffsn_input, _modulate_2d
 from pyffs.backend import fftn, ifftn, get_array_module
 
 
@@ -138,7 +138,7 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     return iffsn(x_FS=x_FS, T=[T], T_c=[T_c], N_FS=[N_FS], axes=(axis,))
 
 
-def ffsn(x, T, T_c, N_FS, axes=None):
+def ffsn(x, T, T_c, N_FS, axes=None, fuse=True):
     r"""
     Fourier Series coefficients from signal samples of a D-dimension signal.
 
@@ -240,27 +240,59 @@ def ffsn(x, T, T_c, N_FS, axes=None):
         is_complex64 = False
         x_FS = x.copy().astype(xp.complex128)
 
-    # apply pre-FFT modulation
-    A = []
-    for d, N_sd in enumerate(N_s):
-        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d], xp)
-        A.append(A_d.conj())
+    # TODO : really worth it just for 2D?
+    # pre-compute modulation arrays
+    C_1 = []
+    C_2 = []
+    D = len(axes)
+    for d, ax in enumerate(axes):
+        A_d, B_d = _create_modulation_vectors(N_s[d], N_FS[d], T[d], T_c[d], xp)
         sh = [1] * x.ndim
-        sh[axes[d]] = N_s[d]
-        C_2 = B_d.conj().reshape(sh)
+        sh[ax] = N_s[d]
+        C_1.append(A_d.conj().reshape(sh) / N_s[d])
+        C_2.append(B_d.conj().reshape(sh))
         if is_complex64:
-            C_2 = C_2.astype(xp.complex64)
-        x_FS *= C_2
+            C_1[d].astype(xp.complex64)
+            C_2[d].astype(xp.complex64)
+
+    # apply pre-FFT modulation
+    if D == 2:
+        x_FS = _modulate_2d(x_FS, C_2[0], C_2[1])
+    else:
+        for _c2 in C_2:
+            x_FS *= _c2
 
     # apply post-FFT modulation
     x_FS = fftn(x_FS, axes=axes)
 
     # apply modulation after FFT
-    for d, ax in enumerate(axes):
-        sh = [1] * x.ndim
-        sh[ax] = N_s[d]
-        C_1 = A[d].reshape(sh)
-        x_FS *= C_1 / N_s[d]
+    if D == 2 and fuse:
+        x_FS = _modulate_2d(x_FS, C_1[0], C_1[1])
+    else:
+        for _c1 in C_1:
+            x_FS *= _c1
+
+    # # apply pre-FFT modulation
+    # A = []
+    # for d, N_sd in enumerate(N_s):
+    #     A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d], xp)
+    #     A.append(A_d.conj())
+    #     sh = [1] * x.ndim
+    #     sh[axes[d]] = N_s[d]
+    #     C_2 = B_d.conj().reshape(sh)
+    #     if is_complex64:
+    #         C_2 = C_2.astype(xp.complex64)
+    #     x_FS *= C_2
+    #
+    # # apply post-FFT modulation
+    # x_FS = fftn(x_FS, axes=axes)
+    #
+    # # apply modulation after FFT
+    # for d, ax in enumerate(axes):
+    #     sh = [1] * x.ndim
+    #     sh[ax] = N_s[d]
+    #     C_1 = A[d].reshape(sh)
+    #     x_FS *= C_1 / N_s[d]
 
     return x_FS
 

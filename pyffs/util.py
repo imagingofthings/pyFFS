@@ -12,7 +12,7 @@ Helper functions.
 
 import cmath
 
-from pyffs.backend import get_backend
+from pyffs.backend import get_backend, CUPY_ENABLED
 
 
 def _index(x, axis, index_spec):
@@ -425,3 +425,11 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c, mod=None):
         E_2 = mod.r_[mod.arange(start=0, stop=M), mod.arange(start=-M, stop=0)]
 
     return B_1 ** E_1, B_2 ** (N * E_2)
+
+
+def _modulate_2d(x, y1, y2):
+    return x * y1 * y2
+
+
+if CUPY_ENABLED:
+    _modulate = cp.fuse(_modulate_2d)
