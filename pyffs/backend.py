@@ -14,7 +14,7 @@ Code is heavily inspired by `PyLops` library: https://github.com/PyLops/pylops/b
 import os
 from importlib import util
 import numpy as np
-import scipy
+import scipy.fft
 
 
 CUPY_ENABLED = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
