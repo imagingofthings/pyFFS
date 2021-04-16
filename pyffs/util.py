@@ -432,4 +432,6 @@ def _modulate_2d(x, y1, y2):
 
 
 if CUPY_ENABLED:
+    import cupy as cp
+
     _modulate = cp.fuse(_modulate_2d)
