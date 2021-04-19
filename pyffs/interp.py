@@ -220,7 +220,10 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
             x = czt(x_FS_p, A[0], W[0], M[0], axis=axes[0])
 
             # exploit conjugate symmetry
-            x = _real_interpolation_1d(x0_FS, x, C)
+            if fuse:
+                x = _real_interpolation_1d(x0_FS, x, C)
+            else:
+                x = 2 * C * x + x0_FS
 
         elif D == 2:
             # positive / positive
@@ -234,7 +237,10 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
             x_np *= xp.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
-            x = _real_interpolation_2d(x0_FS, x_pp, x_np)
+            if fuse:
+                x = _real_interpolation_2d(x0_FS, x_pp, x_np)
+            else:
+                x = 2 * x_pp + 2 * x_np - x0_FS
         else:
             raise NotImplementedError("[real_x] approach not available for D > 2.")
 
