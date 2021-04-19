@@ -155,6 +155,9 @@ def ffsn(x, T, T_c, N_FS, axes=None, fuse=True):
         Function bandwidth along each dimension.
     axes : tuple
         Dimensions of `x` along which function samples are stored.
+    fuse : bool, optional
+        Note that this is only taken intro account for D=2 and when cupy is being used. In this case
+        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -256,7 +259,7 @@ def ffsn(x, T, T_c, N_FS, axes=None, fuse=True):
             C_2[d].astype(xp.complex64)
 
     # apply pre-FFT modulation
-    if D == 2:
+    if D == 2 and fuse:
         x_FS = _modulate_2d(x_FS, C_2[0], C_2[1])
     else:
         for _c2 in C_2:
