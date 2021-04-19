@@ -451,16 +451,18 @@ if CUPY_ENABLED:
     #  CUDA code for this and put inside RawKernel
     _modulate_2d = cp.ElementwiseKernel("S x, S y1, S y2", "S z", "z = x * y1 * y2", "_modulate_2d")
 
-    _real_interpolation_1d = cp.ElementwiseKernel(
-        "S x0_FS, S C",
-        "S x",
-        "x = (S) 2 * C * x + x0_FS",
-        "_real_interpolation_1d",
-    )
-
-    _real_interpolation_2d = cp.ElementwiseKernel(
-        "S x0_FS, S x_pp, S x_np",
-        "S z",
-        "z = (S) 2 * x_pp + (S) 2 *  x_np - x0_FS",
-        "_real_interpolation_2d",
-    )
+    _real_interpolation_1d = cp.fuse(_real_interpolation_1d)
+    _real_interpolation_2d = cp.fuse(_real_interpolation_2d)
+    # _real_interpolation_1d = cp.ElementwiseKernel(
+    #     "S x0_FS, S C",
+    #     "S x",
+    #     "x = (S) 2 * C * x + x0_FS",
+    #     "_real_interpolation_1d",
+    # )
+    #
+    # _real_interpolation_2d = cp.ElementwiseKernel(
+    #     "S x0_FS, S x_pp, S x_np",
+    #     "S z",
+    #     "z = (S) 2 * x_pp + (S) 2 *  x_np - x0_FS",
+    #     "_real_interpolation_2d",
+    # )
