@@ -427,11 +427,40 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c, mod=None):
     return B_1 ** E_1, B_2 ** (N * E_2)
 
 
+"""
+SPEED-UP WITH CUSTOM CUDA KERNELS
+"""
+
+
 def _modulate_2d(x, y1, y2):
     return x * y1 * y2
+
+
+def _real_interpolation_1d(x0_FS, x, C):
+    return 2 * C * x + x0_FS
+
+
+def _real_interpolation_2d(x0_FS, x_pp, x_np):
+    return 2 * x_pp + 2 * x_np - x0_FS
 
 
 if CUPY_ENABLED:
     import cupy as cp
 
+    # TODO : could speed up by combining with computing modulation vectors would need to write
+    #  CUDA code for this and put inside RawKernel
     _modulate_2d = cp.ElementwiseKernel("S x, S y1, S y2", "S z", "z = x * y1 * y2", "_modulate_2d")
+
+    _real_interpolation_1d = cp.ElementwiseKernel(
+        "S x0_FS, S C",
+        "S x",
+        "x = (S) 2 * C * x + x0_FS",
+        "_real_interpolation_1d",
+    )
+
+    _real_interpolation_2d = cp.ElementwiseKernel(
+        "S x0_FS, S x_pp, S x_np",
+        "S z",
+        "z = (S) 2 * x_pp + (S) 2 *  x_np - x0_FS",
+        "_real_interpolation_2d",
+    )

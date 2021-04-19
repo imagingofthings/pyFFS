@@ -11,7 +11,14 @@ Methods for interpolating functions using Fourier Series.
 """
 
 from pyffs.czt import czt, cztn
-from pyffs.util import _index, _index_n, _verify_fs_interp_input
+from pyffs.util import (
+    _index,
+    _index_n,
+    _verify_fs_interp_input,
+    _modulate_2d,
+    _real_interpolation_1d,
+    _real_interpolation_2d,
+)
 from pyffs.backend import get_array_module
 
 
@@ -138,7 +145,7 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     return fs_interpn(x_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_x=real_x)
 
 
-def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
+def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
     r"""
     Interpolate D-dimensional bandlimited periodic signal.
 
@@ -161,6 +168,9 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
         and use a more efficient algorithm. In this case, the FS coefficients
         corresponding to negative frequencies are not used. Note that this
         approach is only available for D < 3, and will raise an error otherwise.
+    fuse : bool, optional
+        Note that this is only taken intro account for D=2 and when cupy is being used. In this case
+        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -202,10 +212,11 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
         if D == 1:
             x_FS_p = x_FS[_index(x_FS, axes[0], slice(N[0] + 1, N_FS[0]))]
             C = xp.reshape(W[0] ** E[0], sh[0]) / A[0]
-
             x = czt(x_FS_p, A[0], W[0], M[0], axis=axes[0])
-            x *= 2 * C
-            x += x0_FS
+
+            # exploit conjugate symmetry
+            x = _real_interpolation_1d(x0_FS, x, C)
+
         elif D == 2:
             # positive / positive
             x_FS_pp = x_FS[_index_n(x_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])]
@@ -218,7 +229,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
             x_np *= xp.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
-            x = 2 * x_pp - x0_FS + 2 * x_np
+            x = _real_interpolation_2d(x0_FS, x_pp, x_np)
         else:
             raise NotImplementedError("[real_x] approach not available for D > 2.")
 
@@ -227,8 +238,13 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
         x = cztn(x_FS, A, W, M, axes=axes)
 
         # modulate along each dimension
-        for d in range(D):
-            C = xp.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
-            x *= C
+        if D == 2 and fuse:
+            C1 = xp.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
+            C2 = xp.reshape(W[1] ** (-N[1] * E[1]), sh[1]) * (A[1] ** N[1])
+            x = _modulate_2d(x, C1, C2)
+        else:
+            for d in range(D):
+                C = xp.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
+                x *= C
 
         return x

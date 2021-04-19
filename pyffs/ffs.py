@@ -259,7 +259,6 @@ def ffsn(x, T, T_c, N_FS, axes=None, fuse=True):
 
     # apply pre-FFT modulation
     if D == 2 and fuse:
-        # TODO : really worth it just for 2D?
         x_FS = _modulate_2d(x_FS, C_2[0], C_2[1])
     else:
         for _c2 in C_2:
@@ -342,7 +341,6 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None, fuse=True):
 
     # apply pre-FFT modulation
     if D == 2 and fuse:
-        # TODO : really worth it just for 2D?
         x = _modulate_2d(x, C_1[0], C_1[1])
     else:
         for _c1 in C_1:
