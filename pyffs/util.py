@@ -434,7 +434,7 @@ def _modulate_2d(x, y1, y2):
 if CUPY_ENABLED:
     import cupy as cp
 
-    # _modulate_2d = cp.fuse(_modulate_2d)
-    _modulate_2d = foo = cp.ElementwiseKernel(
-        "S y1, S y2", "S x", "x = x * y1 * y2", "_modulate_2d"  # overwrite x
-    )
+    _modulate_2d = cp.fuse(_modulate_2d)
+    # _modulate_2d = foo = cp.ElementwiseKernel(
+    #     "S y1, S y2", "S x", "x = x * y1 * y2", "_modulate_2d"  # overwrite x
+    # )
