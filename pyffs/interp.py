@@ -19,7 +19,7 @@ from pyffs.util import (
     _real_interpolation_1d,
     _real_interpolation_2d,
 )
-from pyffs.backend import get_array_module
+from pyffs.backend import get_array_module, get_module_name
 
 
 def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
@@ -191,6 +191,8 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
     D = len(axes)
 
     xp = get_array_module(x_FS)
+    if get_module_name(xp) == "numpy":
+        fuse = False
 
     # precompute modulation terms
     N_FS = [x_FS.shape[d] for d in axes]

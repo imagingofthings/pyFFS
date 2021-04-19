@@ -13,7 +13,7 @@ Methods for computing Fast Fourier Series.
 __all__ = ["ffs", "ffsn", "iffs", "iffsn", "_ffsn", "_iffsn"]
 
 from pyffs.util import _create_modulation_vectors, _verify_ffsn_input, _modulate_2d
-from pyffs.backend import fftn, ifftn, get_array_module
+from pyffs.backend import fftn, ifftn, get_array_module, get_module_name
 
 
 def ffs(x, T, T_c, N_FS, axis=-1):
@@ -234,6 +234,8 @@ def ffsn(x, T, T_c, N_FS, axes=None, fuse=True):
     axes, N_s = _verify_ffsn_input(x, T, T_c, N_FS, axes)
 
     xp = get_array_module(x)
+    if get_module_name(xp) == "numpy":
+        fuse = False
 
     # check for input type
     if (x.dtype == xp.dtype("complex64")) or (x.dtype == xp.dtype("float32")):
