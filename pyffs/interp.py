@@ -22,7 +22,7 @@ from pyffs.util import (
 from pyffs.backend import get_array_module, get_module_name
 
 
-def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
+def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False, fuse=True):
     r"""
     Interpolate bandlimited periodic signal.
 
@@ -48,6 +48,9 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     real_x : bool, optional
         If True, assume that `x_FS` is conjugate symmetric and use a more efficient algorithm. In
         this case, the FS coefficients corresponding to negative frequencies are not used.
+    fuse : bool, optional
+        Note that this is only taken intro account for D=2 and when cupy is being used. In this case
+        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -142,7 +145,7 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     --------
     :py:func:`~pyffs.czt.czt`, :py:func:`~pyffs.interp.fs_interpn`
     """
-    return fs_interpn(x_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_x=real_x)
+    return fs_interpn(x_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_x=real_x, fuse=fuse)
 
 
 def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):

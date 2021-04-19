@@ -16,7 +16,7 @@ from pyffs.util import _create_modulation_vectors, _verify_ffsn_input, _modulate
 from pyffs.backend import fftn, ifftn, get_array_module, get_module_name
 
 
-def ffs(x, T, T_c, N_FS, axis=-1):
+def ffs(x, T, T_c, N_FS, axis=-1, fuse=True):
     r"""
     Fourier Series coefficients from signal samples of a 1D function.
 
@@ -33,6 +33,9 @@ def ffs(x, T, T_c, N_FS, axis=-1):
         Function bandwidth.
     axis : int
         Dimension of `x` along which function samples are stored.
+    fuse : bool, optional
+        Note that this is only taken intro account for D=2 and when cupy is being used. In this case
+        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -96,10 +99,10 @@ def ffs(x, T, T_c, N_FS, axis=-1):
     --------
     :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.iffs`
     """
-    return ffsn(x=x, T=[T], T_c=[T_c], N_FS=[N_FS], axes=(axis,))
+    return ffsn(x=x, T=[T], T_c=[T_c], N_FS=[N_FS], axes=(axis,), fuse=fuse)
 
 
-def iffs(x_FS, T, T_c, N_FS, axis=-1):
+def iffs(x_FS, T, T_c, N_FS, axis=-1, fuse=True):
     r"""
     Signal samples from Fourier Series coefficients of a 1D function.
 
@@ -118,6 +121,9 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
         Function bandwidth.
     axis : int
         Dimension of `x_FS` along which FS coefficients are stored.
+    fuse : bool, optional
+        Note that this is only taken intro account for D=2 and when cupy is being used. In this case
+        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -135,7 +141,7 @@ def iffs(x_FS, T, T_c, N_FS, axis=-1):
     --------
     :py:func:`~pyffs.util.ffs_sample`, :py:func:`~pyffs.ffs.ffs`
     """
-    return iffsn(x_FS=x_FS, T=[T], T_c=[T_c], N_FS=[N_FS], axes=(axis,))
+    return iffsn(x_FS=x_FS, T=[T], T_c=[T_c], N_FS=[N_FS], axes=(axis,), fuse=fuse)
 
 
 def ffsn(x, T, T_c, N_FS, axes=None, fuse=True):
