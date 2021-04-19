@@ -318,6 +318,8 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None, fuse=True):
     axes, N_s = _verify_ffsn_input(x_FS, T, T_c, N_FS, axes)
 
     xp = get_array_module(x_FS)
+    if get_module_name(xp) == "numpy":
+        fuse = False
 
     # check for input type
     if (x_FS.dtype == xp.dtype("complex64")) or (x_FS.dtype == xp.dtype("float32")):
