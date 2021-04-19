@@ -49,8 +49,8 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False, fuse=True):
         If True, assume that `x_FS` is conjugate symmetric and use a more efficient algorithm. In
         this case, the FS coefficients corresponding to negative frequencies are not used.
     fuse : bool, optional
-        Note that this is only taken intro account for D=2 and when cupy is being used. In this case
-        specify whether or not to fuse kernels for slight speedup.
+        Note that this is only taken into account when cupy is being used. In this case specify
+        whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -172,7 +172,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
         corresponding to negative frequencies are not used. Note that this
         approach is only available for D < 3, and will raise an error otherwise.
     fuse : bool, optional
-        Note that this is only taken intro account for D=2 and when cupy is being used. In this case
+        Note that this is only taken into account for D<=2 and when cupy is being used. In this case
         specify whether or not to fuse kernels for slight speedup.
 
     Returns
@@ -194,8 +194,6 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
     D = len(axes)
 
     xp = get_array_module(x_FS)
-    if get_module_name(xp) == "numpy":
-        fuse = False
 
     # precompute modulation terms
     N_FS = [x_FS.shape[d] for d in axes]
@@ -232,7 +230,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
 
             # negative / positive
             x_FS_np = x_FS[_index_n(x_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
-            x_np = cztn(x_FS_np, A, W, M, axes=axes)
+            x_np = cztn(x_FS_np, A, W, M, axes=axes, fuse=fuse)
             x_np *= xp.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
             x_np *= xp.reshape(W[1] ** E[1], sh[1]) / A[1]
 
@@ -246,7 +244,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
 
         return x.real
     else:  # General complex case.
-        x = cztn(x_FS, A, W, M, axes=axes)
+        x = cztn(x_FS, A, W, M, axes=axes, fuse=fuse)
 
         # modulate along each dimension
         if D == 2 and fuse:

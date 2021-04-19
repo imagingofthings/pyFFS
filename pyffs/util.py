@@ -447,22 +447,24 @@ def _real_interpolation_2d(x0_FS, x_pp, x_np):
 if CUPY_ENABLED:
     import cupy as cp
 
-    # TODO : could speed up by combining with computing modulation vectors would need to write
-    #  CUDA code for this and put inside RawKernel
-    _modulate_2d = cp.ElementwiseKernel("S x, S y1, S y2", "S z", "z = x * y1 * y2", "_modulate_2d")
+    _modulate_2d = cp.fuse(_modulate_2d)
+    _real_interpolation_1d = cp.fuse(_real_interpolation_1d)
+    _real_interpolation_2d = cp.fuse(_real_interpolation_2d)
 
-    # _real_interpolation_1d = cp.fuse(_real_interpolation_1d)
-    # _real_interpolation_2d = cp.fuse(_real_interpolation_2d)
-    _real_interpolation_1d = cp.ElementwiseKernel(
-        "S x0_FS, S C",
-        "S x",
-        "x = (S) 2 * C * x + x0_FS",
-        "_real_interpolation_1d",
-    )
-
-    _real_interpolation_2d = cp.ElementwiseKernel(
-        "S x0_FS, S x_pp, S x_np",
-        "S z",
-        "z = (S) 2 * x_pp + (S) 2 *  x_np - x0_FS",
-        "_real_interpolation_2d",
-    )
+    # TODO : could speed up by combining with computing modulation vectors which would require
+    #  writing CUDA code for this and put inside RawKernel. NB if not use using decorators, will
+    #  run into issue when numpy array is provided when CUPY_ENABLED = TRUE.
+    # _modulate_2d = cp.ElementwiseKernel("S x, S y1, S y2", "S z", "z = x * y1 * y2", "_modulate_2d")
+    # _real_interpolation_1d = cp.ElementwiseKernel(
+    #     "S x0_FS, S C",
+    #     "S x",
+    #     "x = (S) 2 * C * x + x0_FS",
+    #     "_real_interpolation_1d",
+    # )
+    #
+    # _real_interpolation_2d = cp.ElementwiseKernel(
+    #     "S x0_FS, S x_pp, S x_np",
+    #     "S z",
+    #     "z = (S) 2 * x_pp + (S) 2 *  x_np - x0_FS",
+    #     "_real_interpolation_2d",
+    # )

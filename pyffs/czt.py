@@ -12,8 +12,8 @@ Methods for computing the chirp Z-transform.
 
 __all__ = ["czt", "cztn", "_cztn"]
 
-from pyffs.util import _verify_cztn_input, _index_n
-from pyffs.backend import get_array_module, fftn, ifftn, fft, next_fast_len
+from pyffs.util import _verify_cztn_input, _index_n, _modulate_2d
+from pyffs.backend import get_array_module, fftn, ifftn, fft, next_fast_len, get_module_name
 
 
 def czt(x, A, W, M, axis=-1):
@@ -34,6 +34,9 @@ def czt(x, A, W, M, axis=-1):
         Length of the transform.
     axis : int
         Dimension of `x` along which the samples are stored.
+    fuse : bool, optional
+        Note that this is only taken into account for D=2 and when cupy is being used. In this case
+        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -79,10 +82,10 @@ def czt(x, A, W, M, axis=-1):
        >>> np.allclose(idft_x, czt_x / N)  # czt() does not do the scaling.
        True
     """
-    return cztn(x=x, A=[A], W=[W], M=[M], axes=(axis,))
+    return cztn(x=x, A=[A], W=[W], M=[M], axes=(axis,), fuse=False)
 
 
-def cztn(x, A, W, M, axes=None):
+def cztn(x, A, W, M, axes=None, fuse=True):
     """
     Multi-dimensional Chirp Z-transform.
 
@@ -98,6 +101,9 @@ def cztn(x, A, W, M, axes=None):
         Length of transform for each dimension.
     axes : tuple
         Dimensions of `x` along which transform should be applied.
+    fuse : bool, optional
+        Note that this is only taken into account for D=2 and when cupy is being used. In this case
+        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -159,43 +165,53 @@ def cztn(x, A, W, M, axes=None):
     u[idx] = x
 
     # Modulate along each dimension
+    u_mod = [(A[d] ** -n[d][: N[d]]) * xp.power(W[d], (n[d][: N[d]] ** 2) / 2) for d in range(D)]
     for d in range(D):
-        _n = n[d]
-        _N = N[d]
         sh_N = [1] * x.ndim
         sh_N[axes[d]] = N[d]
-        # TODO : float_power not supported by cupy as of April 14, 2021
-        # u_mod_d = (A[d] ** -_n[:_N]) * np.float_power(W[d], (_n[:_N] ** 2) / 2)
-        u_mod_d = (A[d] ** -_n[:_N]) * xp.power(W[d], (_n[:_N] ** 2) / 2)
-        u[idx] *= u_mod_d.reshape(sh_N)
+        u_mod[d] = u_mod[d].reshape(sh_N)
+    if D == 2 and fuse:
+        # TODO : really worth it?
+        u[idx] = _modulate_2d(u[idx], u_mod[0], u_mod[1])
+    else:
+        for d in range(D):
+            u[idx] *= u_mod[d]
     U = fftn(u, axes=axes)
+    del u_mod
 
     # Convolve along each dimension -> multiply in frequency domain
+    V = []
     for d in range(D):
         _N = N[d]
         sh_L = [1] * x.ndim
         sh_L[axes[d]] = L[d]
         v = xp.zeros(L[d], dtype=complex)
-        # TODO : float_power not supported by cupy as of April 14, 2021
-        # v[: M[d]] = np.float_power(W[d], -(n[d][: M[d]] ** 2) / 2)
-        # v[L[d] - _N + 1 :] = np.float_power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
         v[: M[d]] = xp.power(W[d], -(n[d][: M[d]] ** 2) / 2)
         v[L[d] - _N + 1 :] = xp.power(W[d], -((L[d] - n[d][L[d] - _N + 1 :]) ** 2) / 2)
-        V = fft(v).reshape(sh_L)
-        U *= V
+        V.append(fft(v).reshape(sh_L))
+    if D == 2 and fuse:
+        # TODO : really worth it?
+        U = _modulate_2d(U, V[0], V[1])
+    else:
+        for d in range(D):
+            U *= V[d]
     g = ifftn(U, axes=axes)
+    del V
 
     # Final modulation in time
     time_idx = _index_n(g, axes, [slice(m) for m in M])
+    g_mod = [xp.power(W[d], (n[d][: M[d]] ** 2) / 2) for d in range(D)]
     for d in range(D):
-        _n = n[d]
-        _M = M[d]
         sh_M = [1] * x.ndim
-        sh_M[axes[d]] = _M
-        # TODO : float_power not supported by cupy as of April 14, 2021
-        # g_mod = np.float_power(W[d], (_n[:_M] ** 2) / 2)
-        g_mod = xp.power(W[d], (_n[:_M] ** 2) / 2)
-        g[time_idx] *= g_mod.reshape(sh_M)
+        sh_M[axes[d]] = M[d]
+        g_mod[d] = g_mod[d].reshape(sh_M)
+    if D == 2 and fuse:
+        # TODO : really worth it?
+        g[time_idx] = _modulate_2d(g[time_idx], g_mod[0], g_mod[1])
+
+    else:
+        for d in range(D):
+            g[time_idx] *= g_mod[d]
 
     x_czt = g[time_idx]
     return x_czt
