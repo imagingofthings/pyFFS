@@ -11,7 +11,7 @@ Methods for computing samples and Fourier Series coefficients of specific
 functions.
 """
 
-import numpy as np
+from pyffs.backend import get_array_module, get_backend
 
 
 def dirichlet(x, T, T_c, N_FS):
@@ -45,18 +45,20 @@ def dirichlet(x, T, T_c, N_FS):
     --------
     :py:func:`~pyffs.func.dirichlet_fs`
     """
+    xp = get_array_module(x)
+
     y = x - T_c
-    n, d = np.zeros((2, len(x)))
-    nan_mask = np.isclose(np.fmod(y, np.pi), 0)
-    n[~nan_mask] = np.sin(N_FS * np.pi * y[~nan_mask] / T)
-    d[~nan_mask] = np.sin(np.pi * y[~nan_mask] / T)
-    n[nan_mask] = N_FS * np.cos(N_FS * np.pi * y[nan_mask] / T)
-    d[nan_mask] = np.cos(np.pi * y[nan_mask] / T)
+    n, d = xp.zeros((2, len(x)))
+    nan_mask = xp.isclose(xp.fmod(y, xp.pi), 0)
+    n[~nan_mask] = xp.sin(N_FS * xp.pi * y[~nan_mask] / T)
+    d[~nan_mask] = xp.sin(xp.pi * y[~nan_mask] / T)
+    n[nan_mask] = N_FS * xp.cos(N_FS * xp.pi * y[nan_mask] / T)
+    d[nan_mask] = xp.cos(xp.pi * y[nan_mask] / T)
 
     return n / d
 
 
-def dirichlet_fs(N_FS, T, T_c):
+def dirichlet_fs(N_FS, T, T_c, mod=None):
     """
     Return Fourier Series coefficients of a shifted Dirichlet kernel of period
     :math:`T` and bandwidth :math:`N_{FS} = 2 N + 1`.
@@ -69,6 +71,9 @@ def dirichlet_fs(N_FS, T, T_c):
         Function period.
     T_c : float
         Period mid-point.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
+
 
     Returns
     -------
@@ -80,8 +85,10 @@ def dirichlet_fs(N_FS, T, T_c):
     :py:func:`~pyffs.func.dirichlet`
         (N_FS,) Fourier Series coefficients.
     """
+    if mod is None:
+        mod = get_backend()
     N = (N_FS - 1) // 2
-    return np.exp(-1j * (2 * np.pi / T) * T_c * np.r_[-N : N + 1])
+    return mod.exp(-1j * (2 * mod.pi / T) * T_c * mod.arange(start=-N, stop=N + 1))
 
 
 def dirichlet_2D(sample_points, T, T_c, N_FS):
@@ -119,7 +126,9 @@ def dirichlet_2D(sample_points, T, T_c, N_FS):
     --------
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.func.dirichlet_fs`
     """
+    xp = get_array_module(sample_points)
+
     # compute along x and y, then combine
     x_vals = dirichlet(x=sample_points[0][:, 0], T=T[0], T_c=T_c[0], N_FS=N_FS[0])
     y_vals = dirichlet(x=sample_points[1][0, :], T=T[1], T_c=T_c[1], N_FS=N_FS[1])
-    return np.outer(x_vals, y_vals)
+    return xp.outer(x_vals, y_vals)

@@ -12,10 +12,8 @@ Methods for computing Fast Fourier Series.
 
 __all__ = ["ffs", "ffsn", "iffs", "iffsn", "_ffsn", "_iffsn"]
 
-import numpy as np
-from scipy import fftpack as fftpack
-
 from pyffs.util import _create_modulation_vectors, _verify_ffsn_input
+from pyffs.backend import fftn, ifftn, get_array_module
 
 
 def ffs(x, T, T_c, N_FS, axis=-1):
@@ -232,35 +230,38 @@ def ffsn(x, T, T_c, N_FS, axes=None):
     """
     axes, N_s = _verify_ffsn_input(x, T, T_c, N_FS, axes)
 
+    xp = get_array_module(x)
+
     # check for input type
-    if (x.dtype == np.dtype("complex64")) or (x.dtype == np.dtype("float32")):
+    if (x.dtype == xp.dtype("complex64")) or (x.dtype == xp.dtype("float32")):
         is_complex64 = True
-        x_FS = x.copy().astype(np.complex64)
+        x_FS = x.copy().astype(xp.complex64)
     else:
         is_complex64 = False
-        x_FS = x.copy().astype(np.complex128)
+        x_FS = x.copy().astype(xp.complex128)
 
-    # apply pre-FFT modulation
-    A = []
-    for d, N_sd in enumerate(N_s):
-        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
-        A.append(A_d.conj())
-        sh = [1] * x.ndim
-        sh[axes[d]] = N_s[d]
-        C_2 = B_d.conj().reshape(sh)
-        if is_complex64:
-            C_2 = C_2.astype(np.complex64)
-        x_FS *= C_2
-
-    # apply post-FFT modulation
-    x_FS = fftpack.fftn(x_FS, axes=axes)
-
-    # apply modulation after FFT
+    C_1 = []
     for d, ax in enumerate(axes):
+        A_d, B_d = _create_modulation_vectors(N_s[d], N_FS[d], T[d], T_c[d], xp)
         sh = [1] * x.ndim
         sh[ax] = N_s[d]
-        C_1 = A[d].reshape(sh)
-        x_FS *= C_1 / N_s[d]
+
+        # apply pre-mod
+        C_2 = B_d.conj().reshape(sh)
+        if is_complex64:
+            C_2 = C_2.astype(xp.complex64)
+        x_FS *= C_2
+
+        # save post-mod vectors
+        C_1.append(A_d.conj().reshape(sh) / N_s[d])
+        if is_complex64:
+            C_1[d].astype(xp.complex64)
+
+    x_FS = fftn(x_FS, axes=axes)
+
+    # apply modulation after FFT
+    for _c1 in C_1:
+        x_FS *= _c1
 
     return x_FS
 
@@ -302,35 +303,38 @@ def iffsn(x_FS, T, T_c, N_FS, axes=None):
     """
     axes, N_s = _verify_ffsn_input(x_FS, T, T_c, N_FS, axes)
 
+    xp = get_array_module(x_FS)
+
     # check for input type
-    if (x_FS.dtype == np.dtype("complex64")) or (x_FS.dtype == np.dtype("float32")):
+    if (x_FS.dtype == xp.dtype("complex64")) or (x_FS.dtype == xp.dtype("float32")):
         is_complex64 = True
-        x = x_FS.copy().astype(np.complex64)
+        x = x_FS.copy().astype(xp.complex64)
     else:
         is_complex64 = False
-        x = x_FS.copy().astype(np.complex128)
+        x = x_FS.copy().astype(xp.complex128)
 
-    # apply pre-iFFT modulation
-    B = []
-    for d, N_sd in enumerate(N_s):
-        A_d, B_d = _create_modulation_vectors(N_sd, N_FS[d], T[d], T_c[d])
-        B.append(B_d)
-        sh = [1] * x.ndim
-        sh[axes[d]] = N_s[d]
-        C_1 = A_d.reshape(sh)
-        if is_complex64:
-            C_1 = C_1.astype(np.complex64)
-        x *= C_1
-
-    # apply FFT
-    x = fftpack.ifftn(x, axes=axes)
-
-    # apply post-iFFT modulation
+    C_2 = []
     for d, ax in enumerate(axes):
+        A_d, B_d = _create_modulation_vectors(N_s[d], N_FS[d], T[d], T_c[d], xp)
         sh = [1] * x.ndim
         sh[ax] = N_s[d]
-        C_2 = B[d].reshape(sh)
-        x *= C_2 * N_s[d]
+
+        # apply pre-mod
+        C_1 = A_d.reshape(sh)
+        if is_complex64:
+            C_1 = C_1.astype(xp.complex64)
+        x *= C_1
+
+        # save post-mod
+        C_2.append(B_d.reshape(sh) * N_s[d])
+        if is_complex64:
+            C_2[d].astype(xp.complex64)
+
+    x = ifftn(x, axes=axes)
+
+    # apply modulation after FFT
+    for _c2 in C_2:
+        x *= _c2
 
     return x
 

@@ -12,7 +12,7 @@ Helper functions.
 
 import cmath
 
-import numpy as np
+from pyffs.backend import get_backend, CUPY_ENABLED
 
 
 def _index(x, axis, index_spec):
@@ -214,7 +214,7 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     else:
         axes = list(range(D))
 
-    N_s = np.array(x.shape)[axes]
+    N_s = [x.shape[d] for d in axes]
 
     # check valid values
     for d in range(D):
@@ -226,31 +226,7 @@ def _verify_ffsn_input(x, T, T_c, N_FS, axes):
     return tuple(axes), N_s
 
 
-def cartesian_product(x1, x2):
-    """
-    Return
-    `Cartesian product <https://en.wikipedia.org/wiki/Cartesian_product>`_ of two arrays.
-
-    Parameters
-    ----------
-    x1 : :py:class:`~numpy.ndarray`
-        (M,) array.
-    x2 : :py:class:`~numpy.ndarray`
-        (N,) array.
-
-    Returns
-    -------
-    y : :py:class:`~numpy.ndarray`
-        (M, N, 2) array.
-    """
-    sh = len(x1), len(x2)
-    y = np.stack(
-        [np.broadcast_to(x1.reshape(-1, 1), sh), np.broadcast_to(x2.reshape(1, -1), sh)], axis=-1
-    )
-    return y
-
-
-def ffs_sample(T, N_FS, T_c, N_s):
+def ffs_sample(T, N_FS, T_c, N_s, mod=None):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs.ffs`.
 
@@ -266,6 +242,8 @@ def ffs_sample(T, N_FS, T_c, N_s):
         Period mid-point.
     N_s : int
         Number of samples.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
 
     Returns
     -------
@@ -310,19 +288,23 @@ def ffs_sample(T, N_FS, T_c, N_s):
         raise ValueError("Parameter[N_s] must be greater or equal to the signal bandwidth.")
     assert N_FS % 2 == 1, "Parameter[N_FS] must be odd."
 
+    if mod is None:
+        mod = get_backend()
+
     if N_s % 2 == 1:  # Odd-valued
         M = (N_s - 1) // 2
-        idx = np.r_[0 : (M + 1), -M:0]
+        # CuPy does not support slicing
+        idx = mod.r_[mod.arange(M + 1), mod.arange(start=-M, stop=0)]
         sample_points = T_c + (T / N_s) * idx
     else:  # Even case
         M = N_s // 2
-        idx = np.r_[0:M, -M:0]
+        idx = mod.r_[mod.arange(M), mod.arange(start=-M, stop=0)]
         sample_points = T_c + (T / N_s) * (0.5 + idx)
 
     return sample_points, idx + M
 
 
-def ffsn_sample(T, N_FS, T_c, N_s):
+def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
     r"""
     Signal sample positions for :py:func:`~pyffs.ffs.ffsn`.
 
@@ -338,6 +320,8 @@ def ffsn_sample(T, N_FS, T_c, N_s):
         Period mid-point for each dimension.
     N_s : list(int)
         Number of sample points for each dimension.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
 
     Returns
     -------
@@ -383,18 +367,21 @@ def ffsn_sample(T, N_FS, T_c, N_s):
     idx = []
     for d in range(D):
         # get values for d-dimension
-        _sample_points, _idx = ffs_sample(T=T[d], N_FS=N_FS[d], T_c=T_c[d], N_s=N_s[d])
+        # cast to int in case cupy array is passed
+        _sample_points, _idx = ffs_sample(
+            T=int(T[d]), N_FS=int(N_FS[d]), T_c=int(T_c[d]), N_s=int(N_s[d]), mod=mod
+        )
 
         # reshape for sparse array
         sh = [1] * D
-        sh[d] = N_s[d]
+        sh[d] = int(N_s[d])
         sample_points.append(_sample_points.reshape(sh))
         idx.append(_idx.reshape(sh))
 
     return sample_points, idx
 
 
-def _create_modulation_vectors(N_s, N_FS, T, T_c):
+def _create_modulation_vectors(N_s, N_FS, T, T_c, mod=None):
     """
     Compute modulation vectors for FFS.
 
@@ -408,6 +395,8 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
         Function period.
     T_c : float
         Period mid-point.
+    mod : :obj:`func`
+        Module to be used to process array (:mod:`numpy` or :mod:`cupy`).
 
     Returns
     -------
@@ -419,15 +408,20 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c):
     :py:func:`~pyffs.ffs.ffs`, :py:func:`~pyffs.ffs.iffs`,
     :py:func:`~pyffs.ffs.ffsn`, :py:func:`~pyffs.ffs.iffsn`
     """
-    M, N = np.r_[N_s, N_FS] // 2
-    E_1 = np.r_[-N : (N + 1), np.zeros((N_s - N_FS,), dtype=int)]
-    B_2 = np.exp(-1j * 2 * np.pi / N_s)
+    if mod is None:
+        mod = get_backend()
+    N_s = int(N_s)
+    N_FS = int(N_FS)
+    M = N_s // 2
+    N = N_FS // 2
+    E_1 = mod.r_[mod.arange(start=-N, stop=N + 1), mod.zeros(N_s - N_FS, dtype=int)]
+    B_2 = mod.exp(-1j * 2 * mod.pi / N_s)
 
     if N_s % 2 == 1:
-        B_1 = np.exp(1j * (2 * np.pi / T) * T_c)
-        E_2 = np.r_[0 : (M + 1), -M:0]
+        B_1 = mod.exp(1j * (2 * mod.pi / T) * T_c)
+        E_2 = mod.r_[mod.arange(start=0, stop=M + 1), mod.arange(start=-M, stop=0)]
     else:
-        B_1 = np.exp(1j * (2 * np.pi / T) * (T_c + T / (2 * N_s)))
-        E_2 = np.r_[0:M, -M:0]
+        B_1 = mod.exp(1j * (2 * mod.pi / T) * (T_c + T / (2 * N_s)))
+        E_2 = mod.r_[mod.arange(start=0, stop=M), mod.arange(start=-M, stop=0)]
 
     return B_1 ** E_1, B_2 ** (N * E_2)

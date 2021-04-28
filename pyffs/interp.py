@@ -10,10 +10,13 @@
 Methods for interpolating functions using Fourier Series.
 """
 
-import numpy as np
-
 from pyffs.czt import czt, cztn
-from pyffs.util import _index, _index_n, _verify_fs_interp_input
+from pyffs.util import (
+    _index,
+    _index_n,
+    _verify_fs_interp_input,
+)
+from pyffs.backend import get_array_module
 
 
 def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
@@ -181,30 +184,33 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
     axes = _verify_fs_interp_input(x_FS, T, a, b, M, axes)
     D = len(axes)
 
+    xp = get_array_module(x_FS)
+
     # precompute modulation terms
-    N_FS = np.array(x_FS.shape)[list(axes)]
-    N = (N_FS - 1) // 2
+    N_FS = [x_FS.shape[d] for d in axes]
+    N = [(nfs - 1) // 2 for nfs in N_FS]
     A = []
     W = []
     sh = []
     E = []
     for d in range(D):
-        A.append(np.exp(-1j * 2 * np.pi / T[d] * a[d]))
-        W.append(np.exp(1j * (2 * np.pi / T[d]) * (b[d] - a[d]) / (M[d] - 1)))
+        A.append(xp.exp(-1j * 2 * xp.pi / T[d] * a[d]))
+        W.append(xp.exp(1j * (2 * xp.pi / T[d]) * (b[d] - a[d]) / (M[d] - 1)))
         sh.append([1] * x_FS.ndim)
         sh[d][axes[d]] = M[d]
-        E.append(np.arange(M[d]))
+        E.append(xp.arange(M[d]))
 
     if real_x:
         x0_FS = x_FS[_index_n(x_FS, axes, [slice(n, n + 1) for n in N])]
 
         if D == 1:
             x_FS_p = x_FS[_index(x_FS, axes[0], slice(N[0] + 1, N_FS[0]))]
-            C = np.reshape(W[0] ** E[0], sh[0]) / A[0]
-
+            C = xp.reshape(W[0] ** E[0], sh[0]) / A[0]
             x = czt(x_FS_p, A[0], W[0], M[0], axis=axes[0])
-            x *= 2 * C
-            x += x0_FS
+
+            # exploit conjugate symmetry
+            x = 2 * C * x + x0_FS
+
         elif D == 2:
             # positive / positive
             x_FS_pp = x_FS[_index_n(x_FS, axes, [slice(N[d], N_FS[d]) for d in range(D)])]
@@ -213,11 +219,11 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
             # negative / positive
             x_FS_np = x_FS[_index_n(x_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
             x_np = cztn(x_FS_np, A, W, M, axes=axes)
-            x_np *= np.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
-            x_np *= np.reshape(W[1] ** E[1], sh[1]) / A[1]
+            x_np *= xp.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
+            x_np *= xp.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
-            x = 2 * x_pp - x0_FS + 2 * x_np
+            x = 2 * x_pp + 2 * x_np - x0_FS
         else:
             raise NotImplementedError("[real_x] approach not available for D > 2.")
 
@@ -227,7 +233,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
 
         # modulate along each dimension
         for d in range(D):
-            C = np.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
+            C = xp.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
             x *= C
 
         return x
