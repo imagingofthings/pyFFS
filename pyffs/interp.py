@@ -15,14 +15,11 @@ from pyffs.util import (
     _index,
     _index_n,
     _verify_fs_interp_input,
-    _modulate_2d,
-    _real_interpolation_1d,
-    _real_interpolation_2d,
 )
-from pyffs.backend import get_array_module, get_module_name
+from pyffs.backend import get_array_module
 
 
-def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False, fuse=True):
+def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     r"""
     Interpolate bandlimited periodic signal.
 
@@ -48,9 +45,6 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False, fuse=True):
     real_x : bool, optional
         If True, assume that `x_FS` is conjugate symmetric and use a more efficient algorithm. In
         this case, the FS coefficients corresponding to negative frequencies are not used.
-    fuse : bool, optional
-        Note that this is only taken into account when cupy is being used. In this case specify
-        whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -145,10 +139,10 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False, fuse=True):
     --------
     :py:func:`~pyffs.czt.czt`, :py:func:`~pyffs.interp.fs_interpn`
     """
-    return fs_interpn(x_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_x=real_x, fuse=fuse)
+    return fs_interpn(x_FS=x_FS, T=[T], a=[a], b=[b], M=[M], axes=(axis,), real_x=real_x)
 
 
-def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
+def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False):
     r"""
     Interpolate D-dimensional bandlimited periodic signal.
 
@@ -171,9 +165,6 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
         and use a more efficient algorithm. In this case, the FS coefficients
         corresponding to negative frequencies are not used. Note that this
         approach is only available for D < 3, and will raise an error otherwise.
-    fuse : bool, optional
-        Note that this is only taken into account for D<=2 and when cupy is being used. In this case
-        specify whether or not to fuse kernels for slight speedup.
 
     Returns
     -------
@@ -218,10 +209,7 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
             x = czt(x_FS_p, A[0], W[0], M[0], axis=axes[0])
 
             # exploit conjugate symmetry
-            if fuse:
-                x = _real_interpolation_1d(x0_FS, x, C)
-            else:
-                x = 2 * C * x + x0_FS
+            x = 2 * C * x + x0_FS
 
         elif D == 2:
             # positive / positive
@@ -230,30 +218,22 @@ def fs_interpn(x_FS, T, a, b, M, axes=None, real_x=False, fuse=True):
 
             # negative / positive
             x_FS_np = x_FS[_index_n(x_FS, axes, [slice(0, N[0]), slice(N[1] + 1, N_FS[1])])]
-            x_np = cztn(x_FS_np, A, W, M, axes=axes, fuse=fuse)
+            x_np = cztn(x_FS_np, A, W, M, axes=axes)
             x_np *= xp.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
             x_np *= xp.reshape(W[1] ** E[1], sh[1]) / A[1]
 
             # exploit conjugate symmetry
-            if fuse:
-                x = _real_interpolation_2d(x0_FS, x_pp, x_np)
-            else:
-                x = 2 * x_pp + 2 * x_np - x0_FS
+            x = 2 * x_pp + 2 * x_np - x0_FS
         else:
             raise NotImplementedError("[real_x] approach not available for D > 2.")
 
         return x.real
     else:  # General complex case.
-        x = cztn(x_FS, A, W, M, axes=axes, fuse=fuse)
+        x = cztn(x_FS, A, W, M, axes=axes)
 
         # modulate along each dimension
-        if D == 2 and fuse:
-            C1 = xp.reshape(W[0] ** (-N[0] * E[0]), sh[0]) * (A[0] ** N[0])
-            C2 = xp.reshape(W[1] ** (-N[1] * E[1]), sh[1]) * (A[1] ** N[1])
-            x = _modulate_2d(x, C1, C2)
-        else:
-            for d in range(D):
-                C = xp.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
-                x *= C
+        for d in range(D):
+            C = xp.reshape(W[d] ** (-N[d] * E[d]), sh[d]) * (A[d] ** N[d])
+            x *= C
 
         return x
