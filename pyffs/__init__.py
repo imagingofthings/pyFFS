@@ -11,7 +11,7 @@ Fast Fourier Series library
 ===========================
 
 Efficient computation of Fourier Series (FS) coefficients and interpolation with
-them through use of the Fast Fourier Transformation (FFT).
+them through use of the Fast Fourier Transform (FFT).
 """
 
 from .czt import *
