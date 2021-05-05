@@ -11,35 +11,35 @@ API Reference
 .. automodule:: pyffs
 
 
-CZT Functions
--------------
+    CZT Functions
+    -------------
 
-.. autosummary::
+    .. autosummary::
 
-  ~czt.czt
-  ~czt.cztn
-
-
-FFS Functions
--------------
-
-.. autosummary::
-
-  ~ffs.ffs
-  ~ffs.ffsn
-  ~ffs.iffs
-  ~ffs.iffsn
-  ~util.ffs_sample
-  ~util.ffsn_sample
+      ~czt.czt
+      ~czt.cztn
 
 
-Interpolation Functions
------------------------
+    FFS Functions
+    -------------
 
-.. autosummary::
+    .. autosummary::
 
-  ~interp.fs_interp
-  ~interp.fs_interpn
+      ~ffs.ffs
+      ~ffs.ffsn
+      ~ffs.iffs
+      ~ffs.iffsn
+      ~util.ffs_sample
+      ~util.ffsn_sample
+
+
+    Interpolation Functions
+    -----------------------
+
+    .. autosummary::
+
+      ~interp.fs_interp
+      ~interp.fs_interpn
 
 
 Submodules
