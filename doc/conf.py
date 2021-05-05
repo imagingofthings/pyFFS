@@ -2,13 +2,15 @@
 # conf.py
 # =======
 # Author : Sepand KASHANI [kashani.sepand@gmail.com]
+# Author : Eric BEZZAM [ebezzam@gmail.com]
 # #############################################################################
 
 import configparser
 import datetime
 import pathlib
-import re
-from typing import Mapping
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join("..", "pyffs")))
 
 
 def setup_config() -> configparser.ConfigParser:
