@@ -49,8 +49,8 @@ Submodules
 
 .. toctree::
 
-   pyffs.czt
    pyffs.ffs
+   pyffs.czt
    pyffs.func
    pyffs.interp
    pyffs.util
