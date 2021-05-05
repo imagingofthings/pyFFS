@@ -17,7 +17,7 @@ from pyffs.backend import get_array_module, fftn, ifftn, fft, next_fast_len
 
 
 def czt(x, A, W, M, axis=-1):
-    """
+    r"""
     Chirp Z-Transform.
 
     This implementation follows the semantics defined in :ref:`CZT_def`.
