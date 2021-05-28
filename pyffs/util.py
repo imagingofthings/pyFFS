@@ -12,7 +12,7 @@ Helper functions.
 
 import cmath
 
-from pyffs.backend import get_backend, CUPY_ENABLED
+from pyffs.backend import get_backend
 
 
 def _index(x, axis, index_spec):
