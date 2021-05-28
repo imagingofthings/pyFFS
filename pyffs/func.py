@@ -109,7 +109,7 @@ def dirichlet_2D(sample_points, T, T_c, N_FS):
     ----------
     sample_points : list(:py:class:`~numpy.ndarray`)
         (2,) coordinates at which to sample the function in the x- and
-        y-dimensions respectively.
+        y-dimensions respectively. Array dimensions must be compatible after broadcasting.
     T : list(float)
         Function period.
     T_c : list(float)
@@ -128,7 +128,7 @@ def dirichlet_2D(sample_points, T, T_c, N_FS):
     """
     xp = get_array_module(sample_points)
 
-    # compute along x and y, then combine
-    x_vals = dirichlet(x=sample_points[0][:, 0], T=T[0], T_c=T_c[0], N_FS=N_FS[0])
-    y_vals = dirichlet(x=sample_points[1][0, :], T=T[1], T_c=T_c[1], N_FS=N_FS[1])
-    return xp.outer(x_vals, y_vals)
+    x, y = sample_points
+    x_vals = dirichlet(x, T=T[0], T_c=T_c[0], N_FS=N_FS[0])
+    y_vals = dirichlet(y, T=T[1], T_c=T_c[1], N_FS=N_FS[1])
+    return x_vals * y_vals
