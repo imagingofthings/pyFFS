@@ -327,7 +327,7 @@ def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
     -------
     S0, ..., SD : list(:py:class:`~numpy.ndarray`)
         (N_D,) coordinates at which to sample a signal in the d-th dimension (in the right order).
-    i1, ..., iD : list(:py:class:~numpy.ndarray)
+    i1, ..., iD : list(:py:class:`~numpy.ndarray`)
         (N_D,) sample indices in the d-th dimension. May be useful to reorder samples.
 
     Examples

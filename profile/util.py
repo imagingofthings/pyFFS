@@ -8,10 +8,10 @@ def comparison_plot(proc_time, proc_time_std, n_std, ax=None):
 
     Parameters
     ----------
-    proc_time : dict of dicts
+    proc_time : dict[float, dict[str, float]]
         Average processing time for every combination of values and approaches. First set of keys
         specify the value being sweeped; next set of keys specify the different approaches.
-    proc_time_std : dict of dicts
+    proc_time_std : dict[float, dict[str, float]]
         Standard deviation in processing time for every combination of values and approaches. First
         set of keys specify the  value being sweeped; next set of keys specify the different
         approaches.
