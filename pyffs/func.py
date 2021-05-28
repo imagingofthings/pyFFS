@@ -48,7 +48,7 @@ def dirichlet(x, T, T_c, N_FS):
     xp = get_array_module(x)
 
     y = x - T_c
-    n, d = xp.zeros((2, len(x)))
+    n, d = xp.zeros((2, *x.shape))
     nan_mask = xp.isclose(xp.fmod(y, xp.pi), 0)
     n[~nan_mask] = xp.sin(N_FS * xp.pi * y[~nan_mask] / T)
     d[~nan_mask] = xp.sin(xp.pi * y[~nan_mask] / T)
