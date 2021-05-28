@@ -11,8 +11,10 @@ Methods for identifying the appropriate backend between `numpy` and `cupy`.
 Code is heavily inspired by `PyLops` library: https://github.com/PyLops/pylops/blob/master/pylops/utils/backend.py
 """
 
-import os
 from importlib import util
+
+import os
+
 import numpy as np
 import scipy.fft
 
@@ -45,7 +47,7 @@ def get_module(backend="numpy"):
     elif backend == "cupy":
         xp = cp
     else:
-        raise ValueError("backend must be `numpy` or `cupy`")
+        raise ValueError(f"Unsupported backend '{backend}': choose amongst {{numpy,cupy}}.")
     return xp
 
 
@@ -68,7 +70,7 @@ def get_module_name(mod):
     elif mod == cp:
         backend = "cupy"
     else:
-        raise ValueError("module must be `numpy` or `cupy`")
+        raise ValueError(f"Unsupported module '{mod}': choose amongst {{numpy, cupy}}.")
     return backend
 
 
@@ -115,11 +117,11 @@ def fftn(x, axes=None):
     mod : :obj:`func`
         Module to be used to process array (:mod:`numpy` or :mod:`cupy`)
     """
-
     if get_array_module(x) == np:
-        return scipy.fft.fftn(x, axes=axes)
+        func = scipy.fft.fftn
     else:
-        return cupyx.scipy.fft.fftn(x, axes=axes)
+        func = cupyx.scipy.fft.fftn
+    return func(x, axes=axes)
 
 
 def fft(x):
@@ -136,11 +138,11 @@ def fft(x):
     mod : :obj:`func`
         Module to be used to process array (:mod:`numpy` or :mod:`cupy`)
     """
-
     if get_array_module(x) == np:
-        return scipy.fft.fft(x)
+        func = scipy.fft.fft
     else:
-        return cupyx.scipy.fft.fft(x)
+        func = cupyx.scipy.fft.fft
+    return func(x)
 
 
 def ifftn(x, axes=None):
@@ -159,11 +161,11 @@ def ifftn(x, axes=None):
     mod : :obj:`func`
         Module to be used to process array (:mod:`numpy` or :mod:`cupy`)
     """
-
     if get_array_module(x) == np:
-        return scipy.fft.ifftn(x, axes=axes)
+        func = scipy.fft.ifftn
     else:
-        return cupyx.scipy.fft.ifftn(x, axes=axes)
+        func = cupyx.scipy.ifft.fftn
+    return func(x, axes=axes)
 
 
 def next_fast_len(target, mod=None):
@@ -182,11 +184,11 @@ def next_fast_len(target, mod=None):
     next_fast_len : int
         The smallest fast length greater than or equal to `target`.
     """
-
     if mod is None:
         mod = get_backend()
 
     if mod == np:
-        return scipy.fft.next_fast_len(target)
+        func = scipy.fft.next_fast_len
     else:
-        return cupyx.scipy.fft.next_fast_len(target)
+        func = cupyx.scipy.fft.next_fast_len
+    return func(target)
