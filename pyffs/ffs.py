@@ -194,8 +194,6 @@ def ffsn(x, T, T_c, N_FS, axes=None):
 
     .. testsetup::
 
-       import math
-
        import numpy as np
 
        from pyffs import ffsn_sample, ffsn
