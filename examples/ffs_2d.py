@@ -4,6 +4,7 @@ from pyffs.func import dirichlet_2D
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import os
 
 font = {"family": "Times New Roman", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
@@ -20,7 +21,7 @@ diric_samples = dirichlet_2D(sample_points, T, T_c, N_FS)
 diric_FS = ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)[: N_FS[0], : N_FS[1]]
 
 # plot time
-fig = plt.figure(num="dirichlet 2D", figsize=(20, 5))
+fig = plt.figure(num="dirichlet 2D", figsize=(10, 5))
 ax_spat = fig.add_subplot(1, 2, 1, projection="3d")
 X, Y = np.meshgrid(sample_points[0], sample_points[1])
 ax_spat.plot_surface(X, Y, diric_samples.T, cmap=cm.coolwarm, linewidth=0, antialiased=False)
@@ -45,5 +46,5 @@ fig.colorbar(cp)
 ax_freq.set_xlabel("$FS_x$")
 ax_freq.set_ylabel("$FS_y$")
 
-
+plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "ffs_2d.png"))
 plt.show()

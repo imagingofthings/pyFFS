@@ -4,6 +4,7 @@ from pyffs import ffs_sample, ffs
 from pyffs.func import dirichlet
 import matplotlib
 import matplotlib.pyplot as plt
+import os
 
 
 font = {"family": "Times New Roman", "weight": "normal", "size": 20}
@@ -31,4 +32,5 @@ ax[1].stem(fs_idx, np.abs(diric_FS))
 ax[1].grid()
 ax[1].set_xlabel("FS index")
 
+plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "ffs_1d.png"))
 plt.show()

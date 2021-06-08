@@ -5,6 +5,7 @@ from scipy.signal import convolve2d as convolve_scipy
 from pyffs.conv import convolve2d as convolve_fs
 import matplotlib
 import matplotlib.pyplot as plt
+import os
 
 font = {"family": "Times New Roman", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
@@ -43,13 +44,16 @@ output_vals_y = np.linspace(
 # --- 1D plot,  2D cross section
 idx_ffs = np.argmin(np.abs(np.squeeze(sample_points[1]) - 2 * T_c[1]))
 idx_fft = np.argmin(np.abs(output_vals_y - 2 * T_c[1]))
-fig = plt.figure(figsize=(10, 20))
+fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(1, 1, 1)
 ax.plot(sample_points[0][idx_x], np.real(output_samples[idx_x, idx_ffs]), label="FFS")
 ax.plot(output_vals_x, np.real(output_fft[:, idx_fft]), label="FFT")
 ax.set_title("convolution of 2D bandlimited periodic functions, y={}".format(2 * T_c[1]))
 ax.set_xlabel("x [m]")
 plt.legend()
+plt.savefig(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_output_slice.png")
+)
 
 # --- 2D plots
 
@@ -63,6 +67,9 @@ fig.colorbar(cp, ax=ax, orientation="vertical")
 ax.set_xlabel("x [m]")
 ax.set_ylabel("y [m]")
 ax.set_title("input")
+plt.savefig(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_input.png")
+)
 
 # output
 fig = plt.figure()
@@ -73,6 +80,9 @@ fig.colorbar(cp, ax=ax, orientation="vertical")
 ax.set_xlabel("x [m]")
 ax.set_ylabel("y [m]")
 ax.set_title("FFS convolve")
+plt.savefig(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_ffsconvolve.png")
+)
 
 # output
 fig = plt.figure()
@@ -86,6 +96,8 @@ ax.set_ylabel("y [m]")
 ax.set_xlim([np.min(sample_points[0]), np.max(sample_points[0])])
 ax.set_ylim([np.min(sample_points[1]), np.max(sample_points[1])])
 ax.set_title("FFT convolve")
-
+plt.savefig(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_fftconvolve.png")
+)
 
 plt.show()

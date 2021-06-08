@@ -5,6 +5,7 @@ from pyffs.func import dirichlet
 import matplotlib
 import matplotlib.pyplot as plt
 from pyffs.conv import convolve as convolve_fs
+import os
 
 font = {"family": "Times New Roman", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
@@ -29,7 +30,7 @@ t_vals_full = np.linspace(2 * np.min(sample_points), 2 * np.max(sample_points), 
 
 # plot
 _, ax = plt.subplots(
-    nrows=3, ncols=1, num="Convolve bandlimited, periodic signals", figsize=(10, 20)
+    nrows=3, ncols=1, num="Convolve bandlimited, periodic signals", figsize=(10, 10)
 )
 ax[0].plot(sample_points[idx], diric_samples_ord)
 ax[0].set_xlim([np.min(sample_points), np.max(sample_points)])
@@ -44,5 +45,6 @@ ax[2].plot(t_vals_full, np.real(output_fft), label="FFT conv", alpha=0.7)
 ax[2].set_xlim([np.min(sample_points), np.max(sample_points)])
 ax[2].set_ylabel("$f \\ast h$")
 plt.legend()
+plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_1d.png"))
 
 plt.show()
