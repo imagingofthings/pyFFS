@@ -1,5 +1,5 @@
 import numpy as np
-from pyffs import ffsn_sample, ffs_shift
+from pyffs import ffsn_sample, ffsn_shift
 from pyffs.func import dirichlet_2D
 from scipy.signal import convolve2d as convolve_scipy
 from pyffs.conv import convolve2d as convolve_fs
@@ -37,7 +37,7 @@ sample_points_x = np.squeeze(sample_points[0])
 sample_points_y = np.squeeze(sample_points[1])
 idx_x = np.squeeze(idx[0])
 idx_y = np.squeeze(idx[1])
-diric_samples_ord = ffs_shift(diric_samples, idx)
+diric_samples_ord = ffsn_shift(diric_samples, idx)
 
 
 output_fft = (
@@ -83,7 +83,7 @@ plt.savefig(
 # output
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
-cp = ax.contourf(X, Y, np.real(ffs_shift(output_samples, idx)).T)
+cp = ax.contourf(X, Y, np.real(ffsn_shift(output_samples, idx)).T)
 fig = plt.gcf()
 fig.colorbar(cp, ax=ax, orientation="vertical")
 ax.set_xlabel("x [m]")
