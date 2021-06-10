@@ -13,35 +13,36 @@ font = {"family": "Times New Roman", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
 
 
-def fft_interpolate(samples, T, dt, T_c):
+def fft_interpolate(dft, T, dt):
     N_target = int(np.ceil(T / dt))
-    X = np.fft.fftshift(np.fft.fft(samples))
-    n_pad = N_target - len(samples)
-    X_pad = np.pad(X, pad_width=(n_pad // 2, n_pad // 2), mode="constant", constant_values=0)
+    n_pad = N_target - len(dft)
+    X_pad = np.pad(dft, pad_width=(n_pad // 2, n_pad // 2), mode="constant", constant_values=0)
     X_pad = np.fft.fftshift(X_pad)
-    vals_fft = np.real(np.fft.ifft(X_pad)) * len(X_pad) / len(samples)
-    dt_fft = T / len(X_pad)
-    # TODO : hack for aligning
-    # shift = 4 * dt_fft
-    shift = 0
-    t_fft = np.linspace(
-        start=T_c - T / 2 + shift, stop=T_c + T / 2 + shift, num=len(vals_fft), endpoint=True
-    )
+    return np.real(np.fft.ifft(X_pad)) * len(X_pad) / len(dft)
 
-    return vals_fft, t_fft
+
+def sinc_interp(x, s, u):
+    if len(x) != len(s):
+        raise ValueError
+    # Find the period
+    T = s[1] - s[0]
+    sincM = np.tile(u, (len(s), 1)) - np.tile(s[:, np.newaxis], (1, len(u)))
+    return np.dot(x, np.sinc(sincM / T))
 
 
 @click.command()
-@click.option("--n_trials", type=int, default=20)
+@click.option("--n_trials", type=int, default=50)
 def profile_fs_interp(n_trials):
     print(f"\nCOMPARING FFS AND FFT INTERP WITH {n_trials} TRIALS")
     n_std = 0.5
 
     start = -0.05
     stop = 0.05
-    M_vals = [101, 301, 1001, 3001, 10001, 30001, 100001]
+    # M_vals = [101, 301, 1001, 3001, 10001, 30001, 100001, 300001, 1000001]
+    M_vals = [100, 300, 1000, 3000, 10000, 30000, 100000]
 
-    T, T_c, N_FS, N_samples = 1, 0, 511, 512
+    T, T_c, N_samples = 1, 0, 2048
+    N_FS = N_samples - 1
     sample_points, _ = ffs_sample(T, N_FS, T_c, N_samples)
     diric_samples = dirichlet(sample_points, T, T_c, N_FS)
     diric_samples_ord = dirichlet(np.sort(sample_points), T, T_c, N_FS)
@@ -64,10 +65,10 @@ def profile_fs_interp(n_trials):
         # FFS
         _key = "FFS"
         timings = []
+        diric_FS = ffs(diric_samples, T, T_c, N_FS)[:N_FS]
         for _ in range(n_trials):
             start_time = time.time()
-            diric_FS = ffs(diric_samples, T, T_c, N_FS)[:N_FS]
-            fs_interp(diric_FS, T=T, a=start, b=stop, M=num, real_x=True)
+            fs_interp(diric_FS, T=T, a=start, b=stop, M=num, real_x=False)
             timings.append(time.time() - start_time)
         proc_time[num][_key] = np.mean(timings)
         proc_time_std[num][_key] = np.std(timings)
@@ -76,20 +77,43 @@ def profile_fs_interp(n_trials):
         # FFT
         _key = "FFT"
         timings = []
+        dft = np.fft.fftshift(np.fft.fft(diric_samples_ord))
         for _ in range(n_trials):
             start_time = time.time()
-            fft_interpolate(diric_samples_ord, T, dt, T_c)
+            vals_fft = fft_interpolate(dft, T, dt)
             timings.append(time.time() - start_time)
         proc_time[num][_key] = np.mean(timings)
         proc_time_std[num][_key] = np.std(timings)
         print("-- {} : {} seconds".format(_key, proc_time[num][_key]))
 
+        # # sinc -- VERY SLOW
+        # _key = "sinc"
+        # t_ord = np.sort(sample_points)
+        # t_interp = np.linspace(
+        #     start=T_c - T / 2, stop=T_c + T / 2, num=len(vals_fft), endpoint=True
+        # )
+        # timings = []
+        # for _ in range(n_trials):
+        #     start_time = time.time()
+        #     sinc_interp(diric_samples_ord, t_ord, t_interp)
+        #     timings.append(time.time() - start_time)
+        # proc_time[num][_key] = np.mean(timings)
+        # proc_time_std[num][_key] = np.std(timings)
+        # print("-- {} : {} seconds".format(_key, proc_time[num][_key]))
+
     # plot results
     fig, ax = plt.subplots()
     util.comparison_plot(proc_time, proc_time_std, n_std, ax)
-    ax.set_title(f"{N_FS} FS coefficients, {n_trials} trials")
+    ax.set_title(f"{N_samples} original samples, {n_trials} trials")
     ax.set_xlabel("Number of interpolation points")
     fig.tight_layout()
+
+    # plot theoretical crossover
+    m = (stop - start) / T
+    dt = T / N_FS * (1 - m)
+    M_cross = int(m * T / dt)
+    if M_cross > 0:
+        ax.axvline(x=M_cross, linestyle="--", color="g")
 
     fname = pathlib.Path(__file__).resolve().parent / "profile_ffs_vs_fft_interp1d.png"
     fig.savefig(fname, dpi=300)

@@ -13,28 +13,20 @@ font = {"family": "Times New Roman", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
 
 
-def fft2_interpolate(samples, T, dx, dy, T_c):
+def fft2_interpolate(dft, T, dx, dy):
     Nx_target = int(np.ceil(T[0] / dx))
     Ny_target = int(np.ceil(T[1] / dy))
-    X = np.fft.fftshift(np.fft.fft2(samples))
-    nx_pad = Nx_target - samples.shape[0]
-    ny_pad = Ny_target - samples.shape[1]
+
+    nx_pad = Nx_target - dft.shape[0]
+    ny_pad = Ny_target - dft.shape[1]
     X_pad = np.pad(
-        X,
+        dft,
         pad_width=((nx_pad // 2, nx_pad // 2), (ny_pad // 2, ny_pad // 2)),
         mode="constant",
         constant_values=0,
     )
     X_pad = np.fft.fftshift(X_pad)
-    vals_fft = np.real(np.fft.ifft2(X_pad))
-    x_fft = np.linspace(
-        start=T_c[0] - T[0] / 2, stop=T_c[0] + T[0] / 2, num=vals_fft.shape[0], endpoint=True
-    )
-    y_fft = np.linspace(
-        start=T_c[1] - T[1] / 2, stop=T_c[1] + T[1] / 2, num=vals_fft.shape[1], endpoint=True
-    )
-
-    return vals_fft, x_fft, y_fft
+    np.real(np.fft.ifft2(X_pad))
 
 
 @click.command()
@@ -43,14 +35,14 @@ def profile_fs_interp(n_trials):
     print(f"\nCOMPARING FFS AND FFT INTERP WITH {n_trials} TRIALS")
     n_std = 0.5
 
-    start = [-0.1, -0.1]
-    stop = [0.1, 0.1]
-    M_vals = [11, 31, 101, 301, 1001]
+    start = 2 * [-0.1]
+    stop = 2 * [0.1]
+    M_vals = [100, 300, 1000]
 
-    T = [1, 1]
-    T_c = [0, 0]
-    N_FS = [121, 121]
-    N_s = [128, 128]
+    T = 2 * [1]
+    T_c = 2 * [0]
+    N_s = 2 * [256]
+    N_FS = [N_s[0] - 1, N_s[1] - 1]
 
     sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
     diric_samples = dirichlet_2D(sample_points, T, T_c, N_FS)
@@ -81,9 +73,9 @@ def profile_fs_interp(n_trials):
         # FFS
         _key = "FFS"
         timings = []
+        diric_FS = ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)[: N_FS[0], : N_FS[1]]
         for _ in range(n_trials):
             start_time = time.time()
-            diric_FS = ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)[: N_FS[0], : N_FS[1]]
             fs_interpn(diric_FS, T=T, a=start, b=stop, M=[num, num], real_x=True)
             timings.append(time.time() - start_time)
         proc_time[num][_key] = np.mean(timings)
@@ -93,9 +85,10 @@ def profile_fs_interp(n_trials):
         # FFT
         _key = "FFT"
         timings = []
+        dft = np.fft.fftshift(np.fft.fft2(diric_samples_ord))
         for _ in range(n_trials):
             start_time = time.time()
-            fft2_interpolate(diric_samples_ord, T, dx, dy, T_c)
+            fft2_interpolate(dft, T, dx, dy)
             timings.append(time.time() - start_time)
         proc_time[num][_key] = np.mean(timings)
         proc_time_std[num][_key] = np.std(timings)
@@ -104,7 +97,7 @@ def profile_fs_interp(n_trials):
     # plot results
     fig, ax = plt.subplots()
     util.comparison_plot(proc_time, proc_time_std, n_std, ax)
-    ax.set_title(f"{N_FS} FS coefficients, {n_trials} trials")
+    ax.set_title(f"{N_s} samples, {n_trials} trials")
     ax.set_xlabel("Number of interpolation points")
     fig.tight_layout()
 
