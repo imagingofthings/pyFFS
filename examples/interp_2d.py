@@ -3,8 +3,10 @@ from pyffs import ffsn_sample, ffsn, fs_interpn
 from pyffs.func import dirichlet_2D
 import matplotlib
 from scipy.interpolate import interp2d
+from scipy.signal import resample
 import matplotlib.pyplot as plt
 import os
+import util
 
 font = {"family": "Times New Roman", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
@@ -48,48 +50,22 @@ def fft2_interpolate(samples, T, dx, dy, T_c, offset=None):
     return vals_fft, x_fft, y_fft
 
 
-def plot2d(x_vals, y_vals, Z, pcolormesh=True, colorbar=True):
-
-    if pcolormesh:
-        # define corners of mesh
-        dx = x_vals[1] - x_vals[0]
-        x_vals -= dx / 2
-        x_vals = np.append(x_vals, [x_vals[-1] + dx])
-
-        dy = y_vals[1] - y_vals[0]
-        y_vals -= dy / 2
-        y_vals = np.append(y_vals, [y_vals[-1] + dy])
-
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    X, Y = np.meshgrid(x_vals, y_vals)
-    if pcolormesh:
-        cp = ax.pcolormesh(X, Y, Z.T)
-    else:
-        cp = ax.contourf(X, Y, Z.T)
-    fig = plt.gcf()
-    if colorbar:
-        fig.colorbar(cp, ax=ax, orientation="vertical")
-    ax.set_xlabel("x [m]")
-    ax.set_ylabel("y [m]")
-    return ax
-
-
 # signal parameters
 T = 2 * [1]
 T_c = 2 * [0]
+T_c_diric = 2 * [0.3]
 N_FS = 2 * [31]
 N_s = 2 * [32]
 
 # specify region to zoom into
-start = [-0.05, -0.05]
-stop = [0.15, 0.15]
-num = 2 * [64]  # number of interpolation points in
-y_val = 0  # cross-section plot (something within zoomed region)
+start = [T_c_diric[0] - 0.05, T_c_diric[1] - 0.05]
+stop = [T_c_diric[0] + 0.15, T_c_diric[1] + 0.15]
+y_val = T_c_diric[1]  # cross-section plot (something within zoomed region)
+num = 2 * [128]  # number of interpolation points
 
 # sample function
 sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
-diric_samples = dirichlet_2D(sample_points, T, T_c, N_FS)
+diric_samples = dirichlet_2D(sample_points, T, T_c_diric, N_FS)
 diric_FS = ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)[: N_FS[0], : N_FS[1]]
 
 # interpolation points
@@ -103,11 +79,20 @@ vals_ffs = fs_interpn(diric_FS, T=T, a=start, b=stop, M=num, real_x=True)
 
 # interpolate with FFT and zero-padding
 samples_ord = dirichlet_2D(
-    [np.sort(sample_points[0], axis=0), np.sort(sample_points[1])], T, T_c, N_FS
+    [np.sort(sample_points[0], axis=0), np.sort(sample_points[1])], T, T_c_diric, N_FS
 )
 offset_x = np.min(np.abs(sample_points[0]))  # offset from `ffsn_sample`
 offset_y = np.min(np.abs(sample_points[1]))  # offset from `ffsn_sample`
 vals_fft, x_fft, y_fft = fft2_interpolate(samples_ord, T, dx, dy, T_c, offset=[offset_x, offset_y])
+
+
+Nx_target = int(np.ceil(T[0] / dx))
+sample_points_x = np.squeeze(np.sort(sample_points[0], axis=0))
+Ny_target = int(np.ceil(T[1] / dy))
+sample_points_y = np.squeeze(np.sort(sample_points[1], axis=1))
+vals_resample, resampled_x = resample(samples_ord, Nx_target, t=sample_points_x, axis=0)
+vals_resample, resampled_y = resample(vals_resample, Ny_target, t=sample_points_y, axis=1)
+
 
 # interpolate with scipy
 f_linear = interp2d(x=sample_points[0], y=sample_points[1], z=diric_samples.T, kind="linear")
@@ -117,22 +102,24 @@ vals_cubic = f_cubic(points_x, points_y).T
 
 # ground truth
 sample_points_interp = [points_x[:, np.newaxis], points_y[np.newaxis, :]]
-vals_true = dirichlet_2D(sample_points_interp, T, T_c, N_FS)
+vals_true = dirichlet_2D(sample_points_interp, T, T_c_diric, N_FS)
 
 
 # -- plot cross section
 idx_yc = np.argmin(np.abs(points_y - y_val))
 idx_og = np.argmin(np.abs(np.squeeze(sample_points[1]) - y_val))
 idx_fft = np.argmin(np.abs(y_fft - y_val))
+idx_resample = np.argmin(np.abs(resampled_y - y_val))
 
-fig = plt.figure(figsize=(10, 10))
+fig = plt.figure(figsize=(12, 10))
 ax = fig.add_subplot(1, 1, 1)
-ax.plot(points_x, np.real(vals_ffs[:, idx_yc]), label="FFS")
-ax.plot(x_fft, np.real(vals_fft[:, idx_fft]), label="FFT")
-ax.plot(points_x, np.real(vals_linear[:, idx_yc]), label="linear")
-ax.plot(points_x, np.real(vals_cubic[:, idx_yc]), label="cubic")
+ax.plot(points_x, np.real(vals_ffs[:, idx_yc]), label="pyffs.fs_interp")
+# ax.plot(x_fft, np.real(vals_fft[:, idx_fft]), label="FFT")
+ax.plot(resampled_x, np.real(vals_resample[:, idx_resample]), label="scipy.signal.resample")
+# ax.plot(points_x, np.real(vals_linear[:, idx_yc]), label="linear")
+# ax.plot(points_x, np.real(vals_cubic[:, idx_yc]), label="cubic")
 ax.plot(points_x, np.real(vals_true[:, idx_yc]), label="ground truth")
-ax.scatter(sample_points[0], diric_samples[:, idx_og], label="provided samples")
+ax.scatter(sample_points[0], diric_samples[:, idx_og], label="available samples")
 ax.set_xlabel("x [m]")
 ax.set_xlim([start[0], stop[0]])
 plt.legend()
@@ -148,7 +135,7 @@ x_shift = (sample_points[0][1, 0] - sample_points[0][0, 0]) / 2
 y_shift = (sample_points[1][0, 1] - sample_points[1][0, 0]) / 2
 
 # input
-ax = plot2d(
+ax = util.plot2d(
     x_vals=np.sort(np.squeeze(sample_points[0])),
     y_vals=np.sort(np.squeeze(sample_points[1])),
     Z=np.real(np.fft.ifftshift(diric_samples)),
@@ -201,7 +188,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_input.png"))
 
 # FFS interp
-ax = plot2d(
+ax = util.plot2d(
     x_vals=points_x,
     y_vals=points_y,
     Z=np.real(vals_ffs),
@@ -213,20 +200,37 @@ ax.axhline(y=y_val, c="r", linestyle="-.", linewidth=linewidth)
 plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_ffs.png"))
 
-# linear interpolation
-ax = plot2d(
-    x_vals=points_x,
-    y_vals=points_y,
-    Z=np.real(vals_linear),
-    pcolormesh=pcolormesh,
-    colorbar=False,
-)
-# -- cross-section
-ax.axhline(y=y_val, c="r", linestyle="-.", linewidth=linewidth)
-plt.tight_layout()
-plt.savefig(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_linear.png")
-)
+# # linear interpolation
+# ax = plot2d(
+#     x_vals=points_x,
+#     y_vals=points_y,
+#     Z=np.real(vals_linear),
+#     pcolormesh=pcolormesh,
+#     colorbar=False,
+# )
+# # -- cross-section
+# ax.axhline(y=y_val, c="r", linestyle="-.", linewidth=linewidth)
+# plt.tight_layout()
+# plt.savefig(
+#     os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_linear.png")
+# )
+
+# # resample
+# ax = plot2d(
+#     x_vals=resampled_x,
+#     y_vals=resampled_y,
+#     Z=np.real(vals_resample),
+#     pcolormesh=pcolormesh,
+#     colorbar=False,
+# )
+# # -- cross-section
+# ax.axhline(y=y_val, c="r", linestyle="-.", linewidth=linewidth)
+# ax.set_xlim([start[0], stop[0]])
+# ax.set_ylim([start[1], stop[1]])
+# plt.tight_layout()
+# plt.savefig(
+#     os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_resample.png")
+# )
 
 
 # # ground truth values

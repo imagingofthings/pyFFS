@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.signal import convolve as convolve_scipy
+from scipy.signal import fftconvolve
 from pyffs import ffs_sample
 from pyffs.func import dirichlet
 import matplotlib
@@ -11,7 +12,8 @@ font = {"family": "Times New Roman", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
 
 
-T, T_c, N_FS, N_samples = 1, 0.2, 15, 512
+T, T_c, N_FS, N_samples = 1, 0.1, 15, 512
+T_c_diric = 0.25
 reorder = True  # pass ordered samples to `convolve_fs` -> need to reorder samples inside
 
 # input, which we convolve with itself
@@ -19,7 +21,7 @@ sample_points, idx = ffs_sample(T, N_FS, T_c, N_samples)
 if reorder:
     sample_points = np.sort(sample_points)
     idx = np.arange(len(sample_points)).astype(int)
-diric_samples = dirichlet(sample_points, T, T_c, N_FS)
+diric_samples = dirichlet(sample_points, T, T_c_diric, N_FS)
 
 # FFS convolution
 output_samples = convolve_fs(
@@ -30,6 +32,7 @@ output_samples = convolve_fs(
 output_fft = (
     convolve_scipy(diric_samples[idx], diric_samples[idx], mode="full", method="fft") / N_samples
 )
+output_fftconvolve = fftconvolve(diric_samples[idx], diric_samples[idx], mode="full") / N_samples
 t_vals_full = np.linspace(2 * np.min(sample_points), 2 * np.max(sample_points), num=len(output_fft))
 
 # plot
@@ -44,8 +47,9 @@ ax[1].plot(sample_points[idx], diric_samples[idx])
 ax[1].set_xlim([np.min(sample_points), np.max(sample_points)])
 ax[1].set_ylabel("$h$")
 
-ax[2].plot(sample_points[idx], np.real(output_samples[idx]), label="FFS conv", alpha=0.7)
-ax[2].plot(t_vals_full, np.real(output_fft), label="FFT conv", alpha=0.7)
+ax[2].plot(sample_points[idx], np.real(output_samples[idx]), label="pyffs.convolve", alpha=0.7)
+ax[2].plot(t_vals_full, np.real(output_fft), label="scipy.signal.convolve", alpha=0.7)
+# ax[2].plot(t_vals_full, np.real(output_fftconvolve), label="fftconvolve", alpha=0.7)
 ax[2].set_xlim([np.min(sample_points), np.max(sample_points)])
 ax[2].set_ylabel("$f \\ast h$")
 plt.legend()
