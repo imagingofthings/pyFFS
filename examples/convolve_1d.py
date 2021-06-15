@@ -3,13 +3,10 @@ from scipy.signal import convolve as convolve_scipy
 from scipy.signal import fftconvolve
 from pyffs import ffs_sample
 from pyffs.func import dirichlet
-import matplotlib
 import matplotlib.pyplot as plt
 from pyffs.conv import convolve as convolve_fs
 import os
-
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
-matplotlib.rc("font", **font)
+import util  # for plotting
 
 
 T, T_c, N_FS, N_samples = 1, 0.1, 15, 512
@@ -37,22 +34,20 @@ t_vals_full = np.linspace(2 * np.min(sample_points), 2 * np.max(sample_points), 
 
 # plot
 _, ax = plt.subplots(
-    nrows=3, ncols=1, num="Convolve bandlimited, periodic signals", figsize=(10, 10)
+    nrows=2, ncols=1, num="Convolve bandlimited, periodic signals", figsize=(10, 10)
 )
 ax[0].plot(sample_points[idx], diric_samples[idx])
 ax[0].set_xlim([np.min(sample_points), np.max(sample_points)])
 ax[0].set_ylabel("$f$")
 
-ax[1].plot(sample_points[idx], diric_samples[idx])
+ax[1].plot(sample_points[idx], np.real(output_samples[idx]), label="pyffs.convolve", alpha=0.7)
+# ax[1].plot(t_vals_full, np.real(output_fft), label="scipy.signal.convolve", alpha=0.7)
+ax[1].plot(t_vals_full, np.real(output_fftconvolve), label="scipy.signal.fftconvolve", alpha=0.7)
 ax[1].set_xlim([np.min(sample_points), np.max(sample_points)])
-ax[1].set_ylabel("$h$")
-
-ax[2].plot(sample_points[idx], np.real(output_samples[idx]), label="pyffs.convolve", alpha=0.7)
-ax[2].plot(t_vals_full, np.real(output_fft), label="scipy.signal.convolve", alpha=0.7)
-# ax[2].plot(t_vals_full, np.real(output_fftconvolve), label="fftconvolve", alpha=0.7)
-ax[2].set_xlim([np.min(sample_points), np.max(sample_points)])
-ax[2].set_ylabel("$f \\ast h$")
+ax[1].set_ylabel("$f \\ast f$")
+ax[1].set_xlabel("Time [s]")
 plt.legend()
+plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_1d.png"))
 
 plt.show()

@@ -14,8 +14,10 @@ import matplotlib.pyplot as plt
 import os
 
 
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
+font = {"family": "Times New Roman", "weight": "normal", "size": 30}
 matplotlib.rc("font", **font)
+matplotlib.rcParams["lines.linewidth"] = 4
+matplotlib.rcParams["lines.markersize"] = 10
 
 
 def sinc_interp(x, s, u):
@@ -70,7 +72,6 @@ vals_linear = f_linear(points)
 vals_cubic = f_cubic(points)
 
 # plot
-linewidth = 3
 
 # input
 t_gt, _ = ffs_sample(T, N_FS, T_c, 4096)
@@ -79,7 +80,7 @@ t_gt = np.sort(t_gt)
 idx_order = np.argsort(sample_points)
 fig = plt.figure(figsize=(12, 10))
 ax = fig.add_subplot(1, 1, 1)
-ax.plot(t_gt, dirichlet(t_gt, T, T_c_diric, N_FS), label="ground truth")
+ax.plot(t_gt, dirichlet(t_gt, T, T_c_diric, N_FS), label="ground truth", alpha=0.7)
 ax.scatter(sample_points[idx_order], diric_samples[idx_order], label="available samples")
 ax.set_xlabel("x [m]")
 ax.set_xlim([T_c - T / 2, T_c + T / 2])
@@ -87,15 +88,14 @@ ax.axvline(
     x=start,
     c="k",
     linestyle="--",
-    linewidth=linewidth,
 )
 ax.axvline(
     x=stop,
     c="k",
     linestyle="--",
-    linewidth=linewidth,
 )
 plt.legend()
+plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_1d_input.png"))
 
 
@@ -106,14 +106,15 @@ t_interp = np.sort(t_interp)
 idx = np.logical_and(sample_points >= start, sample_points <= stop)
 fig = plt.figure(figsize=(12, 10))
 ax = fig.add_subplot(1, 1, 1)
-ax.plot(points, vals_ffs, label="pyffs.fs_interp")
-ax.plot(points, vals_sinc, label="sinc interp")
-ax.plot(resampled_t, resampled_x, label="scipy.signal.resample")
-ax.plot(t_interp, dirichlet(t_interp, T, T_c_diric, N_FS), label="ground truth")
+ax.plot(points, vals_ffs, label="pyffs.fs_interp", alpha=0.7)
+# ax.plot(points, vals_sinc, label="sinc interp")
+ax.plot(resampled_t, resampled_x, label="scipy.signal.resample", alpha=0.7)
+ax.plot(t_interp, dirichlet(t_interp, T, T_c_diric, N_FS), label="ground truth", alpha=0.7)
 ax.scatter(sample_points, diric_samples, label="available samples")
-ax.set_xlabel("x [m]")
+ax.set_xlabel("Time [s]")
 ax.set_xlim([start, stop])
 plt.legend()
+plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_1d.png"))
 
 plt.show()

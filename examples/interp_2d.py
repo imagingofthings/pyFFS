@@ -8,8 +8,10 @@ import matplotlib.pyplot as plt
 import os
 import util
 
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
+font = {"family": "Times New Roman", "weight": "normal", "size": 35}
 matplotlib.rc("font", **font)
+matplotlib.rcParams["lines.linewidth"] = 4
+matplotlib.rcParams["lines.markersize"] = 10
 
 
 def fft2_interpolate(samples, T, dx, dy, T_c, offset=None):
@@ -113,12 +115,14 @@ idx_resample = np.argmin(np.abs(resampled_y - y_val))
 
 fig = plt.figure(figsize=(12, 10))
 ax = fig.add_subplot(1, 1, 1)
-ax.plot(points_x, np.real(vals_ffs[:, idx_yc]), label="pyffs.fs_interp")
+ax.plot(points_x, np.real(vals_ffs[:, idx_yc]), label="pyffs.fs_interp", alpha=0.7)
 # ax.plot(x_fft, np.real(vals_fft[:, idx_fft]), label="FFT")
-ax.plot(resampled_x, np.real(vals_resample[:, idx_resample]), label="scipy.signal.resample")
+ax.plot(
+    resampled_x, np.real(vals_resample[:, idx_resample]), label="scipy.signal.resample", alpha=0.7
+)
 # ax.plot(points_x, np.real(vals_linear[:, idx_yc]), label="linear")
 # ax.plot(points_x, np.real(vals_cubic[:, idx_yc]), label="cubic")
-ax.plot(points_x, np.real(vals_true[:, idx_yc]), label="ground truth")
+ax.plot(points_x, np.real(vals_true[:, idx_yc]), label="ground truth", alpha=0.7)
 ax.scatter(sample_points[0], diric_samples[:, idx_og], label="available samples")
 ax.set_xlabel("x [m]")
 ax.set_xlim([start[0], stop[0]])
@@ -130,7 +134,6 @@ plt.savefig(
 
 # --- 2D plots
 pcolormesh = True
-linewidth = 5
 x_shift = (sample_points[0][1, 0] - sample_points[0][0, 0]) / 2
 y_shift = (sample_points[1][0, 1] - sample_points[1][0, 0]) / 2
 
@@ -149,7 +152,6 @@ ax.axvline(
     ymax=0.5 + stop[1] - y_shift * pcolormesh,
     c="k",
     linestyle="--",
-    linewidth=linewidth,
 )
 ax.axvline(
     x=stop[0] - x_shift * pcolormesh,
@@ -157,7 +159,6 @@ ax.axvline(
     ymax=0.5 + stop[1] - y_shift * pcolormesh,
     c="k",
     linestyle="--",
-    linewidth=linewidth,
 )
 ax.axhline(
     y=start[1] - y_shift * pcolormesh,
@@ -165,7 +166,6 @@ ax.axhline(
     xmax=0.5 + stop[0] - x_shift * pcolormesh,
     c="k",
     linestyle="--",
-    linewidth=linewidth,
 )
 ax.axhline(
     y=stop[1] - y_shift * pcolormesh,
@@ -173,17 +173,15 @@ ax.axhline(
     xmax=0.5 + stop[0] - x_shift * pcolormesh,
     c="k",
     linestyle="--",
-    linewidth=linewidth,
 )
 # -- cross-section
-ax.axhline(
-    y=y_val,
-    xmin=0.5 + start[0] - x_shift * pcolormesh,
-    xmax=0.5 + stop[0] - x_shift * pcolormesh,
-    c="r",
-    linestyle="-.",
-    linewidth=linewidth,
-)
+# ax.axhline(
+#     y=y_val,
+#     xmin=0.5 + start[0] - x_shift * pcolormesh,
+#     xmax=0.5 + stop[0] - x_shift * pcolormesh,
+#     c="r",
+#     linestyle="-."
+# )
 plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_input.png"))
 
@@ -196,7 +194,7 @@ ax = util.plot2d(
     colorbar=False,
 )
 # -- cross-section
-ax.axhline(y=y_val, c="r", linestyle="-.", linewidth=linewidth)
+ax.axhline(y=y_val, c="r", linestyle="-.")
 plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_ffs.png"))
 
@@ -209,7 +207,7 @@ plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "in
 #     colorbar=False,
 # )
 # # -- cross-section
-# ax.axhline(y=y_val, c="r", linestyle="-.", linewidth=linewidth)
+# ax.axhline(y=y_val, c="r", linestyle="-.")
 # plt.tight_layout()
 # plt.savefig(
 #     os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_linear.png")
@@ -224,7 +222,7 @@ plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "in
 #     colorbar=False,
 # )
 # # -- cross-section
-# ax.axhline(y=y_val, c="r", linestyle="-.", linewidth=linewidth)
+# ax.axhline(y=y_val, c="r", linestyle="-.")
 # ax.set_xlim([start[0], stop[0]])
 # ax.set_ylim([start[1], stop[1]])
 # plt.tight_layout()
