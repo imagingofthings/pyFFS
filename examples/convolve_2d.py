@@ -6,19 +6,22 @@ from scipy.signal import fftconvolve
 from pyffs.conv import convolve as convolve_fs
 import matplotlib.pyplot as plt
 import os
-import util  # plot plotting
+from util import plotting_setup, plot2d
 
+
+fig_path = plotting_setup()
+ALPHA = 0.9
 
 T = [1, 1]
 T_c = [0.1, 0.2]
-T_c_diric = 2 * [0.3]
+T_c_diric = np.array([0.3, 0.3])
 N_FS = [15, 9]
 N_samples = [128, 128]
 reorder = True  # pass ordered samples to `convolve_fs` -> need to reorder samples inside
 y_val_plot = 2 * T_c_diric[1]
 
 # input, which we convolve with itself
-sample_points, idx = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_samples)
+sample_points, idx = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_samples, mod=np)
 if reorder:
     sample_points_x = np.sort(sample_points[0], axis=0)
     sample_points_y = np.sort(sample_points[1], axis=1)
@@ -67,42 +70,50 @@ output_fftconvolve = (
 
 
 # --- 1D plot,  2D cross section
+diric_samples_true = dirichlet_2D(sample_points, T, 2 * T_c_diric, N_FS)
+
 idx_ffs = np.argmin(np.abs(np.squeeze(sample_points[1]) - y_val_plot))
 idx_fft = np.argmin(np.abs(output_vals_y - y_val_plot))
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(1, 1, 1)
 ax.plot(
     sample_points[0][idx_x],
+    np.real(diric_samples_true[idx_x, idx_ffs]),
+    label="ground truth",
+    alpha=ALPHA,
+    linestyle="-",
+)
+ax.plot(
+    sample_points[0][idx_x],
     np.real(output_samples[idx_x, idx_ffs]),
     label="pyffs.convolve2d",
-    alpha=0.7,
+    alpha=ALPHA,
+    linestyle="--",
 )
-# ax.plot(output_vals_x, np.real(output_scipy[:, idx_fft]), label="scipy.signal.convolve2d", alpha=0.7)
 ax.plot(
     output_vals_x,
     np.real(output_scipy_wrap[:, idx_fft]),
     label="scipy.signal.convolve2d (wrap)",
-    alpha=0.7,
+    alpha=ALPHA,
+    linestyle="dotted",
 )
 ax.plot(
     output_vals_x,
     np.real(output_fftconvolve[:, idx_fft]),
     label="scipy.signal.fftconvolve",
-    alpha=0.7,
+    alpha=ALPHA,
+    linestyle="-.",
 )
-# ax.set_title("convolution of 2D bandlimited periodic functions, y={}".format(y_val_plot))
 ax.set_xlabel("x [m]")
 ax.set_xlim([np.min(sample_points[0]), np.max(sample_points[0])])
 plt.legend()
-plt.savefig(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_output_slice.png")
-)
+plt.savefig(os.path.join(fig_path, "convolve_2d_output_slice.png"))
 
 # --- 2D plots
 pcolormesh = True
 
 # input
-ax = util.plot2d(
+ax = plot2d(
     x_vals=sample_points_x[idx_x],
     y_vals=sample_points_y[idx_y],
     Z=np.real(diric_samples_ord),
@@ -110,13 +121,10 @@ ax = util.plot2d(
     colorbar=False,
 )
 plt.tight_layout()
-# ax.set_title("input")
-plt.savefig(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_input.png")
-)
+plt.savefig(os.path.join(fig_path, "convolve_2d_input.png"))
 
 # output
-ax = util.plot2d(
+ax = plot2d(
     x_vals=sample_points_x[idx_x],
     y_vals=sample_points_y[idx_y],
     Z=np.real(ffsn_shift(output_samples, idx)),
@@ -124,30 +132,10 @@ ax = util.plot2d(
     colorbar=False,
 )
 plt.tight_layout()
-# ax.set_title("FFS convolve")
-plt.savefig(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_ffsconvolve.png")
-)
-
-# # output
-# ax = util.plot2d(
-#     x_vals=output_vals_x,
-#     y_vals=output_vals_y,
-#     Z=np.real(output_scipy),
-#     pcolormesh=pcolormesh,
-#     colorbar=False,
-# )
-# ax.set_xlim([np.min(sample_points[0]), np.max(sample_points[0])])
-# ax.set_ylim([np.min(sample_points[1]), np.max(sample_points[1])])
-# plt.tight_layout()
-# # ax.set_title("scipy.signal.convolve2d")
-# plt.savefig(
-#     os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_fftconvolve.png")
-# )
-
+plt.savefig(os.path.join(fig_path, "convolve_2d_ffsconvolve.png"))
 
 # output
-ax = util.plot2d(
+ax = plot2d(
     x_vals=output_vals_x,
     y_vals=output_vals_y,
     Z=np.real(output_scipy),
@@ -157,9 +145,6 @@ ax = util.plot2d(
 ax.set_xlim([np.min(sample_points[0]), np.max(sample_points[0])])
 ax.set_ylim([np.min(sample_points[1]), np.max(sample_points[1])])
 plt.tight_layout()
-# ax.set_title("scipy.signal.fftconvolve")
-plt.savefig(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_2d_fftconvolve.png")
-)
+plt.savefig(os.path.join(fig_path, "convolve_2d_fftconvolve.png"))
 
 plt.show()

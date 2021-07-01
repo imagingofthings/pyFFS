@@ -51,8 +51,9 @@ doc/build/
 # Virtual environments
 venv*
 
-# Profiling outputs
+# Profiling and example outputs
 profile/*.png
+examples/figs/*
 
 ### C/C++ template ============================================================
 *.so

@@ -1,10 +1,37 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import os
 
-font = {"family": "Times New Roman", "weight": "normal", "size": 25}
-matplotlib.rc("font", **font)
-matplotlib.rcParams["lines.linewidth"] = 3
+
+def plotting_setup(font_size=30, linewidth=4, markersize=10, fig_folder="figs"):
+    font = {"family": "Times New Roman", "weight": "normal", "size": font_size}
+    matplotlib.rc("font", **font)
+    matplotlib.rcParams["lines.linewidth"] = linewidth
+    matplotlib.rcParams["lines.markersize"] = markersize
+
+    fig_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), fig_folder)
+    if not os.path.isdir(fig_path):
+        os.mkdir(fig_path)
+    return fig_path
+
+
+def sinc_interp(x, s, u):
+    """
+    Interpolates x, sampled at "s" instants
+    Output y is sampled at "u" instants ("u" for "upsampled")
+
+    from Matlab:
+    http://phaseportrait.blogspot.com/2008/06/sinc-interpolation-in-matlab.html
+    """
+
+    if len(x) != len(s):
+        raise ValueError
+    # Find the period
+    T = s[1] - s[0]
+    sincM = np.tile(u, (len(s), 1)) - np.tile(s[:, np.newaxis], (1, len(u)))
+    H = np.sinc(sincM / T)
+    return np.dot(x, H)
 
 
 def plot2d(x_vals, y_vals, Z, pcolormesh=True, colorbar=True):

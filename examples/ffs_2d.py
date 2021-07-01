@@ -1,13 +1,12 @@
 import numpy as np
 from pyffs import ffsn_sample, ffsn
 from pyffs.func import dirichlet_2D
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import os
+from util import plotting_setup
 
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
-matplotlib.rc("font", **font)
+fig_path = plotting_setup()
 
 
 T = [1, 1]
@@ -16,7 +15,7 @@ N_FS = [5, 9]
 N_s = [256, 256]
 K_plot = [15, 15]
 
-sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
+sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s, mod=np)
 diric_samples = dirichlet_2D(sample_points, T, T_c, N_FS)
 diric_FS = ffsn(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)[: N_FS[0], : N_FS[1]]
 
@@ -31,7 +30,7 @@ ax_spat.set_ylabel("y [m]")
 # plot frequency
 Kx = N_FS[0] // 2
 Ky = N_FS[1] // 2
-FS = np.zeros(np.array(K_plot) * 2 + 1, dtype=np.complex)
+FS = np.zeros(np.array(K_plot) * 2 + 1, dtype=complex)
 fsx_off = K_plot[0] - Kx
 fsy_off = K_plot[1] - Ky
 FS[fsx_off : fsx_off + N_FS[0], fsy_off : fsy_off + N_FS[1]] = diric_FS
@@ -46,5 +45,5 @@ fig.colorbar(cp)
 ax_freq.set_xlabel("$FS_x$")
 ax_freq.set_ylabel("$FS_y$")
 
-plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "ffs_2d.png"))
+plt.savefig(os.path.join(fig_path, "ffs_2d.png"))
 plt.show()
