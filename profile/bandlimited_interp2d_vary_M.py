@@ -33,7 +33,7 @@ def fft2_interpolate(dft, T, dx, dy):
 
 @click.command()
 @click.option("--n_samples", type=int, default=32)
-@click.option("--n_trials", type=int, default=30)
+@click.option("--n_trials", type=int, default=10)
 def profile_fs_interp(n_samples, n_trials):
     print(f"\nCOMPARING FFS AND FFT INTERP WITH {n_trials} TRIALS")
     n_std = 0.5
@@ -51,7 +51,7 @@ def profile_fs_interp(n_samples, n_trials):
     start = np.array(T_c) - width / 2
     stop = np.array(T_c) + width / 2
 
-    sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
+    sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s, mod=np)
     diric_samples = dirichlet_2D(sample_points, T, T_c, N_FS)
     diric_samples_ord = dirichlet_2D(
         [np.sort(sample_points[0], axis=0), np.sort(sample_points[1])], T, T_c, N_FS

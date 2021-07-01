@@ -52,7 +52,7 @@ doc/build/
 venv*
 
 # Profiling and example outputs
-profile/*.png
+profile/figs/*
 examples/figs/*
 
 ### C/C++ template ============================================================

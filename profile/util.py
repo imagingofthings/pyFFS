@@ -1,5 +1,22 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
+import os
+
+
+backend_to_label = {"numpy": "CPU", "cupy": "GPU"}
+
+
+def plotting_setup(font_size=30, linewidth=4, markersize=10, fig_folder="figs"):
+    font = {"family": "Times New Roman", "weight": "normal", "size": font_size}
+    matplotlib.rc("font", **font)
+    matplotlib.rcParams["lines.linewidth"] = linewidth
+    matplotlib.rcParams["lines.markersize"] = markersize
+
+    fig_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), fig_folder)
+    if not os.path.isdir(fig_path):
+        os.mkdir(fig_path)
+    return fig_path
 
 
 def comparison_plot(proc_time, proc_time_std, n_std, ax=None):

@@ -23,18 +23,19 @@ def fft_interpolate(dft, T, dt):
 
 
 @click.command()
-@click.option("--n_samples", type=int, default=512)
-@click.option("--n_trials", type=int, default=30)
-def profile_fs_interp(n_trials, n_samples):
+@click.option("--n_samples", type=int, default=128)
+@click.option("--n_trials", type=int, default=10)
+@click.option("--n_interp", type=int, default=1000)
+def profile_fs_interp(n_trials, n_samples, n_interp):
     print(f"\nCOMPARING FFS AND FFT INTERP WITH {n_trials} TRIALS")
     n_std = 0.5
 
-    M = 100
-    width_vals = np.logspace(-4, -1, 10)
+    M = n_interp
+    width_vals = np.logspace(-3, 0, 10)
 
     T, T_c = 1, 0
     N_FS = n_samples - 1
-    sample_points, _ = ffs_sample(T, N_FS, T_c, n_samples)
+    sample_points, _ = ffs_sample(T, N_FS, T_c, n_samples, mod=np)
     diric_samples = dirichlet(sample_points, T, T_c, N_FS)
     t_ord = np.sort(sample_points)
     diric_samples_ord = dirichlet(t_ord, T, T_c, N_FS)
