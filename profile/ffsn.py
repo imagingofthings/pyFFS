@@ -51,10 +51,12 @@ def profile_ffsn(n_trials):
                 # Sample the kernel and do the transform.
                 sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s, mod=mod)
                 diric_samples = dirichlet_2D(sample_points=sample_points, T=T, T_c=T_c, N_FS=N_FS)
+                diric_samples = diric_samples.astype(
+                    "float32"
+                )  # cast to float32, theoretically better for GPU
                 func[_f](
                     x=diric_samples, T=T, N_FS=N_FS, T_c=T_c
                 )  # first one is a bit slow sometimes...
-
                 if len(func.keys()) > 1:
                     _key = "{}_{}".format(_f, backend)
                 else:

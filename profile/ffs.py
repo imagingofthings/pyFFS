@@ -42,8 +42,10 @@ def profile_ffsn(n_trials):
             # Sample the kernel and do the transform.
             sample_points, _ = ffs_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s, mod=mod)
             diric_samples = dirichlet(x=sample_points, T=T, T_c=T_c, N_FS=N_FS)
+            diric_samples = diric_samples.astype(
+                "float32"
+            )  # cast to float32, theoretically better for GPU
             ffs(x=diric_samples, T=T, N_FS=N_FS, T_c=T_c)  # first one is a bit slow sometimes...
-
             timings = []
             for _ in range(n_trials):
                 start_time = time.time()
