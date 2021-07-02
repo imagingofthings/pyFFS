@@ -1,10 +1,8 @@
 import os
 import time
-
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-
 from util import comparison_plot, plotting_setup, backend_to_label
 from pyffs import ffs_sample, ffs, next_fast_len
 from pyffs.func import dirichlet

@@ -1,26 +1,13 @@
 import numpy as np
-import pathlib
+import os
 from pyffs import ffs_sample, ffs, fs_interp
 from pyffs.func import dirichlet
-import matplotlib
 import matplotlib.pyplot as plt
 import click
 from scipy.signal import resample
 from scipy.interpolate import interp1d
-import util
+from util import comparison_plot, plotting_setup
 import time
-
-
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
-matplotlib.rc("font", **font)
-
-
-def fft_interpolate(dft, T, dt):
-    N_target = int(np.ceil(T / dt))
-    n_pad = N_target - len(dft)
-    X_pad = np.pad(dft, pad_width=(n_pad // 2, n_pad // 2), mode="constant", constant_values=0)
-    X_pad = np.fft.fftshift(X_pad)
-    return np.real(np.fft.ifft(X_pad)) * len(X_pad) / len(dft)
 
 
 def sinc_interp(x, s, u):
@@ -37,6 +24,7 @@ def sinc_interp(x, s, u):
 @click.option("--n_trials", type=int, default=10)
 @click.option("--percent_period", type=float, default=0.1)
 def profile_fs_interp(n_trials, n_samples, percent_period):
+    fig_path = plotting_setup(linewidth=3, font_size=20)
     print(f"\nCOMPARING FFS AND FFT INTERP WITH {n_trials} TRIALS")
     n_std = 0.5
     M_vals = [100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000]
@@ -92,18 +80,6 @@ def profile_fs_interp(n_trials, n_samples, percent_period):
         proc_time_std[num][_key] = np.std(timings)
         print("-- {} : {} seconds".format(_key, proc_time[num][_key]))
 
-        # # FFT
-        # _key = "FFT"
-        # timings = []
-        # for _ in range(n_trials):
-        #     start_time = time.time()
-        #     dft = np.fft.fftshift(np.fft.fft(diric_samples_ord))
-        #     vals_fft = fft_interpolate(dft, T, dt)
-        #     timings.append(time.time() - start_time)
-        # proc_time[num][_key] = np.mean(timings)
-        # proc_time_std[num][_key] = np.std(timings)
-        # print("-- {} : {} seconds".format(_key, proc_time[num][_key]))
-
         # # linear
         # _key = "linear"
         # timings = []
@@ -141,7 +117,7 @@ def profile_fs_interp(n_trials, n_samples, percent_period):
 
     # plot results
     fig, ax = plt.subplots()
-    util.comparison_plot(proc_time, proc_time_std, n_std, ax)
+    comparison_plot(proc_time, proc_time_std, n_std, ax)
     ax.set_title(f"{n_samples} samples, {percent_period*100}% of period")
     ax.set_xlabel("Number of interpolation points in section")
     fig.tight_layout()
@@ -152,9 +128,7 @@ def profile_fs_interp(n_trials, n_samples, percent_period):
     # M_cross = int(m * T / dt)
     # if M_cross > 0:
     #     ax.axvline(x=M_cross, linestyle="--", color="g")
-
-    fname = pathlib.Path(__file__).resolve().parent / "bandlimited_interp1d_vary_M.png"
-    fig.savefig(fname, dpi=300)
+    fig.savefig(os.path.join(fig_path, "bandlimited_interp1d_vary_M.png"))
 
     plt.show()
 

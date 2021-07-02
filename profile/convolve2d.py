@@ -1,24 +1,18 @@
-import pathlib
+import os
 import time
-
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-
-import util
+from util import comparison_plot, plotting_setup
 from pyffs import ffsn_sample, convolve, ffsn_shift
 from pyffs.func import dirichlet_2D
 from scipy.signal import convolve2d as convolve_scipy
-import matplotlib
-
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
-matplotlib.rc("font", **font)
-matplotlib.rcParams["lines.linewidth"] = 2
 
 
 @click.command()
 @click.option("--n_trials", type=int, default=1)
 def profile_ffsn(n_trials):
+    fig_path = plotting_setup(linewidth=3, font_size=20)
 
     T = [1, 1]
     T_c = [0, 0]
@@ -68,13 +62,11 @@ def profile_ffsn(n_trials):
 
     # plot results
     fig, ax = plt.subplots()
-    util.comparison_plot(proc_time, proc_time_std, n_std, ax)
+    comparison_plot(proc_time, proc_time_std, n_std, ax)
     ax.set_xlabel("Number of samples per dimension")
     ax.set_xticks([10, 30, 100, 300])
     fig.tight_layout()
-
-    fname = pathlib.Path(__file__).resolve().parent / "profile_convolve2d.png"
-    fig.savefig(fname, dpi=300)
+    fig.savefig(os.path.join(fig_path, "profile_convolve2d.png"))
 
     plt.show()
 
