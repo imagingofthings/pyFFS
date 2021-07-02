@@ -23,8 +23,7 @@ class TestUtil:
                 mod.array([3.2, 3.33, 3.45, 3.58, 2.7, 2.83, 2.95, 3.08]),
             )
             mod.testing.assert_array_equal(
-                idx,
-                mod.array([4, 5, 6, 7, 0, 1, 2, 3]),
+                idx, mod.array([4, 5, 6, 7, 0, 1, 2, 3]),
             )
             assert get_array_module(sample_points) == mod
             assert get_array_module(idx) == mod
