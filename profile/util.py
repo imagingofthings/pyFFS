@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-import os
+import pathlib as plib
 
 
 backend_to_label = {"numpy": "CPU", "cupy": "GPU"}
@@ -13,9 +13,8 @@ def plotting_setup(font_size=30, linewidth=4, markersize=10, fig_folder="figs"):
     matplotlib.rcParams["lines.linewidth"] = linewidth
     matplotlib.rcParams["lines.markersize"] = markersize
 
-    fig_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), fig_folder)
-    if not os.path.isdir(fig_path):
-        os.mkdir(fig_path)
+    fig_path = plib.Path(__file__).parent / fig_folder
+    fig_path.mkdir(exist_ok=True)
     return fig_path
 
 

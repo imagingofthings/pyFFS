@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-import os
+import pathlib as plib
 
 
 def plotting_setup(font_size=30, linewidth=4, markersize=10, fig_folder="figs"):
@@ -10,9 +10,8 @@ def plotting_setup(font_size=30, linewidth=4, markersize=10, fig_folder="figs"):
     matplotlib.rcParams["lines.linewidth"] = linewidth
     matplotlib.rcParams["lines.markersize"] = markersize
 
-    fig_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), fig_folder)
-    if not os.path.isdir(fig_path):
-        os.mkdir(fig_path)
+    fig_path = plib.Path(__file__).parent / fig_folder
+    fig_path.mkdir(exist_ok=True)
     return fig_path
 
 
@@ -53,7 +52,6 @@ def plot2d(x_vals, y_vals, Z, pcolormesh=True, colorbar=True):
         cp = ax.pcolormesh(X, Y, Z.T)
     else:
         cp = ax.contourf(X, Y, Z.T)
-    fig = plt.gcf()
     if colorbar:
         fig.colorbar(cp, ax=ax, orientation="vertical")
     ax.set_xlabel("x [m]")

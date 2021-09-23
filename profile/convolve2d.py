@@ -1,4 +1,4 @@
-import os
+import pathlib as plib
 import time
 import click
 import matplotlib.pyplot as plt
@@ -66,7 +66,7 @@ def profile_ffsn(n_trials):
     ax.set_xlabel("Number of samples per dimension")
     ax.set_xticks([10, 30, 100, 300])
     fig.tight_layout()
-    fig.savefig(os.path.join(fig_path, "profile_convolve2d.png"))
+    fig.savefig(plib.Path(fig_path) / "profile_convolve2d.png")
 
     plt.show()
 

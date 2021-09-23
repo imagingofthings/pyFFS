@@ -1,5 +1,5 @@
 import math
-import os
+import pathlib as plib
 import time
 import click
 import matplotlib.pyplot as plt
@@ -82,7 +82,7 @@ def profile_fs_interp(n_interp, n_trials):
     ax.set_xticks(np.array(N_FS_vals) - 1)
     ax.set_yticks([1e-3, 1e-1, 1e1])
     fig.tight_layout()
-    fig.savefig(os.path.join(fig_path, "profile_fs_interp1d_vary_NFS.png"))
+    fig.savefig(plib.Path(fig_path) / "profile_fs_interp1d_vary_NFS.png")
 
     plt.show()
 

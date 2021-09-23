@@ -5,7 +5,7 @@ from scipy.signal import convolve2d as convolve_scipy
 from scipy.signal import fftconvolve
 from pyffs.conv import convolve as convolve_fs
 import matplotlib.pyplot as plt
-import os
+import pathlib as plib
 from util import plotting_setup, plot2d
 
 
@@ -106,8 +106,8 @@ ax.plot(
 )
 ax.set_xlabel("x [m]")
 ax.set_xlim([np.min(sample_points[0]), np.max(sample_points[0])])
-plt.legend()
-plt.savefig(os.path.join(fig_path, "convolve_2d_output_slice.png"))
+ax.legend()
+fig.savefig(plib.Path(fig_path) / "convolve_2d_output_slice.png")
 
 # --- 2D plots
 pcolormesh = True
@@ -120,8 +120,9 @@ ax = plot2d(
     pcolormesh=pcolormesh,
     colorbar=False,
 )
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "convolve_2d_input.png"))
+fig = plt.gcf()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "convolve_2d_input.png")
 
 # output
 ax = plot2d(
@@ -131,8 +132,9 @@ ax = plot2d(
     pcolormesh=pcolormesh,
     colorbar=False,
 )
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "convolve_2d_ffsconvolve.png"))
+fig = plt.gcf()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "convolve_2d_ffsconvolve.png")
 
 # output
 ax = plot2d(
@@ -144,7 +146,8 @@ ax = plot2d(
 )
 ax.set_xlim([np.min(sample_points[0]), np.max(sample_points[0])])
 ax.set_ylim([np.min(sample_points[1]), np.max(sample_points[1])])
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "convolve_2d_fftconvolve.png"))
+fig = plt.gcf()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "convolve_2d_fftconvolve.png")
 
 plt.show()

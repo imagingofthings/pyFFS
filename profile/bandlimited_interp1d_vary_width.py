@@ -1,5 +1,5 @@
 import numpy as np
-import os
+import pathlib as plib
 from pyffs import ffs_sample, ffs, fs_interp
 from pyffs.func import dirichlet
 import matplotlib.pyplot as plt
@@ -79,7 +79,7 @@ def profile_fs_interp(n_trials, n_samples, n_interp):
     ax.set_title(f"{n_samples} samples, {M} interpolation points")
     ax.set_xlabel("Percentage of period")
     fig.tight_layout()
-    fig.savefig(os.path.join(fig_path, "bandlimited_interp1d_vary_width.png"))
+    fig.savefig(plib.Path(fig_path) / "bandlimited_interp1d_vary_width.png")
 
     plt.show()
 

@@ -1,5 +1,5 @@
 import numpy as np
-import os
+import pathlib as plib
 from pyffs import ffsn_sample, ffsn, fs_interpn
 from pyffs.func import dirichlet_2D
 import matplotlib.pyplot as plt
@@ -93,7 +93,7 @@ def profile_fs_interp(n_samples, n_trials, n_interp):
     ax.set_title(f"{N_s} samples, {M} interp points")
     ax.set_xlabel("Percentage of period")
     fig.tight_layout()
-    fig.savefig(os.path.join(fig_path, "bandlimited_interp2d_vary_width.png"))
+    fig.savefig(plib.Path(fig_path) / "bandlimited_interp2d_vary_width.png")
 
     plt.show()
 

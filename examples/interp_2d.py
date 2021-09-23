@@ -4,7 +4,7 @@ from pyffs.func import dirichlet_2D
 from scipy.interpolate import interp2d
 from scipy.signal import resample
 import matplotlib.pyplot as plt
-import os
+import pathlib as plib
 from util import plotting_setup, plot2d
 
 
@@ -84,7 +84,7 @@ ax.set_xlabel("x [m]")
 ax.set_xlim([start[0], stop[0]])
 plt.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "interp_2d_output_slice.png"))
+fig.savefig(plib.Path(fig_path) / "interp_2d_output_slice.png")
 
 # --- 2D plots
 pcolormesh = True
@@ -131,8 +131,9 @@ ax.axhline(
 )
 
 # -- cross-section
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "interp_2d_input.png"))
+fig = plt.gcf()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "interp_2d_input.png")
 
 # FFS interp
 ax = plot2d(
@@ -144,8 +145,8 @@ ax = plot2d(
 )
 # -- cross-section
 ax.axhline(y=y_val, c="r", linestyle="--")
-plt.tight_layout()
-
-plt.savefig(os.path.join(fig_path, "interp_2d_ffs.png"))
+fig = plt.gcf()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "interp_2d_ffs.png")
 
 plt.show()
