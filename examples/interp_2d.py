@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import os
 import util
 
-font = {"family": "Times New Roman", "weight": "normal", "size": 35}
+font = {"family": "Times New Roman", "weight": "normal", "size": 30}
 matplotlib.rc("font", **font)
 matplotlib.rcParams["lines.linewidth"] = 4
 matplotlib.rcParams["lines.markersize"] = 10
@@ -116,12 +116,9 @@ idx_resample = np.argmin(np.abs(resampled_y - y_val))
 fig = plt.figure(figsize=(12, 10))
 ax = fig.add_subplot(1, 1, 1)
 ax.plot(points_x, np.real(vals_ffs[:, idx_yc]), label="pyffs.fs_interp", alpha=0.7)
-# ax.plot(x_fft, np.real(vals_fft[:, idx_fft]), label="FFT")
 ax.plot(
     resampled_x, np.real(vals_resample[:, idx_resample]), label="scipy.signal.resample", alpha=0.7
 )
-# ax.plot(points_x, np.real(vals_linear[:, idx_yc]), label="linear")
-# ax.plot(points_x, np.real(vals_cubic[:, idx_yc]), label="cubic")
 ax.plot(points_x, np.real(vals_true[:, idx_yc]), label="ground truth", alpha=0.7)
 ax.scatter(sample_points[0], diric_samples[:, idx_og], label="available samples")
 ax.set_xlabel("x [m]")
@@ -146,42 +143,35 @@ ax = util.plot2d(
     colorbar=False,
 )
 # -- zoomed in region
+zoom_color = "r"
 ax.axvline(
     x=start[0] - x_shift * pcolormesh,
     ymin=0.5 + start[1] - y_shift * pcolormesh,
     ymax=0.5 + stop[1] - y_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
 ax.axvline(
     x=stop[0] - x_shift * pcolormesh,
     ymin=0.5 + start[1] - y_shift * pcolormesh,
     ymax=0.5 + stop[1] - y_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
 ax.axhline(
     y=start[1] - y_shift * pcolormesh,
     xmin=0.5 + start[0] - x_shift * pcolormesh,
     xmax=0.5 + stop[0] - x_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
 ax.axhline(
     y=stop[1] - y_shift * pcolormesh,
     xmin=0.5 + start[0] - x_shift * pcolormesh,
     xmax=0.5 + stop[0] - x_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
-# -- cross-section
-# ax.axhline(
-#     y=y_val,
-#     xmin=0.5 + start[0] - x_shift * pcolormesh,
-#     xmax=0.5 + stop[0] - x_shift * pcolormesh,
-#     c="r",
-#     linestyle="-."
-# )
 plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_input.png"))
 
@@ -194,53 +184,8 @@ ax = util.plot2d(
     colorbar=False,
 )
 # -- cross-section
-ax.axhline(y=y_val, c="r", linestyle="-.")
+ax.axhline(y=y_val, c="r", linestyle="--")
 plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_ffs.png"))
-
-# # linear interpolation
-# ax = plot2d(
-#     x_vals=points_x,
-#     y_vals=points_y,
-#     Z=np.real(vals_linear),
-#     pcolormesh=pcolormesh,
-#     colorbar=False,
-# )
-# # -- cross-section
-# ax.axhline(y=y_val, c="r", linestyle="-.")
-# plt.tight_layout()
-# plt.savefig(
-#     os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_linear.png")
-# )
-
-# # resample
-# ax = plot2d(
-#     x_vals=resampled_x,
-#     y_vals=resampled_y,
-#     Z=np.real(vals_resample),
-#     pcolormesh=pcolormesh,
-#     colorbar=False,
-# )
-# # -- cross-section
-# ax.axhline(y=y_val, c="r", linestyle="-.")
-# ax.set_xlim([start[0], stop[0]])
-# ax.set_ylim([start[1], stop[1]])
-# plt.tight_layout()
-# plt.savefig(
-#     os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_resample.png")
-# )
-
-
-# # ground truth values
-# ax = plot2d(
-#     x_vals=points_x,
-#     y_vals=points_y,
-#     Z=np.real(vals_true),
-#     pcolormesh=pcolormesh,
-#     colorbar=False,
-# )
-# ax.set_title("ground truth")
-# plt.tight_layout()
-# plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "interp_2d_true.png"))
 
 plt.show()
