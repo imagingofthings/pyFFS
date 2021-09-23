@@ -164,7 +164,7 @@ def ifftn(x, axes=None):
     if get_array_module(x) == np:
         func = scipy.fft.ifftn
     else:
-        func = cupyx.scipy.ifft.fftn
+        func = cupyx.scipy.fft.ifftn
     return func(x, axes=axes)
 
 

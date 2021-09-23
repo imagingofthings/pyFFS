@@ -9,6 +9,7 @@
 import numpy as np
 from pyffs.ffs import ffsn, iffsn
 from pyffs.util import ffsn_sample, _verify_ffsn_input, ffsn_shift
+from pyffs.backend import get_array_module
 
 
 def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
@@ -52,14 +53,17 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
 
     """
 
+    xp = get_array_module(f)
+    assert xp == get_array_module(h)
+
     if (
-        not isinstance(T, (list, tuple, np.ndarray))
-        or not isinstance(T_c, (list, tuple, np.ndarray))
+        not isinstance(T, (list, tuple, xp.ndarray))
+        or not isinstance(T_c, (list, tuple, xp.ndarray))
         or isinstance(N_FS, int)
         or isinstance(axes, int)
     ):
-        assert not isinstance(T, (list, tuple, np.ndarray))
-        assert not isinstance(T_c, (list, tuple, np.ndarray))
+        assert not isinstance(T, (list, tuple, xp.ndarray))
+        assert not isinstance(T_c, (list, tuple, xp.ndarray))
         assert isinstance(N_FS, int)
         if axes is None:
             axes = (-1,)
@@ -73,7 +77,7 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     # reorder samples
     idx = None
     if reorder:
-        _, idx = ffsn_sample(T, N_FS, T_c, N_s)
+        _, idx = ffsn_sample(T, N_FS, T_c, N_s, mod=xp)
         f = ffsn_shift(f, idx)
         # same for h, as we have same FFS parameters
         h = ffsn_shift(h, idx)

@@ -1,5 +1,22 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
+import os
+
+
+backend_to_label = {"numpy": "CPU", "cupy": "GPU"}
+
+
+def plotting_setup(font_size=30, linewidth=4, markersize=10, fig_folder="figs"):
+    font = {"family": "Times New Roman", "weight": "normal", "size": font_size}
+    matplotlib.rc("font", **font)
+    matplotlib.rcParams["lines.linewidth"] = linewidth
+    matplotlib.rcParams["lines.markersize"] = markersize
+
+    fig_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), fig_folder)
+    if not os.path.isdir(fig_path):
+        os.mkdir(fig_path)
+    return fig_path
 
 
 def comparison_plot(proc_time, proc_time_std, n_std, ax=None):
@@ -53,3 +70,51 @@ def comparison_plot(proc_time, proc_time_std, n_std, ax=None):
     ax.grid()
 
     return ax
+
+
+def naive_interp1d(diric_FS, T, a, b, M):
+
+    sample_points = np.linspace(start=a, stop=b, num=M, endpoint=False)
+
+    # loop as could be large matrix
+    N_FS = len(diric_FS)
+    K = N_FS // 2
+    fs_idx = np.arange(-K, K + 1)
+    vals = np.zeros(len(sample_points), dtype=complex)
+    for i, _x_val in enumerate(sample_points):
+        vals[i] = np.dot(diric_FS, np.exp(1j * 2 * np.pi / T * _x_val * fs_idx))
+    return vals
+
+
+def naive_interp2d(diric_FS, T, a, b, M):
+
+    # create sample points
+    D = len(T)
+    sample_points = []
+    for d in range(D):
+        sh = [1] * D
+        sh[d] = M[d]
+        sample_points.append(
+            np.linspace(start=a[d], stop=b[d], num=M[d], endpoint=False).reshape(sh)
+        )
+
+    # initialize output
+    x_vals = np.linspace(start=a[0], stop=b[0], num=M[0], endpoint=False)
+    y_vals = np.linspace(start=a[1], stop=b[1], num=M[1], endpoint=False)
+    output_shape = (len(x_vals), len(y_vals))
+    vals = np.zeros(output_shape, dtype=complex)
+
+    # loop to avoid creating potentially large matrices
+    N_FSx, N_FSy = diric_FS.shape
+    Kx = N_FSx // 2
+    Ky = N_FSy // 2
+    fsx_idx = np.arange(-Kx, Kx + 1)[:, np.newaxis]
+    fsy_idx = np.arange(-Ky, Ky + 1)[np.newaxis, :]
+    for i, _x_val in enumerate(x_vals):
+        for j, _y_val in enumerate(y_vals):
+            vals[i, j] = np.sum(
+                diric_FS
+                * np.exp(1j * 2 * np.pi * fsx_idx / T[0] * _x_val)
+                * np.exp(1j * 2 * np.pi * fsy_idx / T[1] * _y_val)
+            )
+    return vals

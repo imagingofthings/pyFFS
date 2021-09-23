@@ -1,52 +1,33 @@
 import numpy as np
-import pathlib
+import os
 from pyffs import ffsn_sample, ffsn, fs_interpn
 from pyffs.func import dirichlet_2D
-import matplotlib
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp2d
 from scipy.signal import resample
 import click
-import util
+from util import comparison_plot, plotting_setup
 import time
-
-
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
-matplotlib.rc("font", **font)
-
-
-def fft2_interpolate(dft, T, dx, dy):
-    Nx_target = int(np.ceil(T[0] / dx))
-    Ny_target = int(np.ceil(T[1] / dy))
-
-    nx_pad = Nx_target - dft.shape[0]
-    ny_pad = Ny_target - dft.shape[1]
-    X_pad = np.pad(
-        dft,
-        pad_width=((nx_pad // 2, nx_pad // 2), (ny_pad // 2, ny_pad // 2)),
-        mode="constant",
-        constant_values=0,
-    )
-    X_pad = np.fft.fftshift(X_pad)
-    np.real(np.fft.ifft2(X_pad))
 
 
 @click.command()
 @click.option("--n_samples", type=int, default=32)
-@click.option("--n_trials", type=int, default=30)
-def profile_fs_interp(n_samples, n_trials):
+@click.option("--n_trials", type=int, default=10)
+@click.option("--n_interp", type=int, default=100)
+def profile_fs_interp(n_samples, n_trials, n_interp):
+    fig_path = plotting_setup(linewidth=3, font_size=20)
     print(f"\nCOMPARING FFS AND FFT INTERP WITH {n_trials} TRIALS")
     n_std = 0.5
 
-    M = [10, 10]
-    percent_region_vals = np.logspace(-4, -1, 10)
+    M = [n_interp, n_interp]
+    percent_region_vals = np.logspace(-3, 0, 10)
 
     T = 2 * [1]
     T_c = 2 * [0]
     N_s = 2 * [n_samples]
     N_FS = [N_s[0] - 1, N_s[1] - 1]
 
-    sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
+    sample_points, _ = ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s, mod=np)
     diric_samples = dirichlet_2D(sample_points, T, T_c, N_FS)
     diric_samples_ord = dirichlet_2D(
         [np.sort(sample_points[0], axis=0), np.sort(sample_points[1])], T, T_c, N_FS
@@ -108,13 +89,11 @@ def profile_fs_interp(n_samples, n_trials):
 
     # plot results
     fig, ax = plt.subplots()
-    util.comparison_plot(proc_time, proc_time_std, n_std, ax)
+    comparison_plot(proc_time, proc_time_std, n_std, ax)
     ax.set_title(f"{N_s} samples, {M} interp points")
     ax.set_xlabel("Percentage of period")
     fig.tight_layout()
-
-    fname = pathlib.Path(__file__).resolve().parent / "bandlimited_interp2d_vary_width.png"
-    fig.savefig(fname, dpi=300)
+    fig.savefig(os.path.join(fig_path, "bandlimited_interp2d_vary_width.png"))
 
     plt.show()
 

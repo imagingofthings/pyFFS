@@ -6,15 +6,17 @@ from pyffs.func import dirichlet
 import matplotlib.pyplot as plt
 from pyffs.conv import convolve as convolve_fs
 import os
-import util  # for plotting
+from util import plotting_setup
 
+fig_path = plotting_setup()
+ALPHA = 0.9
 
 T, T_c, N_FS, N_samples = 1, 0.1, 15, 512
 T_c_diric = 0.25
 reorder = True  # pass ordered samples to `convolve_fs` -> need to reorder samples inside
 
 # input, which we convolve with itself
-sample_points, idx = ffs_sample(T, N_FS, T_c, N_samples)
+sample_points, idx = ffs_sample(T, N_FS, T_c, N_samples, mod=np)
 if reorder:
     sample_points = np.sort(sample_points)
     idx = np.arange(len(sample_points)).astype(int)
@@ -40,14 +42,29 @@ ax[0].plot(sample_points[idx], diric_samples[idx])
 ax[0].set_xlim([np.min(sample_points), np.max(sample_points)])
 ax[0].set_ylabel("$f$")
 
-ax[1].plot(sample_points[idx], np.real(output_samples[idx]), label="pyffs.convolve", alpha=0.7)
-# ax[1].plot(t_vals_full, np.real(output_fft), label="scipy.signal.convolve", alpha=0.7)
-ax[1].plot(t_vals_full, np.real(output_fftconvolve), label="scipy.signal.fftconvolve", alpha=0.7)
+diric_samples_true = dirichlet(sample_points, T, 2 * T_c_diric, N_FS)
+ax[1].plot(
+    sample_points[idx], diric_samples_true[idx], label="ground truth", linestyle="-", alpha=ALPHA
+)
+ax[1].plot(
+    sample_points[idx],
+    np.real(output_samples[idx]),
+    label="pyffs.convolve",
+    linestyle="--",
+    alpha=ALPHA,
+)
+ax[1].plot(
+    t_vals_full,
+    np.real(output_fftconvolve),
+    label="scipy.signal.fftconvolve",
+    linestyle="-.",
+    alpha=ALPHA,
+)
 ax[1].set_xlim([np.min(sample_points), np.max(sample_points)])
 ax[1].set_ylabel("$f \\ast f$")
 ax[1].set_xlabel("Time [s]")
 plt.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "convolve_1d.png"))
+plt.savefig(os.path.join(fig_path, "convolve_1d.png"))
 
 plt.show()

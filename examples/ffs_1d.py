@@ -2,18 +2,15 @@ import math
 import numpy as np
 from pyffs import ffs_sample, ffs
 from pyffs.func import dirichlet
-import matplotlib
 import matplotlib.pyplot as plt
 import os
+from util import plotting_setup
 
-
-font = {"family": "Times New Roman", "weight": "normal", "size": 20}
-matplotlib.rc("font", **font)
-
+fig_path = plotting_setup()
 
 T, T_c, N_FS = math.pi, math.e, 15
 N_samples = 512
-sample_points, _ = ffs_sample(T, N_FS, T_c, N_samples)
+sample_points, _ = ffs_sample(T, N_FS, T_c, N_samples, mod=np)
 diric_samples = dirichlet(sample_points, T, T_c, N_FS)
 diric_FS = ffs(diric_samples, T, T_c, N_FS)[:N_FS]
 
@@ -32,5 +29,5 @@ ax[1].stem(fs_idx, np.abs(diric_FS))
 ax[1].grid()
 ax[1].set_xlabel("FS index")
 
-plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs", "ffs_1d.png"))
+plt.savefig(os.path.join(fig_path, "ffs_1d.png"))
 plt.show()

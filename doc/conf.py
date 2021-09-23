@@ -10,7 +10,7 @@ import datetime
 import pathlib
 
 
-autodoc_mock_imports = ["numpy", "scipy"]
+autodoc_mock_imports = ["numpy", "scipy", "cupy", "cupyx"]
 
 
 def setup_config() -> configparser.ConfigParser:

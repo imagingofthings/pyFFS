@@ -23,15 +23,31 @@ Installation
 Developer Install
 -----------------
 
+Recommended setup using Anaconda, for optimized numerical libraries:
+
 ::
 
+    # Create Anaconda environment
+    $ conda create --name pyffs python=3
+    $ conda activate pyffs
+
+    # Clone repository
     $ git clone https://github.com/imagingofthings/pyFFS.git
-    $ cd pyFFS/
+    $ cd pyFFS
     $ # git checkout <commit>
 
-    $ pip install --user -e .[dev]
-    $ python3 test.py                # Run test suite
-    $ python3 setup.py build_sphinx  # Generate documentation
+    # Install requirements with conda
+    $ conda install --file requirements.txt
+
+    # Optionally install CuPy for GPU support
+    $ conda install -c conda-forge cupy
+
+    # Install pyFFS
+    $ pip install -e .[dev]
+    $ pytest                        # Run test suite
+    $ python setup.py build_sphinx  # Generate documentation
+
+More information about CuPy setup can be found `here <https://docs.cupy.dev/en/stable/install.html#installation)>`_.
 
 
 Remarks
