@@ -14,7 +14,7 @@ from pyffs.backend import get_array_module
 
 def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     """
-    Convolve two N-dimensional functions using FFS on their discrete samples.
+    Convolve two N-dimensional functions with the same period using FFS on their discrete samples.
 
     The Fourier Series coefficients of both functions are estimated via FFS and multiplied in order
     to perform the convolution.
@@ -27,10 +27,12 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     ----------
     f : :py:class:`~numpy.ndarray`
         (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
-        :py:func:`~pyffs.util.ffsn_sample`.
+        :py:func:`~pyffs.util.ffsn_sample`. If provided in order expected by
+        :py:func:`~pyffs.ffs.ffsn`, set `reorder=False`.
     h : :py:class:`~numpy.ndarray`
         (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
-        :py:func:`~pyffs.util.ffsn_sample`.
+        :py:func:`~pyffs.util.ffsn_sample`. If provided in order expected by
+        :py:func:`~pyffs.ffs.ffsn`, set `reorder=False`.
     T : int or array_like of floats
         Function period along each dimension.
     T_c : int or array_like of floats
@@ -40,10 +42,9 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     return_coef : bool
         Whether to return coefficients or samples.
     reorder : bool
-        Whether samples need to be reordered with `ffsn_sample`.
+        Whether samples need to be reordered with :py:func:`~pyffs.util.ffsn_sample`.
     axes : int or array_like of ints or None, optional
         Axes over which to compute the convolution. The default is over all axes.
-
 
     Returns
     -------
