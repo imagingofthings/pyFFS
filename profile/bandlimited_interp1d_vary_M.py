@@ -1,5 +1,5 @@
 import numpy as np
-import os
+import pathlib as plib
 from pyffs import ffs_sample, ffs, fs_interp
 from pyffs.func import dirichlet
 import matplotlib.pyplot as plt
@@ -128,7 +128,7 @@ def profile_fs_interp(n_trials, n_samples, percent_period):
     # M_cross = int(m * T / dt)
     # if M_cross > 0:
     #     ax.axvline(x=M_cross, linestyle="--", color="g")
-    fig.savefig(os.path.join(fig_path, "bandlimited_interp1d_vary_M.png"))
+    fig.savefig(plib.Path(fig_path) / "bandlimited_interp1d_vary_M.png")
 
     plt.show()
 

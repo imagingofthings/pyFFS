@@ -1,5 +1,5 @@
 import math
-import os
+import pathlib as plib
 import time
 import click
 import matplotlib.pyplot as plt
@@ -83,7 +83,7 @@ def profile_fs_interp2(n_interp, n_trials):
     ax.set_xlabel("Number of FS coefficients per dimension")
     ax.set_xticks(np.array(N_FS_vals) - 1)
     fig.tight_layout()
-    fig.savefig(os.path.join(fig_path, "profile_fs_interp2d_vary_NFS.png"))
+    fig.savefig(plib.Path(fig_path) / "profile_fs_interp2d_vary_NFS.png")
 
     plt.show()
 

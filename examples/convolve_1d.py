@@ -5,7 +5,7 @@ from pyffs import ffs_sample
 from pyffs.func import dirichlet
 import matplotlib.pyplot as plt
 from pyffs.conv import convolve as convolve_fs
-import os
+import pathlib as plib
 from util import plotting_setup
 
 fig_path = plotting_setup()
@@ -35,7 +35,7 @@ output_fftconvolve = fftconvolve(diric_samples[idx], diric_samples[idx], mode="f
 t_vals_full = np.linspace(2 * np.min(sample_points), 2 * np.max(sample_points), num=len(output_fft))
 
 # plot
-_, ax = plt.subplots(
+fig, ax = plt.subplots(
     nrows=2, ncols=1, num="Convolve bandlimited, periodic signals", figsize=(10, 10)
 )
 ax[0].plot(sample_points[idx], diric_samples[idx])
@@ -63,8 +63,8 @@ ax[1].plot(
 ax[1].set_xlim([np.min(sample_points), np.max(sample_points)])
 ax[1].set_ylabel("$f \\ast f$")
 ax[1].set_xlabel("Time [s]")
-plt.legend()
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "convolve_1d.png"))
+ax[1].legend()
 
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "convolve_1d.png")
 plt.show()

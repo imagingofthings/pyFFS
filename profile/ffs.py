@@ -1,4 +1,4 @@
-import os
+import pathlib as plib
 import time
 import click
 import matplotlib.pyplot as plt
@@ -63,7 +63,7 @@ def profile_ffsn(n_trials):
     ax.set_xticks(np.array(N_FS_vals) - 1)
     ax.set_yticks([1e-4, 1e-3, 1e-2, 1e-1])
     fig.tight_layout()
-    fig.savefig(os.path.join(fig_path, "profile_ffs.png"))
+    fig.savefig(plib.Path(fig_path) / "profile_ffs.png")
 
     plt.show()
 

@@ -4,8 +4,9 @@ from pyffs.func import dirichlet_2D
 from scipy.interpolate import interp2d
 from scipy.signal import resample
 import matplotlib.pyplot as plt
-import os
+import pathlib as plib
 from util import plotting_setup, plot2d
+
 
 fig_path = plotting_setup()
 ALPHA = 0.8
@@ -83,7 +84,7 @@ ax.set_xlabel("x [m]")
 ax.set_xlim([start[0], stop[0]])
 plt.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "interp_2d_output_slice.png"))
+fig.savefig(plib.Path(fig_path) / "interp_2d_output_slice.png")
 
 # --- 2D plots
 pcolormesh = True
@@ -99,45 +100,53 @@ ax = plot2d(
     colorbar=False,
 )
 # -- zoomed in region
+zoom_color = "r"
 ax.axvline(
     x=start[0] - x_shift * pcolormesh,
     ymin=0.5 + start[1] - y_shift * pcolormesh,
     ymax=0.5 + stop[1] - y_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
 ax.axvline(
     x=stop[0] - x_shift * pcolormesh,
     ymin=0.5 + start[1] - y_shift * pcolormesh,
     ymax=0.5 + stop[1] - y_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
 ax.axhline(
     y=start[1] - y_shift * pcolormesh,
     xmin=0.5 + start[0] - x_shift * pcolormesh,
     xmax=0.5 + stop[0] - x_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
 ax.axhline(
     y=stop[1] - y_shift * pcolormesh,
     xmin=0.5 + start[0] - x_shift * pcolormesh,
     xmax=0.5 + stop[0] - x_shift * pcolormesh,
-    c="k",
+    c=zoom_color,
     linestyle="--",
 )
+
 # -- cross-section
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "interp_2d_input.png"))
+fig = plt.gcf()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "interp_2d_input.png")
 
 # FFS interp
 ax = plot2d(
-    x_vals=points_x, y_vals=points_y, Z=np.real(vals_ffs), pcolormesh=pcolormesh, colorbar=False,
+    x_vals=points_x,
+    y_vals=points_y,
+    Z=np.real(vals_ffs),
+    pcolormesh=pcolormesh,
+    colorbar=False,
 )
 # -- cross-section
-ax.axhline(y=y_val, c="r", linestyle="-.")
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "interp_2d_ffs.png"))
+ax.axhline(y=y_val, c="r", linestyle="--")
+fig = plt.gcf()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "interp_2d_ffs.png")
 
 plt.show()

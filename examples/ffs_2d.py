@@ -3,7 +3,7 @@ from pyffs import ffsn_sample, ffsn
 from pyffs.func import dirichlet_2D
 import matplotlib.pyplot as plt
 from matplotlib import cm
-import os
+import pathlib as plib
 from util import plotting_setup
 
 fig_path = plotting_setup()
@@ -45,5 +45,5 @@ fig.colorbar(cp)
 ax_freq.set_xlabel("$FS_x$")
 ax_freq.set_ylabel("$FS_y$")
 
-plt.savefig(os.path.join(fig_path, "ffs_2d.png"))
+fig.savefig(plib.Path(fig_path) / "ffs_2d.png")
 plt.show()

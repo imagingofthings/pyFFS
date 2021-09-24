@@ -8,7 +8,7 @@ from pyffs.func import dirichlet
 from scipy.interpolate import interp1d
 from scipy.signal import resample
 import matplotlib.pyplot as plt
-import os
+import pathlib as plib
 from util import plotting_setup, sinc_interp
 
 fig_path = plotting_setup()
@@ -61,15 +61,18 @@ ax.scatter(sample_points[idx_order], diric_samples[idx_order], label="available 
 ax.set_xlabel("x [m]")
 ax.set_xlim([T_c - T / 2, T_c + T / 2])
 ax.axvline(
-    x=start, c="k", linestyle="--",
+    x=start,
+    c="k",
+    linestyle="--",
 )
 ax.axvline(
-    x=stop, c="k", linestyle="--",
+    x=stop,
+    c="k",
+    linestyle="--",
 )
-plt.legend()
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "interp_1d_input.png"))
-
+ax.legend()
+fig.tight_layout()
+fig.savefig(plib.Path(fig_path) / "interp_1d_input.png")
 
 # -- zoomed in region
 t_interp, _ = ffs_sample(T, N_FS, T_c, N_target, mod=np)
@@ -91,8 +94,8 @@ ax.plot(resampled_t, resampled_x, label="scipy.signal.resample", alpha=ALPHA, li
 ax.scatter(sample_points, diric_samples, label="available samples")
 ax.set_xlabel("Time [s]")
 ax.set_xlim([start, stop])
-plt.legend()
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, "interp_1d.png"))
+ax.legend()
+fig.tight_layout()
 
+fig.savefig(plib.Path(fig_path) / "interp_1d.png")
 plt.show()
