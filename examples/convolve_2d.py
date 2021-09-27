@@ -1,5 +1,5 @@
 import numpy as np
-from pyffs import ffsn_sample, ffsn_shift
+from pyffs import ffsn_sample, iffsn_shift
 from pyffs.func import dirichlet_2D
 from scipy.signal import convolve2d as convolve_scipy
 from scipy.signal import fftconvolve
@@ -41,8 +41,7 @@ sample_points_x = np.squeeze(sample_points[0])
 sample_points_y = np.squeeze(sample_points[1])
 idx_x = np.squeeze(idx[0])
 idx_y = np.squeeze(idx[1])
-diric_samples_ord = ffsn_shift(diric_samples, idx)
-
+diric_samples_ord = iffsn_shift(diric_samples) if not reorder else diric_samples
 
 output_scipy = (
     convolve_scipy(diric_samples_ord, diric_samples_ord, mode="full", boundary="fill")
@@ -63,11 +62,9 @@ output_scipy_wrap = (
     / N_samples[1]
 )
 
-
 output_fftconvolve = (
     fftconvolve(diric_samples_ord, diric_samples_ord, mode="full") / N_samples[0] / N_samples[1]
 )
-
 
 # --- 1D plot,  2D cross section
 diric_samples_true = dirichlet_2D(sample_points, T, 2 * T_c_diric, N_FS)
@@ -83,6 +80,7 @@ ax.plot(
     alpha=ALPHA,
     linestyle="-",
 )
+
 ax.plot(
     sample_points[0][idx_x],
     np.real(output_samples[idx_x, idx_ffs]),
@@ -128,7 +126,7 @@ fig.savefig(plib.Path(fig_path) / "convolve_2d_input.png")
 ax = plot2d(
     x_vals=sample_points_x[idx_x],
     y_vals=sample_points_y[idx_y],
-    Z=np.real(ffsn_shift(output_samples, idx)),
+    Z=np.real(iffsn_shift(output_samples)) if not reorder else np.real(output_samples),
     pcolormesh=pcolormesh,
     colorbar=False,
 )

@@ -61,14 +61,10 @@ ax.scatter(sample_points[idx_order], diric_samples[idx_order], label="available 
 ax.set_xlabel("x [m]")
 ax.set_xlim([T_c - T / 2, T_c + T / 2])
 ax.axvline(
-    x=start,
-    c="k",
-    linestyle="--",
+    x=start, c="k", linestyle="--",
 )
 ax.axvline(
-    x=stop,
-    c="k",
-    linestyle="--",
+    x=stop, c="k", linestyle="--",
 )
 ax.legend()
 fig.tight_layout()

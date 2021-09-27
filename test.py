@@ -24,8 +24,7 @@ cmds = dict(
 )
 
 parser = argparse.ArgumentParser(
-    description="pyFFS test runner.",
-    epilog="When run with no arguments, all tests are executed.",
+    description="pyFFS test runner.", epilog="When run with no arguments, all tests are executed.",
 )
 parser.add_argument("-e", help="Name of test to run.", type=str, choices=cmds.keys())
 args = parser.parse_args()

@@ -8,7 +8,7 @@
 
 import numpy as np
 from pyffs.ffs import ffsn, iffsn
-from pyffs.util import ffsn_sample, _verify_ffsn_input, ffsn_shift
+from pyffs.util import ffsn_shift, iffsn_shift, _verify_ffsn_input
 from pyffs.backend import get_array_module
 
 
@@ -42,7 +42,7 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     return_coef : bool
         Whether to return coefficients or samples.
     reorder : bool
-        Whether samples need to be reordered with :py:func:`~pyffs.util.ffsn_sample`.
+        Whether samples need to be reordered to the order expected by :py:func:`~pyffs.ffs.ffsn`.
     axes : int or array_like of ints or None, optional
         Axes over which to compute the convolution. The default is over all axes.
 
@@ -76,12 +76,9 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     axes, N_s = _verify_ffsn_input(f, T, T_c, N_FS, axes)
 
     # reorder samples
-    idx = None
     if reorder:
-        _, idx = ffsn_sample(T, N_FS, T_c, N_s, mod=xp)
-        f = ffsn_shift(f, idx)
-        # same for h, as we have same FFS parameters
-        h = ffsn_shift(h, idx)
+        f = ffsn_shift(f)
+        h = ffsn_shift(h)
 
     F = ffsn(f, T, T_c, N_FS, axes=axes)
     H = ffsn(h, T, T_c, N_FS, axes=axes)
@@ -90,5 +87,6 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     else:
         output_samples = iffsn(F * H, T=T, T_c=T_c, N_FS=N_FS, axes=axes)
         if reorder:
-            output_samples = ffsn_shift(output_samples, idx)
+            output_samples = iffsn_shift(output_samples)
+
         return output_samples

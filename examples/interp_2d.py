@@ -137,11 +137,7 @@ fig.savefig(plib.Path(fig_path) / "interp_2d_input.png")
 
 # FFS interp
 ax = plot2d(
-    x_vals=points_x,
-    y_vals=points_y,
-    Z=np.real(vals_ffs),
-    pcolormesh=pcolormesh,
-    colorbar=False,
+    x_vals=points_x, y_vals=points_y, Z=np.real(vals_ffs), pcolormesh=pcolormesh, colorbar=False,
 )
 # -- cross-section
 ax.axhline(y=y_val, c="r", linestyle="--")

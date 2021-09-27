@@ -382,6 +382,43 @@ def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
     return sample_points, idx
 
 
+def ffsn_shift(x):
+    """
+    Reorder an input to order expected by :py:func:`~pyffs.ffs.ffsn`.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
+        :py:func:`~pyffs.util.ffsn_sample`.
+
+    Returns
+    -------
+    x_shift : :py:class:`~numpy.ndarray`
+
+    """
+    return np.fft.ifftshift(x)
+
+
+def iffsn_shift(x):
+    """
+    Inverse of :py:func:`~pyffs.util.ffsn_shift` Reorder input to natural order
+    after shifting with :py:func:`~pyffs.util.ffsn_shift`.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) function values in order returned by
+        :py:func:`~pyffs.ffs.iffsn`.
+
+    Returns
+    -------
+    x_shift : :py:class:`~numpy.ndarray`
+
+    """
+    return np.fft.fftshift(x)
+
+
 def _create_modulation_vectors(N_s, N_FS, T, T_c, mod=None):
     """
     Compute modulation vectors for FFS.
@@ -426,34 +463,3 @@ def _create_modulation_vectors(N_s, N_FS, T, T_c, mod=None):
         E_2 = mod.r_[mod.arange(start=0, stop=M), mod.arange(start=-M, stop=0)]
 
     return B_1 ** E_1, B_2 ** (N * E_2)
-
-
-def ffsn_shift(x, idx):
-    """
-    Reorder an input given the indices provided by `ffsn_sample`.
-
-    Parameters
-    ----------
-    x : :py:class:`~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
-        :py:func:`~pyffs.util.ffsn_sample`.
-    idx : list(:py:class:`~numpy.ndarray`)
-        (N_D,) sample indices in the d-th dimension.
-
-    Returns
-    -------
-
-    x_shift : :py:class:`~numpy.ndarray`
-        (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
-        :py:func:`~pyffs.util.ffsn_sample`.
-
-    """
-    idx = [np.squeeze(i) for i in idx]
-    D = len(x.shape)
-    ridx = D * [slice(None)]
-    x_shift = x.copy()
-    for k, _idx in enumerate(idx):
-        ridx[k] = _idx
-        x_shift = x_shift[tuple(ridx)]
-        ridx[k] = slice(None)
-    return x_shift
