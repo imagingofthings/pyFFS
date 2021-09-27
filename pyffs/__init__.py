@@ -19,5 +19,6 @@ from .ffs import *
 from .interp import *
 from .util import *
 from . import func
+from .conv import *
 
 from .backend import *

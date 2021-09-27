@@ -11,6 +11,7 @@ Helper functions.
 """
 
 import cmath
+import numpy as np
 
 from pyffs.backend import get_backend
 
@@ -367,7 +368,7 @@ def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
     idx = []
     for d in range(D):
         # get values for d-dimension
-        # cast to int in case cupy array is passed
+        # cast to scalar in case cupy array is passed
         _sample_points, _idx = ffs_sample(
             T=float(T[d]), N_FS=int(N_FS[d]), T_c=float(T_c[d]), N_s=int(N_s[d]), mod=mod
         )
@@ -379,6 +380,43 @@ def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
         idx.append(_idx.reshape(sh))
 
     return sample_points, idx
+
+
+def ffsn_shift(x):
+    """
+    Reorder an input to order expected by :py:func:`~pyffs.ffs.ffsn`.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) function values at sampling points specified by
+        :py:func:`~pyffs.util.ffsn_sample`.
+
+    Returns
+    -------
+    x_shift : :py:class:`~numpy.ndarray`
+
+    """
+    return np.fft.ifftshift(x)
+
+
+def iffsn_shift(x):
+    """
+    Inverse of :py:func:`~pyffs.util.ffsn_shift` Reorder input to natural order
+    after shifting with :py:func:`~pyffs.util.ffsn_shift`.
+
+    Parameters
+    ----------
+    x : :py:class:`~numpy.ndarray`
+        (..., N_s1, N_s2, ..., N_sD, ...) function values in order returned by
+        :py:func:`~pyffs.ffs.iffsn`.
+
+    Returns
+    -------
+    x_shift : :py:class:`~numpy.ndarray`
+
+    """
+    return np.fft.fftshift(x)
 
 
 def _create_modulation_vectors(N_s, N_FS, T, T_c, mod=None):

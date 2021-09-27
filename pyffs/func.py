@@ -126,8 +126,6 @@ def dirichlet_2D(sample_points, T, T_c, N_FS):
     --------
     :py:func:`~pyffs.util.ffsn_sample`, :py:func:`~pyffs.func.dirichlet_fs`
     """
-    xp = get_array_module(sample_points)
-
     x, y = sample_points
     x_vals = dirichlet(x, T=T[0], T_c=T_c[0], N_FS=N_FS[0])
     y_vals = dirichlet(y, T=T[1], T_c=T_c[1], N_FS=N_FS[1])

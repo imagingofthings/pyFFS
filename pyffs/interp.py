@@ -58,7 +58,6 @@ def fs_interp(x_FS, T, a, b, M, axis=-1, real_x=False):
     .. testsetup::
 
        import math
-
        import numpy as np
 
        from pyffs import fs_interp
