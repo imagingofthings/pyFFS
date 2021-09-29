@@ -382,7 +382,7 @@ def ffsn_sample(T, N_FS, T_c, N_s, mod=None):
     return sample_points, idx
 
 
-def ffsn_shift(x):
+def ffs_shift(x):
     """
     Reorder an input to order expected by :py:func:`~pyffs.ffs.ffsn`.
 
@@ -400,10 +400,10 @@ def ffsn_shift(x):
     return np.fft.ifftshift(x)
 
 
-def iffsn_shift(x):
+def iffs_shift(x):
     """
-    Inverse of :py:func:`~pyffs.util.ffsn_shift` Reorder input to natural order
-    after shifting with :py:func:`~pyffs.util.ffsn_shift`.
+    Inverse of :py:func:`~pyffs.util.ffs_shift` Reorder input to natural order
+    after shifting with :py:func:`~pyffs.util.ffs_shift`.
 
     Parameters
     ----------

@@ -8,7 +8,7 @@
 
 import numpy as np
 from pyffs.ffs import ffsn, iffsn
-from pyffs.util import ffsn_shift, iffsn_shift, _verify_ffsn_input
+from pyffs.util import ffs_shift, iffs_shift, _verify_ffsn_input
 from pyffs.backend import get_array_module
 
 
@@ -77,8 +77,8 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
 
     # reorder samples
     if reorder:
-        f = ffsn_shift(f)
-        h = ffsn_shift(h)
+        f = ffs_shift(f)
+        h = ffs_shift(h)
 
     F = ffsn(f, T, T_c, N_FS, axes=axes)
     H = ffsn(h, T, T_c, N_FS, axes=axes)
@@ -87,6 +87,6 @@ def convolve(f, h, T, T_c, N_FS, return_coef=False, reorder=True, axes=None):
     else:
         output_samples = iffsn(F * H, T=T, T_c=T_c, N_FS=N_FS, axes=axes)
         if reorder:
-            output_samples = iffsn_shift(output_samples)
+            output_samples = iffs_shift(output_samples)
 
         return output_samples

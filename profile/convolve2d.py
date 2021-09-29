@@ -4,7 +4,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 from util import comparison_plot, plotting_setup
-from pyffs import ffsn_sample, convolve, iffsn_shift
+from pyffs import ffsn_sample, convolve, iffs_shift
 from pyffs.func import dirichlet_2D
 from scipy.signal import convolve2d as convolve_scipy
 
@@ -47,7 +47,7 @@ def profile_ffsn(n_trials):
         print("-- {} : {} seconds".format(_key, proc_time[_N_S][_key]))
 
         # SciPy
-        diric_samples_ord = iffsn_shift(diric_samples)
+        diric_samples_ord = iffs_shift(diric_samples)
         _key = "scipy.signal.convolve2d (wrap)"
         timings = []
         for _ in range(n_trials):
