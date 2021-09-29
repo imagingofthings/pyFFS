@@ -66,7 +66,7 @@ From master branch of original repo:
 You will need a username and password for uploading to PyPi.
 
 Finally, `on GitHub <https://github.com/imagingofthings/pyFFS/releases>`_ set the new tag as the latest release by
-pressing on it and at the bottom pressing "Create release".
+pressing on it, at top right selecting "Edit tag", and at the bottom pressing "Publish release".
 
 Remarks
 -------
