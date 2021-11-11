@@ -36,7 +36,7 @@ def profile_ffsn(n_trials):
         diric_samples = dirichlet_2D(sample_points=sample_points, T=T, T_c=T_c, N_FS=N_FS)
 
         # pyFFS
-        _key = "pyffs.convolve2d"
+        _key = "pyffs.convolve"
         timings = []
         for _ in range(n_trials):
             start_time = time.time()

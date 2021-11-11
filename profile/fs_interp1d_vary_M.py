@@ -13,7 +13,8 @@ from pyffs.backend import AVAILABLE_MOD, get_module_name
 @click.command()
 @click.option("--n_fs", type=int, default=1001)
 @click.option("--n_trials", type=int, default=10)
-def profile_fs_interp(n_fs, n_trials):
+@click.option("--direct", is_flag=True)
+def profile_fs_interp(n_fs, n_trials, direct):
     print(f"\nCOMPARING FS_INTERP WITH {n_trials} TRIALS")
 
     fig_path = plotting_setup(linewidth=3, font_size=20)
@@ -61,23 +62,27 @@ def profile_fs_interp(n_fs, n_trials):
                 print("{} version : {} seconds".format(_f, proc_time_interp1d[M][_key]))
 
         # naive approach, apply synthesis formula
-        diric_FS = dirichlet_fs(N_FS, T, T_c, mod=np).astype("complex64")
-        _key = "direct"
-        timings = []
-        for _ in range(n_trials):
-            start_time = time.time()
-            naive_interp1d(diric_FS, T, a, b, M)
-            timings.append(time.time() - start_time)
-        proc_time_interp1d[M][_key] = np.mean(timings)
-        proc_time_interp1d_std[M][_key] = np.std(timings)
-        print("-- {} : {} seconds".format(_key, proc_time_interp1d[M][_key]))
+        if direct:
+            diric_FS = dirichlet_fs(N_FS, T, T_c, mod=np).astype("complex64")
+            _key = "direct"
+            timings = []
+            for _ in range(n_trials):
+                start_time = time.time()
+                naive_interp1d(diric_FS, T, a, b, M)
+                timings.append(time.time() - start_time)
+            proc_time_interp1d[M][_key] = np.mean(timings)
+            proc_time_interp1d_std[M][_key] = np.std(timings)
+            print("-- {} : {} seconds".format(_key, proc_time_interp1d[M][_key]))
 
     # plot results
     fig, ax = plt.subplots()
     comparison_plot(proc_time_interp1d, proc_time_interp1d_std, n_std, ax)
     ax.set_title(f"{N_FS} FS coefficients")
     ax.set_xlabel("Number of interpolations points")
-    ax.set_yticks([1e-3, 1e-1, 1e1])
+    if direct:
+        ax.set_yticks([1e-3, 1e-1, 1e1])
+    else:
+        ax.set_yticks([1e-3, 1e-2, 1e-1])
     fig.tight_layout()
     fig.savefig(plib.Path(fig_path) / "profile_fs_interp1d_vary_M.png")
 
