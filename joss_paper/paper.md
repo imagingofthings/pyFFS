@@ -48,7 +48,7 @@ on the chirp Z-transform [@rabiner1969chirp] that can make it more than an order
 of magnitude faster than the SciPy equivalent when one wishes to perform 
 interpolation. GPU support through the CuPy library [@Okuta2017] allows for 
 further acceleration, e.g. an order of magnitude faster for computing the 2-D FS
-coefficients of $ 1000\times1000 $ samples and nearly two orders of magnitude 
+coefficients of `$1000 \times 1000 $` samples and nearly two orders of magnitude 
 faster for 2-D interpolation.
 
 
