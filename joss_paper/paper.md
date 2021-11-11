@@ -65,7 +65,7 @@ scenarios in which the proposed library is more than an order of magnitude
 faster, i.e. for 2-D convolution and for interpolation (results 
 [below](comparison)). Moreover, GPU support has been seamlessly incorporated for
 an even faster implementation. Just as the FFT implementation via NumPy and
-SciPy can be readily used for an efficient $ \mathcal{O}(N \log N) $ analysis 
+SciPy can be readily used for an efficient `$ \mathcal{O}(N \log N) $` analysis 
 and synthesis of discrete sequences, pyFFS offers the same ease-of-use and
 performance capabilities for discrete representations of continuous-domain
 signals, with some faster interpolation tricks.
