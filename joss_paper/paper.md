@@ -54,7 +54,11 @@ more than an order of magnitude faster than the SciPy equivalent when one wishes
 to perform distortionless bandlimited interpolation. GPU support through the 
 CuPy library [@Okuta2017] allows for further acceleration, e.g. an order of 
 magnitude faster for computing the 2-D FS coefficients of $1000\times1000$ 
-samples and nearly two orders of magnitude faster for 2-D interpolation.
+samples and nearly two orders of magnitude faster for 2-D interpolation. As the
+purpose of this paper is to present the library, how to use it, and some
+benchmarking results, we refer to [this technical report](https://arxiv.org/abs/2110.00262)
+for mathematical presentations and proofs of the FFS algorithm and the CZT-based
+interpolation.
 
 
 # Statement of need
@@ -258,9 +262,7 @@ $\mathcal{O}(N_t\log N_t)$, where $N_t=\lceil T/\Delta t\rceil$, $T$ is the
 period, and $\Delta t$ is the desired resolution. The complexity of the pyFFS 
 method is defined by that of the CZT [@rabiner1969chirp], namely 
 $\mathcal{O}((M+N)\log (M+N))$ where $M$ is the number of interpolation points 
-and $N$ is the number of FS coefficients. For a mathematical presentation and
-proof of the proposed CZT-based interpolation, we refer to 
-[this technical report](https://arxiv.org/abs/2110.00262).
+and $N$ is the number of FS coefficients.
 
 In the benchmark below, we interpolate a $2\%$ region of a 2-D function, of 
 which we have $256\times 256$ samples. As we vary the resolution of the
