@@ -56,7 +56,7 @@ CuPy library [@Okuta2017] allows for further acceleration, e.g. an order of
 magnitude faster for computing the 2-D FS coefficients of $1000\times1000$ 
 samples and nearly two orders of magnitude faster for 2-D interpolation. As the
 purpose of this paper is to present the library, how to use it, and some
-benchmarking results, we refer to [this technical report](https://arxiv.org/abs/2110.00262)
+benchmarking results, we refer to [this report](https://arxiv.org/abs/2110.00262)
 for mathematical presentations and proofs of the FFS algorithm and the CZT-based
 interpolation.
 
