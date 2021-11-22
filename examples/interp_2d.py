@@ -10,17 +10,25 @@ from util import plotting_setup, plot2d
 
 fig_path = plotting_setup()
 ALPHA = 0.8
+percent_region = 0.02
+n_samples = 256
+n_fs = 31  # must be odd
 
 # signal parameters
 T = 2 * [1]
 T_c = 2 * [0]
 T_c_diric = 2 * [0.3]
-N_FS = 2 * [31]
-N_s = 2 * [32]
+N_s = 2 * [n_samples]
+N_FS = 2 * [n_fs]
 
 # specify region to zoom into
-start = [T_c_diric[0] - 0.05, T_c_diric[1] - 0.05]
-stop = [T_c_diric[0] + 0.15, T_c_diric[1] + 0.15]
+side_percent = np.sqrt(percent_region)
+width = side_percent * np.array(T)
+start = np.array(T_c_diric) - width / 4
+stop = np.array(T_c_diric) + 3 * width / 4
+
+# start = [T_c_diric[0] - 0.05, T_c_diric[1] - 0.05]
+# stop = [T_c_diric[0] + 0.15, T_c_diric[1] + 0.15]
 y_val = T_c_diric[1]  # cross-section plot (something within zoomed region)
 num = 2 * [128]  # number of interpolation points
 
@@ -137,7 +145,11 @@ fig.savefig(plib.Path(fig_path) / "interp_2d_input.png")
 
 # FFS interp
 ax = plot2d(
-    x_vals=points_x, y_vals=points_y, Z=np.real(vals_ffs), pcolormesh=pcolormesh, colorbar=False,
+    x_vals=points_x,
+    y_vals=points_y,
+    Z=np.real(vals_ffs),
+    pcolormesh=pcolormesh,
+    colorbar=False,
 )
 # -- cross-section
 ax.axhline(y=y_val, c="r", linestyle="--")

@@ -23,7 +23,8 @@ class TestUtil:
                 mod.array([3.2, 3.33, 3.45, 3.58, 2.7, 2.83, 2.95, 3.08]),
             )
             mod.testing.assert_array_equal(
-                idx, mod.array([4, 5, 6, 7, 0, 1, 2, 3]),
+                idx,
+                mod.array([4, 5, 6, 7, 0, 1, 2, 3]),
             )
             assert get_array_module(sample_points) == mod
             assert get_array_module(idx) == mod
@@ -75,9 +76,11 @@ class TestUtil:
             for N_s in [8, 9]:
                 _, idx = ffs_sample(T=1, N_FS=7, T_c=mod.pi, N_s=N_s, mod=mod)
                 mod.testing.assert_array_equal(
-                    idx, mod.fft.ifftshift(mod.arange(N_s)),
+                    idx,
+                    mod.fft.ifftshift(mod.arange(N_s)),
                 )
                 idx_reord = mod.fft.fftshift(idx)
                 mod.testing.assert_array_equal(
-                    idx_reord, mod.arange(N_s),
+                    idx_reord,
+                    mod.arange(N_s),
                 )

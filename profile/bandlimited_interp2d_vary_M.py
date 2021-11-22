@@ -19,7 +19,8 @@ def profile_fs_interp(n_samples, n_trials, percent_region):
     print(f"\nCOMPARING FFS AND FFT INTERP WITH {n_trials} TRIALS")
     n_std = 0.5
 
-    M_vals = [10, 30, 100, 300, 1000, 3000]
+    # M_vals = [10, 30, 100, 300, 1000, 3000]
+    M_vals = np.logspace(start=2, stop=3, num=10).astype(int)
 
     T = 2 * [1]
     T_c = 2 * [0]
@@ -115,6 +116,7 @@ def profile_fs_interp(n_samples, n_trials, percent_region):
     comparison_plot(proc_time, proc_time_std, n_std, ax)
     ax.set_title(f"{N_s} samples, {percent_region*100}% of period")
     ax.set_xlabel("Number of interpolation points in section")
+    ax.set_xticks([1e2, 3e2, 1e3])
     fig.tight_layout()
     fig.savefig(plib.Path(fig_path) / "bandlimited_interp2d_vary_M.png")
 

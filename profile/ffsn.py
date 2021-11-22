@@ -72,7 +72,7 @@ def profile_ffsn(n_trials):
     # plot results
     fig, ax = plt.subplots()
     comparison_plot(proc_time, proc_time_std, n_std, ax)
-    ax.set_xlabel("Number of FS coefficients")
+    ax.set_xlabel("Number of FS coefficients per dimension (2-D)")
     ax.set_xticks(np.array(N_FS_vals) - 1)
     ax.set_yticks([1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1])
     fig.tight_layout()
