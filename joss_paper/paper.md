@@ -83,6 +83,140 @@ interpolating multidimensional functions efficiently. Such functions are
 commonplace in numerous applications, e.g. radio-astronomy, medical imaging, 
 holography, etc.
 
+# Example usage
+
+## Fourier series analysis and synthesis
+
+The user interface for 1-D functions is shown below. Note that the samples 
+provided to `ffs` are not in chronological order. The method `ffs_sample` 
+returns the timestamps and indices necessary for ensuring the samples provided 
+to `ffs` are in the expected order.
+
+```python
+# determine appropriate timestamps and indices for rearranging input
+sample_points, idx = pyffs.ffs_sample(
+  T,      # function period
+  N_FS,   # function bandwidth, i.e. number of FS coefficients (odd)
+  T_c,    # function center
+  N_s     # number of samples
+)
+
+# sample a known function at the correctly ordered timestamps
+x = pyffs.func.dirichlet(sample_points, T, T_c, N_FS)
+# OR rearrange ordered samples using `idx`
+# x = x_orig[idx]
+
+# compute FS coefficients 
+x_FS = pyffs.ffs(x, T, T_c, N_FS)
+
+# back to samples with inverse transform
+x_r = pyffs.iffs(x_FS, T, T_c, N_FS)    # equivalent to x
+```
+
+The user interface for the general N-D case is shown below, with the specific 
+example of 2-D. As in the 1-D case, samples provided to `ffsn` are not in 
+increasing order of the input variables. The method `ffsn_sample` returns the 
+locations and indices necessary for making sure the samples provided to `ffsn`
+are in the expected order. Alternatively, the method `ffs_shift` can be used to
+reorder the samples.
+
+```python
+T = [T_x, T_y]         # list of periods for each dimension
+T_c = [T_cx, T_cy]     # list of function centers for each dimension
+N_FS = [N_FSx, N_FSy]  # list of function bandwidths for each dimension
+N_s = [N_sx, N_sy]     # number of samples per dimension
+
+# determine appropriate timestamps and indices for rearranging input
+sample_points, idx = pyffs.ffsn_sample(T=T, N_FS=N_FS, T_c=T_c, N_s=N_s)
+
+# sample a known function at the correctly ordered timestamps
+x = pyffs.func.dirichlet_2D(sample_points, T, T_c, N_FS)
+# OR rearrange ordered samples
+# x = pyffs.ffs_shift(x_orig)
+
+# compute FS coefficients 
+x_FS = pyffs.ffsn(x, T=T, T_c=T_c, N_FS=N_FS)
+
+# go back to samples
+x_r = pyffs.iffsn(x_FS, T=T, T_c=T_c, N_FS=N_FS)    # equivalent to x
+```
+
+## Circular convolution
+
+The user interface for N-D circular convolutions is shown below.
+
+```python
+out = pyffs.convolve(
+  f=f,  # samples of one function in the convolution
+  h=h,  # samples of the other function in the convolution
+  T=T,  # period(s) of both functions along all dimensions
+  T_c=T_c,  # period center(s) of both functions along all dimensions
+  N_FS=N_FS,   # number of FS coefficients for both functions 
+    # along all dimensions
+  reorder=True  # whether input samples should be reordered into 
+    # expected order for ffsn
+)
+```
+
+Samples can be provided in their natural order or in the order expected by 
+`ffsn`. By default, the argument `reorder` is set to `True`, such that samples 
+are expected in their natural order and are reordered internally. The output 
+samples are returned in the same order as the inputs.
+
+## Bandlimited interpoloation
+
+The user interface for 1-D badnlimited interpolation is shown below.
+
+```python
+x_interp = pyffs.fs_interp(
+  x_FS,   # FS coefficients in increasing order of index
+  T,      # period
+  a,      # start time
+  b,      # stop stop
+  M       # number of points
+)
+```
+
+The user interface for the general N-D bandlimited interpolation is shown below,
+with the specific example of 2-D.
+
+```python
+x_interp = pyffs.fs_interpn(
+  x_FS,            # multidimensional FS coefficients
+  T=[T_x, T_y],    # list of periods for each dimension
+  a=[a_x, a_y],    # list of start points for each dimension
+  b=[b_x, b_y],    # list of stop points for each dimension
+  M=[M_x, M_y]     # number of samples per dimension
+)
+```
+
+In both cases, the provided FS coefficients must be ordered such that the 
+indices are in increasing order, as returned by `ffs` and `ffsn`.
+
+## GPU usage
+
+GPU support is available through the CuPy library [@Okuta2017]. If the 
+appropriate version of CuPy is installed, nearly all array operations will take 
+place on the GPU if the provided input is a CuPy array, as shown below. 
+NumPy arrays can be passed if one wishes to still perform operations on the CPU.
+
+```python
+import cupy as cp
+
+x_cp = cp.array(x)   # convert existing `numpy` array to `cupy` array
+
+# apply functions like before, array operations take place on GPU
+x_FS = pyffs.ffs(x_cp, T, T_c, N_FS)    # compute FS coefficients
+x_r = pyffs.iffs(x_FS, T, T_c, N_FS)    # back to samples
+y = pyffs.convolve(x_cp, x_cp, T, T_c, N_FS)    # convolve
+x_interp = pyffs.fs_interp(x_FS, T, a, b, M)  # interpolate
+```
+
+Note that converting between CuPy and NumPy requires data transfer between the 
+CPU and GPU, which could be costly for large arrays. Therefore, if passing CuPy 
+arrays to pyFFS, it is recommended to perform as much pre-processing and 
+post-processing as possible on the GPU in order to limit such data transfer.
+
 # <a name="comparison"></a>Comparison with SciPy
 
 Below is a functionality comparison between pyFFS and SciPy [@Virtanen2020].
@@ -202,7 +336,7 @@ scenarios.
 ![Profiling 2-D Fourier series interpolation.\label{fig:profile_interp2d_gpu}](fig/profile_interp2d_gpu.png){width=100%}
 
 
-# <a name="optics"></a>Example usage (Fourier optics)
+# <a name="optics"></a>Example application: Fourier optics
 
 In Fourier optics, we are often interested in the propagation of light between
 two planes, i.e. a source plane and a target plane as shown in Figure
@@ -237,21 +371,24 @@ with pyFFS in Figure \ref{fig:bandlimited_interpolation}.
 Below we show how the pyFFS interface can be used in optical wave propagation
 for efficient simulation and interpolation.
 
-    import pyffs    
+```python
+import pyffs    
 
-    # pad input and reorder
-    f_pad = numpy.pad(f, pad_width=pad_width)
-    f_pad_reorder = pyffs.ffs_shift(f_pad)
-    
-    # compute FS coefficients of input
-    F = pyffs.ffsn(f_pad_reorder, T, T_c, N_FS)
-    
-    # convolution in frequency domain with free space transfer function
-    G = F * H
-    
-    # interpolate at the desired location and resolution
-    # a and b specify the region while N_out specifies the resolution
-    g = pyffs.fs_interpn(G, T, a, b, N_out)
+# pad input and reorder
+f_pad = numpy.pad(f, pad_width=pad_width)
+f_pad_reorder = pyffs.ffs_shift(f_pad)
+
+# compute FS coefficients of input
+F = pyffs.ffsn(f_pad_reorder, T, T_c, N_FS)
+
+# convolution in frequency domain with free space transfer function
+G = F * H
+
+# interpolate at the desired location and resolution
+# a and b specify the region while N_out specifies the resolution
+g = pyffs.fs_interpn(G, T, a, b, N_out)
+```
+
 
 The free space propagation transfer function `H` in the above code listing can
 be obtained by evaluating the analytic expression for the Fresnel approximation
