@@ -58,18 +58,25 @@ samples and nearly two orders of magnitude faster for 2-D interpolation.
 
 
 # Statement of need
-While deceptively simple, the FFS algorithm presented in this paper is surprisingly neither described in signal processing textbooks nor implemented in numerical computing libraries. For example, NumPy and SciPy  in the Python ecosystem focus mainly on the DFT and related operations. We aim to change this by providing an efficient and easy-to-use interface to the FFS algorithm via our Python package pyFFS. 
+While deceptively simple, the FFS algorithm presented in this paper is 
+surprisingly neither described in signal processing textbooks nor implemented in
+numerical computing libraries. For example, NumPy and SciPy in the Python 
+ecosystem focus mainly on the DFT and related operations. We aim to change this 
+by providing an efficient and easy-to-use interface to the FFS algorithm via our
+Python package pyFFS. 
 The main motivation for working with pyFFS rather than the FFT routines from NumPy/SciPy is 
 convenience when working with continuous-domain compactly-supported signals. The philosophy of pyFFS
 is to retain the continuous-domain perspective, often neglected when using 
 numerical libraries such as NumPy and SciPy, which allows for much clearer code
 (as will be shown in a Fourier optics example). This can also prevent common pitfalls
-due to an invalid conversion between discrete and continuous domains (e.g. spectral leakage, aliasing, periodisation artefacts, etc). 
-Beyond conveniency, pyFFS is also extremely efficient. We benchmark pyFFS with equivalent functions in SciPy, observing scenarios in which the proposed library is more than an order of 
-magnitude faster, i.e. for 2-D convolution and for interpolation. Moreover, GPU
-support has been seamlessly incorporated for an even faster implementation. Just
-as the FFT implementation via NumPy and SciPy can be readily used for an 
-efficient $\mathcal{O}(N\log N)$ analysis and synthesis of discrete sequences, 
+due to an invalid conversion between discrete and continuous domains (e.g. 
+spectral leakage, aliasing, periodisation artefacts, etc). 
+As well as convenient, pyFFS is also extremely efficient. We benchmark pyFFS 
+with equivalent functions in SciPy, observing scenarios in which the proposed 
+library is more than an order of magnitude faster, i.e. for 2-D convolution and 
+for interpolation. Moreover, GPU support has been seamlessly incorporated for an
+even faster implementation. Just as the FFT implementation via NumPy and SciPy 
+can be readily used for an efficient $\mathcal{O}(N\log N)$ analysis and synthesis of discrete sequences, 
 pyFFS offers the same ease-of-use and performance capabilities for discrete
 representations of continuous-domain signals, along with faster interpolation
 techniques.
@@ -80,46 +87,55 @@ currently being investigated in radio-astronomy and optics projects, in which ph
 processes have been modeled as bandlimited. In general, pyFFS is useful for 
 interpolating multidimensional functions efficiently. Such functions are 
 commonplace in numerous applications, e.g. radio-astronomy, medical imaging, 
-holography, etc. Finally, Fourier Series are an important component of the *Non Uniform Fast Fourier Transform (NUFFT)*, extensively used in MRI imaging and other computational imaging modalities [@barnett2019parallel]. 
+holography, etc. Finally, Fourier Series are an important component of the
+*Non Uniform Fast Fourier Transform (NUFFT)*, extensively used in MRI imaging 
+and other computational imaging modalities [@barnett2019parallel]. 
 
 # Algorithms 
 
-In this section, we provide for reference the main definitions and results leveraged in pyFFS. For simplicity, the results are provided in the context of 1-D sequence, but pyFFS also offers N-D versions of the various algorithms/transforms below.
+In this section, we provide for reference the main definitions and results 
+leveraged in pyFFS. For simplicity, the results are provided in the context of 
+1-D sequences, but pyFFS also offers N-D versions of the various algorithms/transforms below.
 As the purpose of this paper is to present the library, how to use it, and some
 benchmarking results, we refer to [@bezzam2021pyffs]
 for mathematical presentations and proofs of the FFS algorithm and the CZT-based
 interpolation.
 
-## The Discrete Fourier Transform 
+[comment]: <> (## The Discrete Fourier Transform )
 
-Let $\mathbf{x} \in \mathbb{C}^{N}$. The length-$N$ *Discrete Fourier Transform* $\text{DFT}_{N}\{\mathbf{x}\} \in \mathbb{C}^{N}$ is
-defined as [@vetterli2014foundations]:
+[comment]: <> (Let $\mathbf{x} \in \mathbb{C}^{N}$. The length-$N$ *Discrete Fourier Transform* $\text{DFT}_{N}\{\mathbf{x}\} \in \mathbb{C}^{N}$ is)
 
-$$\text{DFT}_{N}\{\mathbf{x}\}[k] = \sum_{n = 0}^{N - 1} \mathbf{x}[n] W_{N}^{n k}, \qquad  k \in \{ 0, \ldots, N - 1 \},$$
+[comment]: <> (defined as [@vetterli2014foundations]:)
 
-with $W_{N} = \exp\left( -j \frac{2 \pi}{N} \right)$.
+[comment]: <> ($$\text{DFT}_{N}\{\mathbf{x}\}[k] = \sum_{n = 0}^{N - 1} \mathbf{x}[n] W_{N}^{n k}, \qquad  k \in \{ 0, \ldots, N - 1 \},$$)
 
-The length-$N$ *inverse Discrete Fourier Transform* $\text{iDFT}_{N}\{\mathbf{x}\} \in \mathbb{C}^{N}$ is defined as:
+[comment]: <> (with $W_{N} = \exp\left&#40; -j \frac{2 \pi}{N} \right&#41;$.)
 
-$$\text{iDFT}_{N}\{\mathbf{x}\}[n] = \frac{1}{N} \sum_{k = 0}^{N - 1} \mathbf{x}[k] W_{N}^{-n k}, \qquad n \in \{ 0, \ldots, N - 1 \}.$$
+[comment]: <> (The length-$N$ *inverse Discrete Fourier Transform* $\text{iDFT}_{N}\{\mathbf{x}\} \in \mathbb{C}^{N}$ is defined as:)
 
-Moreover, $\text{(i)DFT}_{N}$ is reversible:
+[comment]: <> ($$\text{iDFT}_{N}\{\mathbf{x}\}[n] = \frac{1}{N} \sum_{k = 0}^{N - 1} \mathbf{x}[k] W_{N}^{-n k}, \qquad n \in \{ 0, \ldots, N - 1 \}.$$)
 
-$$(\text{iDFT}_{N} \circ \text{DFT}_{N})\{\mathbf{x}\} = (\text{DFT}_{N} \circ \text{iDFT}_{N})\{\mathbf{x}\} = \mathbf{x}.$$
+[comment]: <> ([comment]: <> &#40;Moreover, $\text{&#40;i&#41;DFT}_{N}$ is reversible:&#41;)
 
-The FFT [@Cooley1965] is a particularly efficient  $\mathcal{O}(N \log N)$ algorithm to compute
-$\text{(i)DFT}_{N}$, especially if $N$ is highly composite.
+[comment]: <> ([comment]: <> &#40;$$&#40;\text{iDFT}_{N} \circ \text{DFT}_{N}&#41;\{\mathbf{x}\} = &#40;\text{DFT}_{N} \circ \text{iDFT}_{N}&#41;\{\mathbf{x}\} = \mathbf{x}.$$&#41;)
 
-## The Chirp Z-Transform 
+[comment]: <> (The FFT [@Cooley1965] is a particularly efficient  $\mathcal{O}&#40;N \log N&#41;$ algorithm to compute)
 
-Let $\mathbf{x} \in \mathbb{C}^{N}$. The length-$M$ *Chirp Z-Transform* 
-$\text{CZT}_{N}^{M}\{\mathbf{x}\} \in \mathbb{C}^{M}$ of parameters $A, W \in \mathbb{C}^{*}$ is
-defined as:
+[comment]: <> ($\text{&#40;i&#41;DFT}_{N}$, especially if $N$ is highly composite.)
 
-$$\text{CZT}_{N}^{M}\{ \mathbf{x} \}[k] = \sum_{n = 0}^{N - 1} \mathbf{x}[n] A^{-n} W^{n k}, \qquad k \in \{ 0, \ldots, M - 1 \}.$$
+[comment]: <> (## The Chirp Z-Transform )
 
-The CZT is a generalization of the DFT which samples the $Z$ plane at uniformly-spaced points along the unit circle. It can be efficiently computed using can be efficiently computed using the $\text{DFT}$ and $\text{iDFT}$ in $\mathcal{O}(L \log L)$
-operations, where $L \ge N + M - 1$. This is done via Bluestein's algorithm [@Bluestein1970]. A similar formulation of the CZT and its efficient computation is known as the fast fractional FT algorithm [@Bailey1991].
+[comment]: <> (Let $\mathbf{x} \in \mathbb{C}^{N}$. The length-$M$ *Chirp Z-Transform* )
+
+[comment]: <> ($\text{CZT}_{N}^{M}\{\mathbf{x}\} \in \mathbb{C}^{M}$ of parameters $A, W \in \mathbb{C}^{*}$ is)
+
+[comment]: <> (defined as:)
+
+[comment]: <> ($$\text{CZT}_{N}^{M}\{ \mathbf{x} \}[k] = \sum_{n = 0}^{N - 1} \mathbf{x}[n] A^{-n} W^{n k}, \qquad k \in \{ 0, \ldots, M - 1 \}.$$)
+
+[comment]: <> (The CZT is a generalization of the DFT which samples the $Z$ plane at uniformly-spaced points along the unit circle. It can be efficiently computed using can be efficiently computed using the $\text{DFT}$ and $\text{iDFT}$ in $\mathcal{O}&#40;L \log L&#41;$)
+
+[comment]: <> (operations, where $L \ge N + M - 1$. This is done via Bluestein's algorithm [@Bluestein1970]. A similar formulation of the CZT and its efficient computation is known as the fast fractional FT algorithm [@Bailey1991].)
 
 ## Fast Fourier Series
 
@@ -143,7 +159,9 @@ $$\mathbf{x}  = N_{s} \; \text{iDFT}_{N_{s}}\left\{ \mathbf{X}^{FS} \odot \exp\l
 
 $$\mathbf{X}^{FS}  = \frac{1}{N_{s}} \text{DFT}_{N_{s}}\left\{ \mathbf{x} \odot \exp\left( -j \frac{2 \pi}{N_{s}} \right)^{- N \mathbf{E}_{2}} \right\} \odot \exp\left( j \frac{2 \pi}{T} T_{c} \right)^{- \mathbf{E}_{1}},$$
 
-where
+where $\text{DFT}_{N}\{\mathbf{x}\} \in \mathbb{C}^{N}$ and 
+$\text{iDFT}_{N}\{\mathbf{x}\} \in \mathbb{C}^{N}$ are the length-$N$ *Discrete Fourier Transform*
+and *inverse Discrete Fourier Transform* respectively [@vetterli2014foundations], and
 
 $$\mathbf{x}  = \left[ x(t_0), \ldots, x(t_{M}), x(t_{-M}), \ldots, x(t_{-1}) \right] \in \mathbb{C}^{N_{s}},$$ 
 
@@ -151,21 +169,39 @@ $$\mathbf{X}^{FS}  = \left[ X_{-N}^{FS}, \ldots, X_{N}^{FS}, \mathbf{0}_Q \right
 
 $$\mathbf{E}_{1}  = \left[ -N, \ldots, N, \mathbf{0}_Q \right] \in \mathbb{Z}^{N_{s}}, \qquad\mathbf{E}_{2}  = \left[ 0, \ldots, (N_s-1)/2, -(N_s-1)/2, \ldots, -1 \right] \in \mathbb{Z}^{N_{s}}.$$
 
-A proof of this result as well as the case $Q\in 2\mathbb{N}+1$ is available in [@bezzam2021pyffs].
+The FFT [@Cooley1965] is a particularly efficient  $\mathcal{O}(N \log N)$ algorithm to compute
+$\text{(i)DFT}_{N}$, especially if $N$ is highly composite. As the (i)DFT is a 
+core component, FFS can be computed
+with similar efficency. A proof of this result as well as the case $Q\in 2\mathbb{N}+1$ is available in [@bezzam2021pyffs].
 
 ## Fast Interpolation of FS Coefficients
 Let $0\leq a < b\leq T\in \mathbb{R}$ be the end-points of an interval on which we want to evaluate
 $M$ equi-spaced samples of $x$. Then
 $$\mathbf{x} = A^{N} \text{CZT}_{N_{FS}}^{M}(\mathbf{X}^{FS}) \odot W^{-N \mathbf{E}},$$
 
-where 
+where $\text{CZT}_{N}^{M}\{\mathbf{x}\} \in \mathbb{C}^{M}$ is the length-$M$ *Chirp Z-Transform* 
+of parameters $A, W \in \mathbb{C}^{*}$ defined as
+
+$$\text{CZT}_{N}^{M}\{ \mathbf{x} \}[k] = \sum_{n = 0}^{N - 1} \mathbf{x}[n] A^{-n} W^{n k}, \qquad k \in \{ 0, \ldots, M - 1 \},$$
+and
 $$\mathbf{x} = [x(t_{0}), \ldots, x(t_{M-1})] \in \mathbb{C}^{M}$$
 $$\mathbf{X}^{FS}  = \frac{1}{N_{s}} \text{DFT}_{N_{s}}\left\{ \mathbf{x} \odot \exp\left( -j \frac{2 \pi}{N_{s}} \right)^{- N \mathbf{E}_{2}} \right\} \odot \exp\left( j \frac{2 \pi}{T} T_{c} \right)^{- \mathbf{E}_{1}},$$
 $$t_{n} = a + \frac{b - a}{M - 1} n, \quad n \in \{0,\ldots, M-1\},$$
-$$A = \exp\left(-j \frac{2\pi}{T} a\right),\qquad W = \exp\left(j \frac{2 \pi}{T} \frac{b - a}{M - 1}\right),\qquad \mathbf{E} = [0, \ldots, M -1] \in \mathbb{N}^{M},$$
-and where the CZT has parameters $A, W$.  With this result, one can interpolate sub-sections of a period efficiently. More-over, it is possible to perform DFTs of a smaller length than what would be normally required with a more standard iDFT interpolation approach, namely zero-padding
-the DFT coefficients and taking a longer iDFT for an increase in temporal resolution across the entire period. Again, the proof of this result is available in [@bezzam2021pyffs].
+$$A = \exp\left(-j \frac{2\pi}{T} a\right),\qquad W = \exp\left(j \frac{2 \pi}{T} \frac{b - a}{M - 1}\right),\qquad \mathbf{E} = [0, \ldots, M -1] \in \mathbb{N}^{M}.$$
 
+The CZT is a generalization of the DFT which samples the $Z$ plane at 
+uniformly-spaced points along the unit circle. It can be efficiently computed 
+using the $\text{DFT}$ and $\text{iDFT}$ in $\mathcal{O}(L \log L)$
+operations, where $L \ge N + M - 1$. This is done via Bluestein's algorithm 
+[@Bluestein1970].
+
+With the above result, one can interpolate sub-sections of a period efficiently. 
+Moreover, it is possible to perform DFTs of a smaller length than what would be 
+normally required with a more standard iDFT interpolation approach, namely zero-padding
+the DFT coefficients and taking a longer iDFT for an increase in temporal
+resolution across the entire period. As the CZT is the most expensive operation,
+the above interpolation has the same complexity. Again, the proof of this result is 
+available in [@bezzam2021pyffs].
 
 # pyFFS Overview and Usage
 
