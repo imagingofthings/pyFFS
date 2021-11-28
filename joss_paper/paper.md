@@ -205,7 +205,7 @@ available in [@bezzam2021pyffs].
 
 # pyFFS Overview and Usage
 
-pyFFS is a Python library for performing efficient and distortionless FS coefficient computation, convolution, and interpolation for periodic/compactly-supported, bandlimited signals. The goal is to provide an intuitive tool to numerically work with such signals of any dimension $ D $. Just as the FFT functions from NumPy and SciPy can be used without too much thought about the internal details, we have created a a user interface for FS computations that can also be used out-of-the-box for the appropriate scenario.
+pyFFS is a Python library for performing efficient and distortionless FS coefficient computation, convolution, and interpolation for periodic/compactly-supported, bandlimited signals. The goal is to provide an intuitive tool to numerically work with such signals of any dimension $D$. Just as the FFT functions from NumPy and SciPy can be used without too much thought about the internal details, we have created a user interface for FS computations that can also be used out-of-the-box for the appropriate scenario.
 
 
 ## Fourier series analysis and synthesis
@@ -236,7 +236,10 @@ x_FS = pyffs.ffs(x, T, T_c, N_FS)
 x_r = pyffs.iffs(x_FS, T, T_c, N_FS)    # equivalent to x
 ```
 
-The user interface for the general N-D case is shown below, with the specific 
+For the general N-D case, one would use `ffsn_sample`, `ffsn`, and `iffsn` and 
+for each of the arguments pass a list of length $N$ (one value per dimension).
+
+<!-- The user interface for the general N-D case is shown below, with the specific 
 example of 2-D. As in the 1-D case, samples provided to `ffsn` are not in 
 increasing order of the input variables. The method `ffsn_sample` returns the 
 locations and indices necessary for making sure the samples provided to `ffsn`
@@ -262,7 +265,7 @@ x_FS = pyffs.ffsn(x, T=T, T_c=T_c, N_FS=N_FS)
 
 # go back to samples
 x_r = pyffs.iffsn(x_FS, T=T, T_c=T_c, N_FS=N_FS)    # equivalent to x
-```
+``` -->
 
 ## Circular convolution
 
@@ -282,13 +285,14 @@ out = pyffs.convolve(
 ```
 
 Samples can be provided in their natural order or in the order expected by 
-`ffsn`. By default, the argument `reorder` is set to `True`, such that samples 
+`ffsn`. 
+<!-- By default, the argument `reorder` is set to `True`, such that samples 
 are expected in their natural order and are reordered internally. The output 
-samples are returned in the same order as the inputs.
+samples are returned in the same order as the inputs. -->
 
 ## Bandlimited interpoloation
 
-The user interface for 1-D badnlimited interpolation is shown below.
+The user interface for 1-D bandlimited interpolation is shown below.
 
 ```python
 x_interp = pyffs.fs_interp(
@@ -300,7 +304,10 @@ x_interp = pyffs.fs_interp(
 )
 ```
 
-The user interface for the general N-D bandlimited interpolation is shown below,
+For the general N-D case, one would use `fs_interpn` and 
+for each of the arguments pass a list of length $N$ (one value per dimension).
+
+<!-- The user interface for the general N-D bandlimited interpolation is shown below,
 with the specific example of 2-D.
 
 ```python
@@ -314,7 +321,7 @@ x_interp = pyffs.fs_interpn(
 ```
 
 In both cases, the provided FS coefficients must be ordered such that the 
-indices are in increasing order, as returned by `ffs` and `ffsn`.
+indices are in increasing order, as returned by `ffs` and `ffsn`. -->
 
 ## GPU usage
 
@@ -343,7 +350,7 @@ post-processing as possible on the GPU in order to limit such data transfer.
 
 ## <a name="comparison"></a>API Scope
 
-The following table summarises pyFFS' API and compares it with functions from SciPy offering similar functionalities [@Virtanen2020].
+The following table summarizes pyFFS' API and compares it with functions from SciPy offering similar functionalities (but for the DFT) [@Virtanen2020].
 
 |   | pyFFS | SciPy |
 |:-:|:-:|:-:|
@@ -357,17 +364,21 @@ The following table summarises pyFFS' API and compares it with functions from Sc
 
 # Benchmarking
 
+All benchmarking is performed on a Lenovo ThinkPad P15 Gen 1 
+laptop, with an Intel i7-10850H six-core processor. For the GPU benchmarking,
+a an NVIDIA Quadro RTX 3000 GPU is used.
+
 ## Convolution
 Note that SciPy's `scipy.fft.fftconvolve` zero-pads inputs in order to
 approximate a linear convolution, while pyFFS performs a circular convolution.
 Within SciPy, circular convolution is only supported for 2-D by calling 
 `scipy.signal.convolve2d`  with the parameter `boundary = wrap`. This method can
 be considerably slower than pyFFS' `pyffs.convolve` for modest size inputs, as
-shown below. All benchmarking is performed on a Lenovo ThinkPad P15 Gen 1 
-laptop, with an Intel i7-10850H six-core processor.
+shown below.
 
 ![2-D bandlimited circular convolution.\label{fig:profile_convolve2d}](fig/profile_convolve2d.png){width=50%}
 
+## Bandlimited interpolation
 For N-D bandlimited interpolation with SciPy, it is possible to use 
 `scipy.signal.resample` along each dimension. However, there is no one-shot
 function. Below we benchmark 1-D and 2-D interpolation as we vary the 
@@ -405,9 +416,7 @@ initializing an array with `np.zeros`, so casting the arrays accordingly is
 recommended. In the benchmarking tests below, we use `float32`/ `complex64`
 arrays. Secondly, the benefits of using a GPU typically emerge when the
 processed arrays are larger than the CPU cache. So the crossover between CPU and
-GPU performance can be very hardware-dependent. All benchmarking below is 
-performed on a Lenovo ThinkPad P15 Gen 1 laptop, with an Intel i7-10850H 
-six-core processor and an NVIDIA Quadro RTX 3000 GPU.
+GPU performance can be very hardware-dependent.
 
 Figure \Ref{fig:gpu_ffs} compares the processing time between a CPU and a GPU for 
 computing an increasing number of FS coefficients.
@@ -515,9 +524,9 @@ interpolation approach of pyFFS.
 In this paper we have presented pyFFS, a Python library for efficient Fourier series (FS) coefficient computation, convolution, and interpolation. The intended use of this package is when working with discrete samples that arise from a continuous-domain signal. When the underlying signal is periodic (or has finite support and can be periodized) and bandlimited, its FS coefficients can be computed and interpolated in a straightforward and distortionless fashion with pyFFS. If either periodicity or bandlimitedness is not met, the same workarounds as when applying the discrete Fourier transform can be used, namely windowing to taper discontinuous boundaries or bandlimiting by FS coefficient truncation.
 
 As computation is posed in the continuous-domain, accuracy loss that may arise from switching between the discrete- and the continuous-domain can be minimized. Moreover, this package serves as a handy continuous-domain complement to the functionalities already available in SciPy, where the focus is primarily on discrete signals.
-We also provide functionality not available in SciPy, namely N-D circular convolution,  N-D bandlimited interpolation, and a bandlimited interpolation technique based on the chirp Z-transform. As shown in our benchmarking results, the latter can be more than an order of magnitude faster when interpolating sub-regions of a 1-D  or 2-D periodic function. Similar results can be expected for a general N-D function. Furthermore, GPU support has been seamlessly integrated through the CuPy package, offering more than an order of magnitude reduction when computing and interpolating a large number of FS coefficients.
+We also provide functionality not available in SciPy, namely N-D circular convolution,  N-D bandlimited interpolation, and a bandlimited interpolation technique based on the chirp Z-transform. As shown in our benchmarking results, the latter can be more than an order of magnitude faster when interpolating sub-regions of a 1-D or 2-D periodic function. Similar results can be expected for a general N-D function. Furthermore, GPU support has been seamlessly integrated through the CuPy package, offering more than an order of magnitude reduction when computing and interpolating a large number of FS coefficients.
 
-In summary, pyFFS offers researchers and engineers a convenient and efficient interface for working with FS coefficients. The source code is made available on [GitHub](github.com/imagingofthings/pyFFS) and can be easily installed for Python through PyPi.More extensive and up-to-date documentation can be found at pyffs.readthedocs.io.
+<!-- In summary, pyFFS offers researchers and engineers a convenient and efficient interface for working with FS coefficients. The source code is made available on [GitHub](github.com/imagingofthings/pyFFS) and can be easily installed for Python through PyPi. More extensive and up-to-date documentation can be found at pyffs.readthedocs.io. -->
 
 # Acknowledgements
 
