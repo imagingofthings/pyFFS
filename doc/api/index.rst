@@ -41,6 +41,13 @@ API Reference
       ~interp.fs_interp
       ~interp.fs_interpn
 
+    Circular Convolution
+    --------------------
+
+    .. autosummary::
+
+      ~conv.convolve
+
 
 Submodules
 ----------
@@ -51,4 +58,5 @@ Submodules
    pyffs.ffs
    pyffs.func
    pyffs.interp
+   pyffs.conv
    pyffs.util
