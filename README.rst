@@ -73,3 +73,29 @@ Remarks
 
 pyFFS is developed and tested on x86_64 systems running Linux and macOS
 Catalina.
+
+Citing this work
+----------------
+
+If you use this package in your own research, please cite `our paper <https://epubs.siam.org/doi/10.1137/21M1448641>`_.
+
+::
+
+    @article{10.1137/21M1448641,
+        author = {Bezzam, Eric and Kashani, Sepand and Hurley, Paul and Vetterli, Martin and Simeoni, Matthieu},
+        title = {PyFFS: A Python Library for Fast Fourier Series Computation and Interpolation with GPU Acceleration},
+        year = {2022},
+        issue_date = {Aug 2022},
+        publisher = {Society for Industrial and Applied Mathematics},
+        address = {USA},
+        volume = {44},
+        number = {4},
+        issn = {1064-8275},
+        url = {https://doi.org/10.1137/21M1448641},
+        doi = {10.1137/21M1448641},
+        journal = {SIAM J. Sci. Comput.},
+        month = {jan},
+        pages = {C346–C366},
+        numpages = {21},
+        keywords = {GPU, chirp Z-transform, numerical library, 97N80, fast Fourier series, bandlimited interpolation, 65T40, 42B05, 97N50, Python}
+    }
