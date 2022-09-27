@@ -77,7 +77,7 @@ Catalina.
 Citing this work
 ----------------
 
-If you use this package in your own research, please cite `our paper <https://epubs.siam.org/doi/10.1137/21M1448641>`_.
+If you use this package in your own research, please cite `our paper <https://arxiv.org/abs/2110.00262>`_.
 
 ::
 
