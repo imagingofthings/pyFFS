@@ -19,13 +19,16 @@ import numpy as np
 import scipy.fft
 
 
-CUPY_ENABLED = util.find_spec("cupy") is not None and int(os.getenv("CUPY_PYFFS", 1)) == 1
+CUPY_ENABLED = (util.find_spec("cupy") is not None) and (int(os.getenv("CUPY_PYFFS", 1)) == 1)
 AVAILABLE_MOD = [np]
 if CUPY_ENABLED:
-    import cupy as cp
-    import cupyx
-
-    AVAILABLE_MOD.append(cp)
+    try:
+        import cupy as cp
+        import cupyx
+        AVAILABLE_MOD.append(cp)
+    except ImportError:
+        # CuPy is installed, but GPU drivers probably missing.
+        CUPY_ENABLED = False
 
 
 def get_module(backend="numpy"):
