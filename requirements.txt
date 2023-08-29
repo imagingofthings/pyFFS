@@ -1,7 +1,7 @@
 numpy >= 1.10
 scipy >= 1.5.0
-sphinx == 2.1.*
-sphinx_rtd_theme == 0.4.*
+sphinx >= 2.1.0
+sphinx_rtd_theme >= 0.4.0
 pytest >= 6.0
 click >= 7.0
 matplotlib >= 3.0
